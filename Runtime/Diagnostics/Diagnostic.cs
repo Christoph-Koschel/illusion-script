@@ -5,7 +5,7 @@
         public readonly string text;
         public readonly TextSpan span;
 
-        internal Diagnostic(string text, TextSpan span)
+        internal Diagnostic(TextSpan span, string text)
         {
             this.text = text;
             this.span = span;

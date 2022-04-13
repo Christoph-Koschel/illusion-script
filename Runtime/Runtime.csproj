@@ -9,7 +9,6 @@
     <ItemGroup>
       <Folder Include="Compiling" />
       <Folder Include="Interpreting" />
-      <Folder Include="Parsing" />
     </ItemGroup>
 
 </Project>

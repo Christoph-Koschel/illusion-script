@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace IllusionScript.Runtime.Diagnostics
@@ -30,6 +31,12 @@ namespace IllusionScript.Runtime.Diagnostics
         {
             string message = $"ERROR: Bad character input: '{current}'";
             TextSpan span = new TextSpan(position, 1);
+            Report(span, message);
+        }
+        
+        public void ReportInvalidNumber(TextSpan span, string text, Type type)
+        {
+            string message = $"ERROR: The number {text} isn't valid {type}";
             Report(span, message);
         }
     }

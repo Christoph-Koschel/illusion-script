@@ -2,6 +2,16 @@
 {
     public enum SyntaxType
     {
-        EOFToken
+        BadToken,
+        WhiteSpaceToken,
+        EOFToken,
+        
+        NumberToken,
+        
+        PlusToken,
+        MinusToken,
+        StarToken,
+        SlashToken,
+        PercentToken
     }
 }

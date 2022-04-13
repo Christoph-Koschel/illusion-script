@@ -7,4 +7,8 @@
         <RootNamespace>IllusionScript</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Runtime\Runtime.csproj" />
+    </ItemGroup>
+
 </Project>
