@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <AssemblyName>IllusionScript.Runtime</AssemblyName>
+        <RootNamespace>IllusionScript.Runtime</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="Compiling" />
+      <Folder Include="Interpreting" />
+      <Folder Include="Parsing" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,15 @@
+﻿namespace IllusionScript.Runtime.Diagnostics
+{
+    public struct TextSpan
+    {
+        public readonly int start;
+        public readonly int length;
+        public readonly int end => start + length;
+
+        public TextSpan(int start, int length)
+        {
+            this.start = start;
+            this.length = length;
+        }
+    }
+}
