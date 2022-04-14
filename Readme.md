@@ -13,8 +13,6 @@
     <a href="https://github.com/christoph-koschel/illusion-script"><strong>Explore the docs »</strong></a>
     <br/>
     <br/>
-    <a href="https://github.com/christoph-koschel/illusion-script">View Demo</a>
-    .
     <a href="https://github.com/christoph-koschel/illusion-script/issues">Report Bug</a>
     .
     <a href="https://github.com/christoph-koschel/illusion-script/issues">Request Feature</a>
@@ -42,7 +40,7 @@ During development it is important to us to keep the language simple and flexibl
 
 ## Built With
 
-C#
+C#\
 IL Compiler
 
 ## Getting Started
@@ -80,12 +78,13 @@ ils -c main.ils -o main.exe
 
 Pull Request are at any time welcome.
 
+
 Please sort your pull request into categories.
 
-For example:
-bugfixes/TokenLexing
-features/BinaryOperator
-..
+For example:\
+bugfixes/TokenLexing\
+features/BinaryOperator\
+..\
 ..
 
 ### Creating A Pull Request

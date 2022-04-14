@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using IllusionScript.Runtime.Diagnostics;
+using IllusionScript.Runtime.Parsing;
 
 namespace IllusionScript.Runtime.Lexing
 {

@@ -1,4 +1,4 @@
-﻿namespace IllusionScript.Runtime
+﻿namespace IllusionScript.Runtime.Parsing
 {
     public enum SyntaxType
     {
@@ -15,6 +15,11 @@
         PercentToken,
         
         LParenToken,
-        RParenToken
+        RParenToken,
+        
+        
+        BinaryExpression,
+        NumberExpression,
+        ParenExpression
     }
 }

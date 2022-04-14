@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using IllusionScript.Runtime.Parsing;
 
 namespace IllusionScript.Runtime.Diagnostics
 {
@@ -26,17 +27,23 @@ namespace IllusionScript.Runtime.Diagnostics
 
         public IEnumerator<Diagnostic> GetEnumerator() => diagnostics.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        
+
         public void ReportBadCharacter(int position, char current)
         {
             string message = $"ERROR: Bad character input: '{current}'";
             TextSpan span = new TextSpan(position, 1);
             Report(span, message);
         }
-        
+
         public void ReportInvalidNumber(TextSpan span, string text, Type type)
         {
             string message = $"ERROR: The number {text} isn't valid {type}";
+            Report(span, message);
+        }
+
+        public void ReportExpectedToken(TextSpan span, SyntaxType expected, SyntaxType actually)
+        {
+            string message = $"ERROR: Expected <{expected}> got <{actually}>";
             Report(span, message);
         }
     }
