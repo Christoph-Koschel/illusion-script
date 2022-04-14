@@ -7,7 +7,7 @@ using IllusionScript.Runtime.Parsing.Nodes;
 
 namespace IllusionScript.Runtime.Parsing
 {
-    internal sealed class Parser
+    public sealed class Parser
     {
         public readonly DiagnosticGroup diagnostics;
         public readonly Token[] tokens;
@@ -15,7 +15,7 @@ namespace IllusionScript.Runtime.Parsing
         private Token next => Peek(1);
         private int position;
 
-        public Parser(SourceText source)
+        internal Parser(SourceText source)
         {
             Lexer lexer = new Lexer(source);
             List<Token> tokens = new List<Token>();
@@ -109,6 +109,35 @@ namespace IllusionScript.Runtime.Parsing
             }
 
             return left;
+        }
+
+        public static int GetUnaryOperatorIndex(SyntaxType type)
+        {
+            switch (type)
+            {
+                case SyntaxType.MinusToken:
+                case SyntaxType.PlusToken:
+                    return 3;
+
+                default: 
+                    return 0;
+            }
+        }
+
+        public static int GetBinaryOperatorIndex(SyntaxType type)
+        {
+            switch (type)
+            {
+                case SyntaxType.StarToken:
+                case SyntaxType.SlashToken:
+                case SyntaxType.PercentToken:
+                    return 2;
+                case SyntaxType.MinusToken:
+                case SyntaxType.PlusToken:
+                    return 1;
+                default: 
+                    return 0;
+            }
         }
     }
 }

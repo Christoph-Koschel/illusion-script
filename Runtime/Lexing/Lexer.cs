@@ -1,10 +1,11 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Parsing;
 
 namespace IllusionScript.Runtime.Lexing
 {
-    internal sealed class Lexer
+    public sealed class Lexer
     {
         private SourceText source;
         public readonly DiagnosticGroup diagnostics;
@@ -12,7 +13,7 @@ namespace IllusionScript.Runtime.Lexing
         private char current => Peek(0);
         private char next => Peek(1);
 
-        public Lexer(SourceText source)
+        internal Lexer(SourceText source)
         {
             this.source = source;
             diagnostics = new DiagnosticGroup();
@@ -117,6 +118,26 @@ namespace IllusionScript.Runtime.Lexing
             }
 
             return new Token(SyntaxType.WhiteSpaceToken, start, builder.ToString(), null);
+        }
+
+        public static string? GetText(SyntaxType type)
+        {
+            switch (type)
+            {
+                case SyntaxType.PlusToken:
+                    return "+";
+                case SyntaxType.MinusToken:
+                    return "-";
+                case SyntaxType.StarToken:
+                    return "*";
+                case SyntaxType.SlashToken:
+                    return "/";
+                case SyntaxType.PercentToken:
+                    return "%";
+                default:
+                    Console.WriteLine(type + " is not defined in GetText");
+                    return null;
+            }
         }
     }
 }
