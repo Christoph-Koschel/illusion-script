@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Linq;
 using IllusionScript.Runtime.Diagnostics;
-using IllusionScript.Runtime.Interface;
-using IllusionScript.Runtime.Lexing;
+using IllusionScript.Runtime.Parsing;
 
 namespace repl
 {
@@ -15,28 +14,17 @@ namespace repl
                 Console.Write("> ");
                 string input = Console.ReadLine();
 
-                Compilation compilation = Compilation.Parse(input);
-                if (compilation.diagnostics.Any())
+                SyntaxThree syntaxThree = SyntaxThree.Parse(input);
+                if (syntaxThree.diagnostics.Any())
                 {
-                    foreach (Diagnostic diagnostic in compilation.diagnostics)
+                    foreach (Diagnostic diagnostic in syntaxThree.diagnostics)
                     {
                         Console.WriteLine(diagnostic);
                     }
                 }
                 else
                 {
-                    foreach (Token token in compilation.tokens)
-                    {
-                        Console.Write(token.type);
-
-                        if (token.value != null)
-                        {
-                            Console.Write(" ");
-                            Console.Write(token.value);
-                        }
-                        
-                        Console.Write("\n");
-                    }
+                    syntaxThree.root.WriteTo(Console.Out);
                 }
             }
         }

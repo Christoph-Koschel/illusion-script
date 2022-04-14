@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using IllusionScript.Runtime;
-using IllusionScript.Runtime.Interface;
 using IllusionScript.Runtime.Lexing;
+using IllusionScript.Runtime.Parsing;
 using Xunit;
 
 namespace Runtime.Test.Lexing
@@ -13,7 +12,7 @@ namespace Runtime.Test.Lexing
         [MemberData(nameof(GetTokensWithWhitespacesData))]
         public static void CheckLexerTokenInterpreter(string text, SyntaxType type)
         {
-            Token[] tokens = Compilation.MakeTokens(text).ToArray();
+            Token[] tokens = SyntaxThree.MakeTokens(text).ToArray();
             Assert.Single(tokens);
             Assert.Equal(type, tokens[0].type);
             Assert.Equal(text, tokens[0].text);
@@ -25,7 +24,7 @@ namespace Runtime.Test.Lexing
             SyntaxType type2)
         {
             string text = text1 + text2;
-            Token[] tokens = Compilation.MakeTokens(text).ToArray();
+            Token[] tokens = SyntaxThree.MakeTokens(text).ToArray();
 
             Assert.Equal(2, tokens.Length);
             Assert.Equal(type1, tokens[0].type);

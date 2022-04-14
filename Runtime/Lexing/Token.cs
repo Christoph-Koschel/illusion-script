@@ -1,10 +1,11 @@
 ﻿using IllusionScript.Runtime.Diagnostics;
+using IllusionScript.Runtime.Parsing;
+using IllusionScript.Runtime.Parsing.Nodes;
 
 namespace IllusionScript.Runtime.Lexing
 {
-    public sealed class Token
+    public sealed class Token : Expression
     {
-        public readonly SyntaxType type;
         public readonly string text;
         public readonly object value;
         public readonly TextSpan span;
@@ -17,5 +18,7 @@ namespace IllusionScript.Runtime.Lexing
 
             span = new TextSpan(start, text.Length);
         }
+
+        public override SyntaxType type { get; }
     }
 }
