@@ -28,5 +28,25 @@ namespace IllusionScript.Runtime.Interface
             SourceText source = new SourceText(text);
             return Parse(source);
         }
+
+        public static IEnumerable<Token> MakeTokens(SourceText text)
+        {
+            Lexer lexer = new Lexer(text);
+            Token token;
+            do
+            {
+                token = lexer.Lex();
+                if (token.type != SyntaxType.EOFToken)
+                {
+                    yield return token;
+                }
+            } while (token.type != SyntaxType.EOFToken);
+        }
+
+        public static IEnumerable<Token> MakeTokens(string text)
+        {
+            SourceText source = new SourceText(text);
+            return MakeTokens(source);
+        }
     }
 }

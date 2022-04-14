@@ -15,7 +15,11 @@ namespace IllusionScript.Runtime.Parsing
             List<Token> tokens = new List<Token>();
             do
             {
-                tokens.Add(lexer.Lex());
+                Token token = lexer.Lex();
+                if (token.type != SyntaxType.WhiteSpaceToken)
+                {
+                    tokens.Add(token);
+                }
             } while (tokens[^1].type != SyntaxType.EOFToken);
 
             diagnostics = new DiagnosticGroup();

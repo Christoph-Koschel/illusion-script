@@ -40,6 +40,7 @@ namespace IllusionScript.Runtime.Lexing
                     return new Token(SyntaxType.EOFToken, start, "", null);
                 case '\r':
                 case '\n':
+                case '\t':
                 case ' ':
                     return CreateWhitespaces();
                 case '0':
@@ -68,6 +69,12 @@ namespace IllusionScript.Runtime.Lexing
                 case '%':
                     position++;
                     return new Token(SyntaxType.PercentToken, start, "%", null);
+                case '(':
+                    position++;
+                    return new Token(SyntaxType.LParenToken, start, "(", null);
+                case ')':
+                    position++;
+                    return new Token(SyntaxType.RParenToken, start, ")", null);
                 default:
                     diagnostics.ReportBadCharacter(start, current);
                     position++;
