@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using IllusionScript.Runtime.Interface;
 using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing;
 using IllusionScript.Runtime.Parsing.Nodes;
@@ -144,8 +145,8 @@ namespace Runtime.Test.Parsing
 
         private static Expression ParseExpression(string text)
         {
-            SyntaxThree syntaxTree = SyntaxThree.Parse(text);
-            return syntaxTree.root;
+            Compilation compilation = SyntaxThree.Parse(text);
+            return compilation.syntaxThree.root;
         }
 
         public static IEnumerable<object[]> GetBinaryOperatorPairsData()

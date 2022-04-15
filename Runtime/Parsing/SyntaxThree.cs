@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using IllusionScript.Runtime.Diagnostics;
+using IllusionScript.Runtime.Interface;
 using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing.Nodes;
 
@@ -11,22 +12,23 @@ namespace IllusionScript.Runtime.Parsing
         public readonly SourceText text;
         public readonly Expression root;
 
-        internal SyntaxThree(SourceText text)
+        private SyntaxThree(SourceText text)
         {
             Parser parser = new Parser(text);
             Expression root = parser.ParseText();
 
             diagnostics = parser.diagnostics;
-            this.text = text;
             this.root = root;
+            this.text = text;
         }
 
-        public static SyntaxThree Parse(SourceText source)
+        public static Compilation Parse(SourceText source)
         {
-            return new SyntaxThree(source);
+            SyntaxThree syntaxThree = new SyntaxThree(source);
+            return new Compilation(syntaxThree.diagnostics, syntaxThree);
         }
 
-        public static SyntaxThree Parse(string text)
+        public static Compilation Parse(string text)
         {
             SourceText source = new SourceText(text);
             return Parse(source);

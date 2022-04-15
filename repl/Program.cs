@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using IllusionScript.Runtime.Diagnostics;
+using IllusionScript.Runtime.Interface;
 using IllusionScript.Runtime.Parsing;
 
 namespace repl
@@ -9,22 +10,52 @@ namespace repl
     {
         static void Main(string[] args)
         {
+            bool showTree = true; // TODO change on release to false;
+
             while (true)
             {
                 Console.Write("> ");
                 string input = Console.ReadLine();
 
-                SyntaxThree syntaxThree = SyntaxThree.Parse(input);
-                if (syntaxThree.diagnostics.Any())
+                if (input.ToLower() == "#showtree")
                 {
-                    foreach (Diagnostic diagnostic in syntaxThree.diagnostics)
+                    showTree = !showTree;
+                    Console.WriteLine($"#ShowThree has set to {showTree}");
+                    continue;
+                }
+                else if (input.ToLower() == "#cls")
+                {
+                    Console.Clear();
+                    continue;
+                }
+
+                Compilation compilation = SyntaxThree.Parse(input);
+                if (compilation.diagnostics.Any())
+                {
+                    foreach (Diagnostic diagnostic in compilation.diagnostics)
                     {
                         Console.WriteLine(diagnostic);
                     }
                 }
                 else
                 {
-                    syntaxThree.root.WriteTo(Console.Out);
+                    if (showTree)
+                    {
+                        compilation.syntaxThree.root.WriteTo(Console.Out);
+                    }
+
+                    InterpreterResult result = compilation.Interpret();
+                    if (result.diagnostic.Any())
+                    {
+                        foreach (Diagnostic diagnostic in result.diagnostic)
+                        {
+                            Console.WriteLine(diagnostic);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine(result.value);
+                    }
                 }
             }
         }
