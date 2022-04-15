@@ -1,16 +1,25 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Runtime.Test.Lexing
 {
-    public static class LexerTest
+    public class LexerTest
     {
+        private readonly ITestOutputHelper testOutputHelper;
+
+        public LexerTest(ITestOutputHelper testOutputHelper)
+        {
+            this.testOutputHelper = testOutputHelper;
+        }
+
         [Theory]
         [MemberData(nameof(GetTokensWithWhitespacesData))]
-        public static void CheckLexerTokenInterpreter(string text, SyntaxType type)
+        public void CheckLexerTokenInterpreter(string text, SyntaxType type)
         {
             Token[] tokens = SyntaxThree.MakeTokens(text).ToArray();
             Assert.Single(tokens);
@@ -60,18 +69,14 @@ namespace Runtime.Test.Lexing
 
         private static IEnumerable<(string text, SyntaxType type)> GetTokens()
         {
-            return new[]
-            {
-                ("-", SyntaxType.MinusToken),
-                ("+", SyntaxType.PlusToken),
-                ("/", SyntaxType.SlashToken),
-                ("*", SyntaxType.StarToken),
-                ("%", SyntaxType.PercentToken),
-                ("(", SyntaxType.LParenToken),
-                (")", SyntaxType.RParenToken),
-                ("12", SyntaxType.NumberToken),
-                ("1", SyntaxType.NumberToken),
-            };
+            yield return (text: "+", type: SyntaxType.PlusToken);
+            yield return (text: "-", type: SyntaxType.MinusToken);
+            yield return (text: "*", type: SyntaxType.StarToken);
+            yield return (text: "/", type: SyntaxType.SlashToken);
+            yield return (text: "%", type: SyntaxType.PercentToken);
+            yield return (text: "**", type: SyntaxType.DoubleStarToken);
+            yield return (text: "1245", type: SyntaxType.NumberToken);
+            yield return (text: "1", type: SyntaxType.NumberToken);
         }
 
         private static IEnumerable<(string text, SyntaxType type)> GetWhitespaceTokens()
@@ -103,50 +108,25 @@ namespace Runtime.Test.Lexing
             bool t1IsKeyword = t1Type.ToString().EndsWith("Keyword");
             bool t2IsKeyword = t2Type.ToString().EndsWith("Keyword");
 
-            // if (t1Type == SyntaxType.IdentifierToken && t2Type == SyntaxType.IdentifierToken)
-            // {
-            //     return true;
-            // }
-
             if (t1IsKeyword && t2IsKeyword)
             {
                 return true;
             }
-
-            // if (t1IsKeyword && t2Type == SyntaxType.IdentifierToken)
-            // {
-            //     return true;
-            // }
-
-            // if (t1Type == SyntaxType.IdentifierToken && t2IsKeyword)
-            // {
-            //     return true;
-            // }
 
             if (t1Type == SyntaxType.NumberToken && t2Type == SyntaxType.NumberToken)
             {
                 return true;
             }
 
-            // if (t1Type == SyntaxType.NotToken && t2Type == SyntaxType.EqualsToken)
-            // {
-            //     return true;
-            // }
+            if (t1Type == SyntaxType.StarToken && t2Type == SyntaxType.StarToken)
+            {
+                return true;
+            }
 
-            // if (t1Type == SyntaxType.NotToken && t2Type == SyntaxType.DoubleEqualsToken)
-            // {
-            //     return true;
-            // }
-
-            // if (t1Type == SyntaxType.EqualsToken && t2Type == SyntaxType.EqualsToken)
-            // {
-            //     return true;
-            // }
-
-            // if (t1Type == SyntaxType.EqualsToken && t2Type == SyntaxType.DoubleEqualsToken)
-            // {
-            //     return true;
-            // }
+            if (t1Type == SyntaxType.StarToken && t2Type == SyntaxType.DoubleStarToken)
+            {
+                return true;
+            }
 
             return false;
         }

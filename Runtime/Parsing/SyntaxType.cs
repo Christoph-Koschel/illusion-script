@@ -11,6 +11,7 @@
         PlusToken,
         MinusToken,
         StarToken,
+        DoubleStarToken,
         SlashToken,
         PercentToken,
         
@@ -21,6 +22,7 @@
         BinaryExpression,
         NumberExpression,
         ParenExpression,
-        UnaryExpression
+        UnaryExpression,
+
     }
 }

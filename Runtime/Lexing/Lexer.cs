@@ -64,6 +64,12 @@ namespace IllusionScript.Runtime.Lexing
                     return new Token(SyntaxType.MinusToken, start, "-", null);
                 case '*':
                     position++;
+                    if (current == '*')
+                    {
+                        position++;
+                        return new Token(SyntaxType.DoubleStarToken, start, "**", null);
+                    }
+
                     return new Token(SyntaxType.StarToken, start, "*", null);
                 case '/':
                     position++;
@@ -130,6 +136,8 @@ namespace IllusionScript.Runtime.Lexing
                     return "-";
                 case SyntaxType.StarToken:
                     return "*";
+                case SyntaxType.DoubleStarToken:
+                    return "**";
                 case SyntaxType.SlashToken:
                     return "/";
                 case SyntaxType.PercentToken:

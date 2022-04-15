@@ -66,7 +66,20 @@ namespace IllusionScript.Runtime.Parsing
                 Expression factor = ParseFactor();
                 return new UnaryExpression(token, factor);
             }
-            else if (token.type is SyntaxType.NumberToken)
+
+            return ParsePower();
+        }
+
+        private Expression ParsePower()
+        {
+            return ParseBinaryOperator(ParseAtom, ParseFactor, SyntaxType.DoubleStarToken);
+        }
+
+        private Expression ParseAtom()
+        {
+            Token token = current;
+
+            if (token.type is SyntaxType.NumberToken)
             {
                 position++;
                 return new NumberExpression(token);
@@ -77,6 +90,7 @@ namespace IllusionScript.Runtime.Parsing
                 Expression expression = ParseExpression();
                 if (current.type == SyntaxType.RParenToken)
                 {
+                    position++;
                     return new ParenExpression(expression);
                 }
                 else
@@ -85,8 +99,8 @@ namespace IllusionScript.Runtime.Parsing
                 }
             }
 
-            diagnostics.ReportExpectedToken(token.span, SyntaxType.LParenToken, token.type);
-            throw new Exception("Undefined operation");
+            diagnostics.ReportExpectedToken(token.span, SyntaxType.NumberToken, token.type);
+            throw new Exception("Unexpected operator");
         }
 
         private Expression ParseBinaryOperator(Func<Expression> func1, params SyntaxType[] operators)
@@ -119,7 +133,7 @@ namespace IllusionScript.Runtime.Parsing
                 case SyntaxType.PlusToken:
                     return 3;
 
-                default: 
+                default:
                     return 0;
             }
         }
@@ -128,6 +142,8 @@ namespace IllusionScript.Runtime.Parsing
         {
             switch (type)
             {
+                case SyntaxType.DoubleStarToken:
+                    return 4;
                 case SyntaxType.StarToken:
                 case SyntaxType.SlashToken:
                 case SyntaxType.PercentToken:
@@ -135,7 +151,7 @@ namespace IllusionScript.Runtime.Parsing
                 case SyntaxType.MinusToken:
                 case SyntaxType.PlusToken:
                     return 1;
-                default: 
+                default:
                     return 0;
             }
         }

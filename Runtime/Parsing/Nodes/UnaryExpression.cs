@@ -12,7 +12,7 @@ namespace IllusionScript.Runtime.Parsing.Nodes
             this.operatorToken = operatorToken;
             this.factor = factor;
         }
-        
+
         public override SyntaxType type => SyntaxType.UnaryExpression;
     }
 }
