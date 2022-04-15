@@ -54,13 +54,12 @@ namespace IllusionScript.Runtime.Parsing.Nodes
 
             string marker = isLast ? "└──" : "├──";
 
-            writer.Write(indent);
-
             if (isConsole)
             {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
             }
 
+            writer.Write(indent);
             writer.Write(marker);
 
             if (isConsole)
