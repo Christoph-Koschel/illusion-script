@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using IllusionScript.Runtime.Interface;
 using IllusionScript.Runtime.Lexing;
@@ -69,14 +68,14 @@ namespace Runtime.Test.Parsing
             }
             else
             {
-                if (Parser.GetBinaryOperatorIndex(op1) <= Parser.GetBinaryOperatorIndex(op2))
+                if (Parser.GetBinaryOperatorIndex(op1) < Parser.GetBinaryOperatorIndex(op2))
                 {
                     using AssertingEnumerator e = new AssertingEnumerator(expression);
-                    e.AssertNode(SyntaxType.BinaryExpression);
                     e.AssertNode(SyntaxType.BinaryExpression);
                     e.AssertNode(SyntaxType.NumberExpression);
                     e.AssertToken(SyntaxType.NumberToken, "1");
                     e.AssertToken(op1, op1Text);
+                    e.AssertNode(SyntaxType.BinaryExpression);
                     e.AssertNode(SyntaxType.NumberExpression);
                     e.AssertToken(SyntaxType.NumberToken, "2");
                     e.AssertToken(op2, op2Text);
@@ -87,10 +86,10 @@ namespace Runtime.Test.Parsing
                 {
                     using AssertingEnumerator e = new AssertingEnumerator(expression);
                     e.AssertNode(SyntaxType.BinaryExpression);
+                    e.AssertNode(SyntaxType.BinaryExpression);
                     e.AssertNode(SyntaxType.NumberExpression);
                     e.AssertToken(SyntaxType.NumberToken, "1");
                     e.AssertToken(op1, op1Text);
-                    e.AssertNode(SyntaxType.BinaryExpression);
                     e.AssertNode(SyntaxType.NumberExpression);
                     e.AssertToken(SyntaxType.NumberToken, "2");
                     e.AssertToken(op2, op2Text);

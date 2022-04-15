@@ -48,12 +48,12 @@ namespace IllusionScript.Runtime.Parsing
 
         private Expression ParseExpression()
         {
-            return ParseBinaryOperator(ParseTerm, SyntaxType.StarToken, SyntaxType.SlashToken, SyntaxType.PercentToken);
+            return ParseBinaryOperator(ParseTerm, SyntaxType.PlusToken, SyntaxType.MinusToken);
         }
 
         private Expression ParseTerm()
         {
-            return ParseBinaryOperator(ParseFactor, SyntaxType.PlusToken, SyntaxType.MinusToken);
+            return ParseBinaryOperator(ParseFactor, SyntaxType.StarToken, SyntaxType.SlashToken, SyntaxType.PercentToken);
         }
 
         private Expression ParseFactor()

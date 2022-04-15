@@ -10,7 +10,7 @@ namespace IllusionScript.Runtime.Interpreting
     {
         private readonly BoundExpression expression;
         public readonly DiagnosticGroup diagnostic;
-        
+
         internal Interpreter(BoundExpression expression)
         {
             this.expression = expression;
@@ -73,15 +73,18 @@ namespace IllusionScript.Runtime.Interpreting
                     return (int)left % (int)right;
                 case BoundBinaryOperatorType.Pow:
                 {
-                    int index = (int)right;
-                    int result = 0;
-                    while (index != 0)
+                    int x = (int)left;
+                    int pow = (int)right;
+                    int ret = 1;
+                    while (pow != 0)
                     {
-                        result *= (int)left;
-                        index--;
+                        if ((pow & 1) == 1)
+                            ret *= x;
+                        x *= x;
+                        pow >>= 1;
                     }
 
-                    return result;
+                    return ret;
                 }
                 default:
                     throw new Exception($"Undefined binary operator: {expression.binaryOperator.operatorType}");
