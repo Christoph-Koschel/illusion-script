@@ -27,28 +27,26 @@ namespace Runtime.Test.Parsing
             string text = $"1 {op1Text} 2 {op2Text} 3";
             Expression expression = ParseExpression(text);
 
-            Debug.Assert(op1Text != null);
-            Debug.Assert(op2Text != null);
-
             testOutputHelper.WriteLine(Parser.GetBinaryOperatorIndex(op1).ToString());
             testOutputHelper.WriteLine(Parser.GetBinaryOperatorIndex(op2).ToString());
             testOutputHelper.WriteLine(text);
             testOutputHelper.WriteLine(expression.ToString());
 
-            if (Parser.GetBinaryOperatorIndex(op1) == 4 || Parser.GetBinaryOperatorIndex(op2) == 4)
+            if (Parser.GetBinaryOperatorIndex(op1) == Parser.GetBinaryOperatorIndex(SyntaxType.DoubleStarToken) ||
+                Parser.GetBinaryOperatorIndex(op2) == Parser.GetBinaryOperatorIndex(SyntaxType.DoubleStarToken))
             {
-                if (Parser.GetBinaryOperatorIndex(op1) <= Parser.GetBinaryOperatorIndex(op2))
+                if (Parser.GetBinaryOperatorIndex(op1) < Parser.GetBinaryOperatorIndex(op2))
                 {
                     using AssertingEnumerator e = new AssertingEnumerator(expression);
                     e.AssertNode(SyntaxType.BinaryExpression);
-                    e.AssertNode(SyntaxType.NumberExpression);
+                    e.AssertNode(SyntaxType.LiteralExpression);
                     e.AssertToken(SyntaxType.NumberToken, "1");
                     e.AssertToken(op1, op1Text);
                     e.AssertNode(SyntaxType.BinaryExpression);
-                    e.AssertNode(SyntaxType.NumberExpression);
+                    e.AssertNode(SyntaxType.LiteralExpression);
                     e.AssertToken(SyntaxType.NumberToken, "2");
                     e.AssertToken(op2, op2Text);
-                    e.AssertNode(SyntaxType.NumberExpression);
+                    e.AssertNode(SyntaxType.LiteralExpression);
                     e.AssertToken(SyntaxType.NumberToken, "3");
                 }
                 else
@@ -56,13 +54,13 @@ namespace Runtime.Test.Parsing
                     using AssertingEnumerator e = new AssertingEnumerator(expression);
                     e.AssertNode(SyntaxType.BinaryExpression);
                     e.AssertNode(SyntaxType.BinaryExpression);
-                    e.AssertNode(SyntaxType.NumberExpression);
+                    e.AssertNode(SyntaxType.LiteralExpression);
                     e.AssertToken(SyntaxType.NumberToken, "1");
                     e.AssertToken(op1, op1Text);
-                    e.AssertNode(SyntaxType.NumberExpression);
+                    e.AssertNode(SyntaxType.LiteralExpression);
                     e.AssertToken(SyntaxType.NumberToken, "2");
                     e.AssertToken(op2, op2Text);
-                    e.AssertNode(SyntaxType.NumberExpression);
+                    e.AssertNode(SyntaxType.LiteralExpression);
                     e.AssertToken(SyntaxType.NumberToken, "3");
                 }
             }
@@ -72,14 +70,14 @@ namespace Runtime.Test.Parsing
                 {
                     using AssertingEnumerator e = new AssertingEnumerator(expression);
                     e.AssertNode(SyntaxType.BinaryExpression);
-                    e.AssertNode(SyntaxType.NumberExpression);
+                    e.AssertNode(SyntaxType.LiteralExpression);
                     e.AssertToken(SyntaxType.NumberToken, "1");
                     e.AssertToken(op1, op1Text);
                     e.AssertNode(SyntaxType.BinaryExpression);
-                    e.AssertNode(SyntaxType.NumberExpression);
+                    e.AssertNode(SyntaxType.LiteralExpression);
                     e.AssertToken(SyntaxType.NumberToken, "2");
                     e.AssertToken(op2, op2Text);
-                    e.AssertNode(SyntaxType.NumberExpression);
+                    e.AssertNode(SyntaxType.LiteralExpression);
                     e.AssertToken(SyntaxType.NumberToken, "3");
                 }
                 else
@@ -87,13 +85,13 @@ namespace Runtime.Test.Parsing
                     using AssertingEnumerator e = new AssertingEnumerator(expression);
                     e.AssertNode(SyntaxType.BinaryExpression);
                     e.AssertNode(SyntaxType.BinaryExpression);
-                    e.AssertNode(SyntaxType.NumberExpression);
+                    e.AssertNode(SyntaxType.LiteralExpression);
                     e.AssertToken(SyntaxType.NumberToken, "1");
                     e.AssertToken(op1, op1Text);
-                    e.AssertNode(SyntaxType.NumberExpression);
+                    e.AssertNode(SyntaxType.LiteralExpression);
                     e.AssertToken(SyntaxType.NumberToken, "2");
                     e.AssertToken(op2, op2Text);
-                    e.AssertNode(SyntaxType.NumberExpression);
+                    e.AssertNode(SyntaxType.LiteralExpression);
                     e.AssertToken(SyntaxType.NumberToken, "3");
                 }
             }
@@ -108,9 +106,6 @@ namespace Runtime.Test.Parsing
             string text = $"{unaryText} 1 {binaryText} 2";
             Expression expression = ParseExpression(text);
 
-            Debug.Assert(unaryText != null);
-            Debug.Assert(binaryText != null);
-
             testOutputHelper.WriteLine(Parser.GetUnaryOperatorIndex(unaryType).ToString());
             testOutputHelper.WriteLine(Parser.GetBinaryOperatorIndex(binaryType).ToString());
             testOutputHelper.WriteLine(text);
@@ -122,10 +117,10 @@ namespace Runtime.Test.Parsing
                 e.AssertNode(SyntaxType.UnaryExpression);
                 e.AssertToken(unaryType, unaryText);
                 e.AssertNode(SyntaxType.BinaryExpression);
-                e.AssertNode(SyntaxType.NumberExpression);
+                e.AssertNode(SyntaxType.LiteralExpression);
                 e.AssertToken(SyntaxType.NumberToken, "1");
                 e.AssertToken(binaryType, binaryText);
-                e.AssertNode(SyntaxType.NumberExpression);
+                e.AssertNode(SyntaxType.LiteralExpression);
                 e.AssertToken(SyntaxType.NumberToken, "2");
             }
             else
@@ -134,10 +129,10 @@ namespace Runtime.Test.Parsing
                 e.AssertNode(SyntaxType.BinaryExpression);
                 e.AssertNode(SyntaxType.UnaryExpression);
                 e.AssertToken(unaryType, unaryText);
-                e.AssertNode(SyntaxType.NumberExpression);
+                e.AssertNode(SyntaxType.LiteralExpression);
                 e.AssertToken(SyntaxType.NumberToken, "1");
                 e.AssertToken(binaryType, binaryText);
-                e.AssertNode(SyntaxType.NumberExpression);
+                e.AssertNode(SyntaxType.LiteralExpression);
                 e.AssertToken(SyntaxType.NumberToken, "2");
             }
         }
