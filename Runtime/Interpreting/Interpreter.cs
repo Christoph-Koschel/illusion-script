@@ -47,10 +47,12 @@ namespace IllusionScript.Runtime.Interpreting
                     return right;
                 case BoundUnaryOperatorType.Negation:
                     return -(int)right;
+                case BoundUnaryOperatorType.OnesComplement:
+                    return ~(int)right;
                 case BoundUnaryOperatorType.LogicalNegation:
                     return !(bool)right;
                 default:
-                    throw new Exception($"Undefined binary operator: {expression.unaryOperator.operatorType}");
+                    throw new Exception($"Undefined unary operator: {expression.unaryOperator.operatorType}");
             }
         }
 
@@ -62,7 +64,14 @@ namespace IllusionScript.Runtime.Interpreting
             switch (expression.binaryOperator.operatorType)
             {
                 case BoundBinaryOperatorType.Addition:
-                    return (int)left + (int)right;
+                    if (expression.type == typeof(int))
+                    {
+                        return (int)left + (int)right;
+                    }
+                    else
+                    {
+                        return (string)left + (string)right;
+                    }
                 case BoundBinaryOperatorType.Subtraction:
                     return (int)left - (int)right;
                 case BoundBinaryOperatorType.Multiplication:
@@ -86,6 +95,49 @@ namespace IllusionScript.Runtime.Interpreting
 
                     return ret;
                 }
+                case BoundBinaryOperatorType.LogicalAnd:
+                    return (bool)left && (bool)right;
+                case BoundBinaryOperatorType.LogicalOr:
+                    return (bool)left || (bool)right;
+                case BoundBinaryOperatorType.NotEquals:
+                    return !Equals(left, right);
+                case BoundBinaryOperatorType.Equals:
+                    return Equals(left, right);
+                case BoundBinaryOperatorType.BitwiseAnd:
+                    if (expression.type == typeof(int))
+                    {
+                        return (int)left & (int)right;
+                    }
+                    else
+                    {
+                        return (bool)left & (bool)right;
+                    }
+                case BoundBinaryOperatorType.BitwiseOr:
+                    if (expression.type == typeof(int))
+                    {
+                        return (int)left | (int)right;
+                    }
+                    else
+                    {
+                        return (bool)left | (bool)right;
+                    }
+                case BoundBinaryOperatorType.BitwiseXor:
+                    if (expression.type == typeof(int))
+                    {
+                        return (int)left ^ (int)right;
+                    }
+                    else
+                    {
+                        return (bool)left ^ (bool)right;
+                    }
+                case BoundBinaryOperatorType.Less:
+                    return (int)left < (int)right;
+                case BoundBinaryOperatorType.LessEquals:
+                    return (int)left <= (int)right;
+                case BoundBinaryOperatorType.Greater:
+                    return (int)left > (int)right;
+                case BoundBinaryOperatorType.GreaterEquals:
+                    return (int)left >= (int)right;
                 default:
                     throw new Exception($"Undefined binary operator: {expression.binaryOperator.operatorType}");
             }
