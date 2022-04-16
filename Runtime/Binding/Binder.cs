@@ -20,10 +20,10 @@ namespace IllusionScript.Runtime.Binding
         {
             switch (expression.type)
             {
-                case SyntaxType.NumberExpression:
-                    return BindNumberExpression((NumberExpression)expression);
+                case SyntaxType.LiteralExpression:
+                    return BindLiteralExpression((LiteralExpression)expression);
                 case SyntaxType.BinaryExpression:
-                    return BindBinaryExpression((BinaryOperationExpression)expression);
+                    return BindBinaryExpression((BinaryExpression)expression);
                 case SyntaxType.UnaryExpression:
                     return BindUnaryExpression((UnaryExpression)expression);
                 case SyntaxType.ParenExpression:
@@ -40,7 +40,7 @@ namespace IllusionScript.Runtime.Binding
             return new BoundUnary(unaryOperator, right);
         }
 
-        private BoundExpression BindBinaryExpression(BinaryOperationExpression expression)
+        private BoundExpression BindBinaryExpression(BinaryExpression expression)
         {
             BoundExpression left = Bind(expression.left);
             BoundExpression right = Bind(expression.right);
@@ -50,9 +50,9 @@ namespace IllusionScript.Runtime.Binding
             return new BoundBinary(left, binaryOperator, right);
         }
 
-        private BoundExpression BindNumberExpression(NumberExpression expression)
+        private BoundExpression BindLiteralExpression(LiteralExpression expression)
         {
-            return new BoundLiteral(expression.number.value);
+            return new BoundLiteral(expression.value);
         }
     }
 }

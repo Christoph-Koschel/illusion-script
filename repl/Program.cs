@@ -4,9 +4,9 @@ using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Interface;
 using IllusionScript.Runtime.Parsing;
 
-namespace repl
+namespace IllusionScript
 {
-    internal sealed class Program
+    internal static class Program
     {
         static void Main(string[] args)
         {
