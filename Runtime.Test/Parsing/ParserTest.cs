@@ -139,8 +139,8 @@ namespace Runtime.Test.Parsing
 
         private static Expression ParseExpression(string text)
         {
-            Compilation compilation = SyntaxThree.Parse(text);
-            return compilation.syntaxThree.root;
+            Compilation compilation = SyntaxTree.Parse(text);
+            return compilation.SyntaxTree.root;
         }
 
         public static IEnumerable<object[]> GetBinaryOperatorPairsData()

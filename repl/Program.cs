@@ -29,7 +29,7 @@ namespace IllusionScript
                     continue;
                 }
 
-                Compilation compilation = SyntaxThree.Parse(input);
+                Compilation compilation = SyntaxTree.Parse(input);
                 if (compilation.diagnostics.Any())
                 {
                     foreach (Diagnostic diagnostic in compilation.diagnostics)
@@ -41,7 +41,7 @@ namespace IllusionScript
                 {
                     if (showTree)
                     {
-                        compilation.syntaxThree.root.WriteTo(Console.Out);
+                        compilation.SyntaxTree.root.WriteTo(Console.Out);
                     }
 
                     InterpreterResult result = compilation.Interpret();

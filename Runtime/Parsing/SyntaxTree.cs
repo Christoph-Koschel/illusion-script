@@ -6,13 +6,13 @@ using IllusionScript.Runtime.Parsing.Nodes;
 
 namespace IllusionScript.Runtime.Parsing
 {
-    public sealed class SyntaxThree
+    public sealed class SyntaxTree
     {
         public readonly DiagnosticGroup diagnostics;
         public readonly SourceText text;
         public readonly Expression root;
 
-        private SyntaxThree(SourceText text)
+        private SyntaxTree(SourceText text)
         {
             Parser parser = new Parser(text);
             Expression root = parser.ParseText();
@@ -24,8 +24,8 @@ namespace IllusionScript.Runtime.Parsing
 
         public static Compilation Parse(SourceText source)
         {
-            SyntaxThree syntaxThree = new SyntaxThree(source);
-            return new Compilation(syntaxThree.diagnostics, syntaxThree);
+            SyntaxTree syntaxTree = new SyntaxTree(source);
+            return new Compilation(syntaxTree.diagnostics, syntaxTree);
         }
 
         public static Compilation Parse(string text)

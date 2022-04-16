@@ -21,7 +21,7 @@ namespace Runtime.Test.Lexing
         [MemberData(nameof(GetTokensWithWhitespacesData))]
         public void CheckLexerTokenInterpreter(string text, SyntaxType type)
         {
-            Token[] tokens = SyntaxThree.MakeTokens(text).ToArray();
+            Token[] tokens = SyntaxTree.MakeTokens(text).ToArray();
             Assert.Single(tokens);
             Assert.Equal(type, tokens[0].type);
             Assert.Equal(text, tokens[0].text);
@@ -33,7 +33,7 @@ namespace Runtime.Test.Lexing
             SyntaxType type2)
         {
             string text = text1 + text2;
-            Token[] tokens = SyntaxThree.MakeTokens(text).ToArray();
+            Token[] tokens = SyntaxTree.MakeTokens(text).ToArray();
 
             Assert.Equal(2, tokens.Length);
             Assert.Equal(type1, tokens[0].type);

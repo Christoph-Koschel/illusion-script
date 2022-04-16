@@ -9,18 +9,18 @@ namespace IllusionScript.Runtime.Interface
     public sealed class Compilation
     {
         public readonly DiagnosticGroup diagnostics;
-        public readonly SyntaxThree syntaxThree;
+        public readonly SyntaxTree SyntaxTree;
 
-        internal Compilation(DiagnosticGroup diagnostics, SyntaxThree syntaxThree)
+        internal Compilation(DiagnosticGroup diagnostics, SyntaxTree syntaxTree)
         {
             this.diagnostics = diagnostics;
-            this.syntaxThree = syntaxThree;
+            this.SyntaxTree = syntaxTree;
         }
 
         public InterpreterResult Interpret()
         {
             Binder binder = new Binder();
-            BoundExpression expression = binder.Bind(syntaxThree.root);
+            BoundExpression expression = binder.Bind(SyntaxTree.root);
 
             Interpreter interpreter = new Interpreter(expression);
             object result = interpreter.Interpret();
