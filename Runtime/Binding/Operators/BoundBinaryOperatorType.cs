@@ -2,6 +2,7 @@
 {
     internal enum BoundBinaryOperatorType
     {
+        // Math
         Addition,
         Subtraction, 
         Multiplication,
@@ -9,9 +10,19 @@
         Modulo,
         Pow,
         
+        // Logical
         LogicalAnd,
         LogicalOr,
         NotEquals,
-        Equals
+        Equals,
+        
+        BitwiseAnd,
+        BitwiseOr,
+        BitwiseXor,
+        
+        Less,
+        LessEquals,
+        Greater,
+        GreaterEquals
     }
 }

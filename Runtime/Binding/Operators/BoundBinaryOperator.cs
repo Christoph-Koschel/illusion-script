@@ -5,11 +5,11 @@ namespace IllusionScript.Runtime.Binding.Operators
 {
     internal sealed class BoundBinaryOperator
     {
-        public SyntaxType type;
-        public BoundBinaryOperatorType operatorType;
-        public Type leftType;
-        public Type rightType;
-        public Type resultType;
+        public readonly SyntaxType type;
+        public readonly BoundBinaryOperatorType operatorType;
+        public readonly Type leftType;
+        public readonly Type rightType;
+        public readonly Type resultType;
 
         private BoundBinaryOperator(SyntaxType type, BoundBinaryOperatorType operatorType, Type leftType,
             Type rightType, Type resultType)
@@ -31,22 +31,53 @@ namespace IllusionScript.Runtime.Binding.Operators
         {
         }
 
-        private static BoundBinaryOperator[] operators = 
+        private static readonly BoundBinaryOperator[] operators =
         {
-            new (SyntaxType.PlusToken, BoundBinaryOperatorType.Addition, typeof(int)),
-            new (SyntaxType.MinusToken, BoundBinaryOperatorType.Subtraction, typeof(int)),
-            new (SyntaxType.StarToken, BoundBinaryOperatorType.Multiplication, typeof(int)),
-            new (SyntaxType.SlashToken, BoundBinaryOperatorType.Division, typeof(int)),
-            new (SyntaxType.PercentToken, BoundBinaryOperatorType.Modulo, typeof(int)),
-            new (SyntaxType.DoubleStarToken, BoundBinaryOperatorType.Pow, typeof(int)),
+            new(SyntaxType.PlusToken, BoundBinaryOperatorType.Addition, typeof(int)),
+            new(SyntaxType.MinusToken, BoundBinaryOperatorType.Subtraction, typeof(int)),
+            new(SyntaxType.StarToken, BoundBinaryOperatorType.Multiplication, typeof(int)),
+            new(SyntaxType.SlashToken, BoundBinaryOperatorType.Division, typeof(int)),
+            new(SyntaxType.PercentToken, BoundBinaryOperatorType.Modulo, typeof(int)),
+            new(SyntaxType.DoubleStarToken, BoundBinaryOperatorType.Pow, typeof(int)),
 
-            // new (SyntaxType.DoubleEqualsToken, BoundBinaryOperatorType.Equals, typeof(int), typeof(bool)),
-            // new (SyntaxType.NotEqualsToken, BoundBinaryOperatorType.NotEquals, typeof(int), typeof(bool)),
-            // new (SyntaxType.DoubleEqualsToken, BoundBinaryOperatorType.Equals, typeof(bool)),
-            // new (SyntaxType.NotEqualsToken, BoundBinaryOperatorType.NotEquals, typeof(bool)),
+            new(SyntaxType.DoubleEqualsToken, BoundBinaryOperatorType.Equals, typeof(int), typeof(bool)),
+            new(SyntaxType.BangToken, BoundBinaryOperatorType.NotEquals, typeof(int), typeof(bool)),
+            new(SyntaxType.DoubleEqualsToken, BoundBinaryOperatorType.Equals, typeof(bool)),
+            new(SyntaxType.BangEqualsToken, BoundBinaryOperatorType.NotEquals, typeof(bool)),
 
-            // new (SyntaxType.AndToken, BoundBinaryOperatorType.LogicalAnd, typeof(bool)),
-            // new (SyntaxType.OrToken, BoundBinaryOperatorType.LogicalOr, typeof(bool)),
+            new(SyntaxType.AndToken, BoundBinaryOperatorType.LogicalAnd, typeof(bool)),
+            new(SyntaxType.SplitToken, BoundBinaryOperatorType.LogicalOr, typeof(bool)),
+
+            new(SyntaxType.AndToken, BoundBinaryOperatorType.BitwiseAnd, typeof(int)),
+            new(SyntaxType.SplitToken, BoundBinaryOperatorType.BitwiseOr, typeof(int)),
+            new(SyntaxType.HatToken, BoundBinaryOperatorType.BitwiseXor, typeof(int)),
+
+            new(SyntaxType.DoubleEqualsToken, BoundBinaryOperatorType.Equals, typeof(int), typeof(bool)),
+            new(SyntaxType.BangEqualsToken, BoundBinaryOperatorType.NotEquals, typeof(int), typeof(bool)),
+            new(SyntaxType.LessToken, BoundBinaryOperatorType.Less, typeof(int), typeof(bool)),
+            new(SyntaxType.LessEqualsToken, BoundBinaryOperatorType.LessEquals, typeof(int), typeof(bool)),
+            new(SyntaxType.GreaterToken, BoundBinaryOperatorType.Greater, typeof(int), typeof(bool)),
+            new(SyntaxType.GreaterEqualsToken, BoundBinaryOperatorType.GreaterEquals, typeof(int),
+                typeof(bool)),
+
+            new(SyntaxType.AndToken, BoundBinaryOperatorType.BitwiseAnd, typeof(bool)),
+            new(SyntaxType.DoubleAndToken, BoundBinaryOperatorType.LogicalAnd,
+                typeof(bool)),
+
+            new(SyntaxType.SplitToken, BoundBinaryOperatorType.BitwiseOr, typeof(bool)),
+            new(SyntaxType.DoubleSplitToken, BoundBinaryOperatorType.LogicalOr, typeof(bool)),
+            new(SyntaxType.HatToken, BoundBinaryOperatorType.BitwiseXor, typeof(bool)),
+            new(SyntaxType.DoubleEqualsToken, BoundBinaryOperatorType.Equals, typeof(bool)),
+            new(SyntaxType.BangEqualsToken, BoundBinaryOperatorType.NotEquals, typeof(bool)),
+
+            new(SyntaxType.PlusToken, BoundBinaryOperatorType.Addition, typeof(string)),
+            new(SyntaxType.DoubleEqualsToken, BoundBinaryOperatorType.Equals, typeof(string),
+                typeof(bool)),
+            new(SyntaxType.BangEqualsToken, BoundBinaryOperatorType.NotEquals, typeof(string),
+                typeof(bool)),
+
+            new(SyntaxType.DoubleEqualsToken, BoundBinaryOperatorType.Equals, typeof(object)),
+            new(SyntaxType.BangEqualsToken, BoundBinaryOperatorType.NotEquals, typeof(object))
         };
 
         public static BoundBinaryOperator Bind(SyntaxType type, Type leftType, Type rightType)
