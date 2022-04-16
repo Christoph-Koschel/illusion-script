@@ -309,6 +309,16 @@ namespace Runtime.Test.Lexing
                 return true;
             }
 
+            if (t1Type == SyntaxType.DoubleStarToken && t2Type == SyntaxType.EqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.DoubleStarToken && t2Type == SyntaxType.DoubleEqualsToken)
+            {
+                return true;
+            }
+
 
             return false;
         }

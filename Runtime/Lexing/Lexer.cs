@@ -335,6 +335,8 @@ namespace IllusionScript.Runtime.Lexing
                     return "-";
                 case SyntaxType.MinusEqualsToken:
                     return "-=";
+                case SyntaxType.DoubleStarToken:
+                    return "**";
                 case SyntaxType.StarToken:
                     return "*";
                 case SyntaxType.StarEqualsToken:
