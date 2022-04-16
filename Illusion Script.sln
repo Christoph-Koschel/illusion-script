@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "repl", "repl\repl.csproj", "{3A8FE740-8DFB-4C96-BB5C-CB11ECDB9712}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repl", "Repl\Repl.csproj", "{3A8FE740-8DFB-4C96-BB5C-CB11ECDB9712}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime", "Runtime\Runtime.csproj", "{7F14CFD5-C6E3-412D-A27F-1E67AEC82DF9}"
 EndProject
