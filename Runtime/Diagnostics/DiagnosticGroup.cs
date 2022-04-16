@@ -46,5 +46,17 @@ namespace IllusionScript.Runtime.Diagnostics
             string message = $"ERROR: Expected <{expected}> got <{actually}>";
             Report(span, message);
         }
+
+        public void ReportUnexpectedToken(TextSpan span, SyntaxType got, SyntaxType expected)
+        {
+            string message = $"ERROR: Unexpected token <{got}>, expected <{expected}>.";
+            Report(span, message);
+        }
+
+        public void ReportUnterminatedString(TextSpan span)
+        {
+            string message = $"ERROR: Unterminated string literal";
+            Report(span, message);
+        }
     }
 }
