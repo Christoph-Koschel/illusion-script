@@ -69,14 +69,22 @@ namespace Runtime.Test.Lexing
 
         private static IEnumerable<(string text, SyntaxType type)> GetTokens()
         {
-            yield return (text: "+", type: SyntaxType.PlusToken);
-            yield return (text: "-", type: SyntaxType.MinusToken);
-            yield return (text: "*", type: SyntaxType.StarToken);
-            yield return (text: "/", type: SyntaxType.SlashToken);
-            yield return (text: "%", type: SyntaxType.PercentToken);
-            yield return (text: "**", type: SyntaxType.DoubleStarToken);
-            yield return (text: "1245", type: SyntaxType.NumberToken);
-            yield return (text: "1", type: SyntaxType.NumberToken);
+            IEnumerable<(string text, SyntaxType type)> fixedTokens = Enum.GetValues(typeof(SyntaxType))
+                .Cast<SyntaxType>()
+                .Select(k => (text: Lexer.GetText(k), k))
+                .Where(t => t.text != null);
+
+            IEnumerable<(string text, SyntaxType type)> dynamicTokens = new[]
+            {
+                ("1", SyntaxType.NumberToken),
+                ("123", SyntaxType.NumberToken),
+                ("a", SyntaxType.IdentifierToken),
+                ("abc", SyntaxType.IdentifierToken),
+                ("\"Test\"", SyntaxType.StringToken),
+                ("\"Te\\\"st\\\"\"", SyntaxType.StringToken)
+            };
+
+            return fixedTokens.Concat(dynamicTokens);
         }
 
         private static IEnumerable<(string text, SyntaxType type)> GetWhitespaceTokens()
@@ -113,6 +121,21 @@ namespace Runtime.Test.Lexing
                 return true;
             }
 
+            if (t1IsKeyword && t2Type == SyntaxType.IdentifierToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.IdentifierToken && t2IsKeyword)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.IdentifierToken && t2Type == SyntaxType.IdentifierToken)
+            {
+                return true;
+            }
+
             if (t1Type == SyntaxType.NumberToken && t2Type == SyntaxType.NumberToken)
             {
                 return true;
@@ -127,6 +150,165 @@ namespace Runtime.Test.Lexing
             {
                 return true;
             }
+
+            if (t1Type == SyntaxType.StarToken && t2Type == SyntaxType.StarEqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.BangToken && t2Type == SyntaxType.EqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.BangToken && t2Type == SyntaxType.DoubleEqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.PercentToken && t2Type == SyntaxType.EqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.PercentToken && t2Type == SyntaxType.DoubleEqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.AndToken && t2Type == SyntaxType.AndToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.AndToken && t2Type == SyntaxType.DoubleAndToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.AndToken && t2Type == SyntaxType.AndEqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.AndToken && t2Type == SyntaxType.EqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.AndToken && t2Type == SyntaxType.DoubleEqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.StarToken && t2Type == SyntaxType.EqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.StarToken && t2Type == SyntaxType.DoubleEqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.PlusToken && t2Type == SyntaxType.EqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.PlusToken && t2Type == SyntaxType.DoubleEqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.MinusToken && t2Type == SyntaxType.EqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.MinusToken && t2Type == SyntaxType.DoubleEqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.SlashToken && t2Type == SyntaxType.EqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.SlashToken && t2Type == SyntaxType.DoubleEqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.LessToken && t2Type == SyntaxType.EqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.LessToken && t2Type == SyntaxType.DoubleEqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.EqualsToken && t2Type == SyntaxType.EqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.EqualsToken && t2Type == SyntaxType.DoubleEqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.GreaterToken && t2Type == SyntaxType.EqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.GreaterToken && t2Type == SyntaxType.DoubleEqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.HatToken && t2Type == SyntaxType.EqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.HatToken && t2Type == SyntaxType.DoubleEqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.SplitToken && t2Type == SyntaxType.EqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.SplitToken && t2Type == SyntaxType.DoubleEqualsToken)
+            {
+                return true;
+            }
+
+
+            if (t1Type == SyntaxType.SplitToken && t2Type == SyntaxType.SplitToken)
+            {
+                return true;
+            }
+
+
+            if (t1Type == SyntaxType.SplitToken && t2Type == SyntaxType.SplitEqualsToken)
+            {
+                return true;
+            }
+
+
+            if (t1Type == SyntaxType.SplitToken && t2Type == SyntaxType.DoubleSplitToken)
+            {
+                return true;
+            }
+
 
             return false;
         }
