@@ -4,7 +4,7 @@ namespace IllusionScript.Runtime.Symbols
 {
     public abstract class Symbol
     {
-        private readonly string name;
+        public readonly string name;
 
         private protected Symbol(string name)
         {
