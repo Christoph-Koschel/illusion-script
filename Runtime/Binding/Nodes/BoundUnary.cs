@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.SymbolStore;
+using IllusionScript.Runtime.Binding.Nodes;
 using IllusionScript.Runtime.Binding.Operators;
 using IllusionScript.Runtime.Symbols;
 
@@ -10,7 +11,7 @@ namespace IllusionScript.Runtime.Binding.Node
         public readonly BoundUnaryOperator unaryOperator;
         public readonly BoundExpression right;
 
-        public BoundUnary(BoundUnaryOperator unaryOperator, BoundExpression right)
+        public BoundUnary(Parsing.Nodes.Node node, BoundUnaryOperator unaryOperator, BoundExpression right) : base(node)
         {
             this.unaryOperator = unaryOperator;
             this.right = right;

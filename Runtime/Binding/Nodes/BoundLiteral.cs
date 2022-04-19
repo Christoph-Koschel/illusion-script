@@ -1,4 +1,5 @@
 ﻿using System;
+using IllusionScript.Runtime.Binding.Nodes;
 using IllusionScript.Runtime.Symbols;
 
 namespace IllusionScript.Runtime.Binding.Node
@@ -7,7 +8,7 @@ namespace IllusionScript.Runtime.Binding.Node
     {
         public readonly object value;
 
-        public BoundLiteral(object value)
+        public BoundLiteral(Parsing.Nodes.Node node, object value): base (node)
         {
             this.value = value;
             type = value switch

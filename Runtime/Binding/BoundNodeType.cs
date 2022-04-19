@@ -6,6 +6,9 @@
         LiteralExpression,
         BinaryExpression,
         VariableExpression,
-        AssignmentExpression
+        AssignmentExpression,
+        ErrorExpression,
+        ConversionExpression,
+        CompoundAssignmentExpression
     }
 }
