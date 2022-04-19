@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing.Nodes;
@@ -265,6 +266,29 @@ namespace IllusionScript.Runtime.Parsing
                     return 1;
                 default:
                     return 0;
+            }
+        }
+        
+        public static SyntaxType GetBinaryOperatorOfAssignmentOperator(SyntaxType type)
+        {
+            switch(type)
+            {
+                case SyntaxType.PlusEqualsToken:
+                    return SyntaxType.PlusToken;
+                case SyntaxType.MinusEqualsToken:
+                    return SyntaxType.MinusToken;
+                case SyntaxType.StarEqualsToken:
+                    return SyntaxType.StarToken;
+                case SyntaxType.SlashEqualsToken:
+                    return SyntaxType.SlashToken;
+                case SyntaxType.AndEqualsToken:
+                    return SyntaxType.AndToken;
+                case SyntaxType.SplitEqualsToken:
+                    return SyntaxType.SplitToken;
+                case SyntaxType.HatEqualsToken:
+                    return SyntaxType.HatToken;
+                default:
+                    throw new Exception($"Unexpected syntax: '{type}'");
             }
         }
     }

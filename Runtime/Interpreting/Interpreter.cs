@@ -3,6 +3,7 @@ using IllusionScript.Runtime.Binding;
 using IllusionScript.Runtime.Binding.Node;
 using IllusionScript.Runtime.Binding.Operators;
 using IllusionScript.Runtime.Diagnostics;
+using IllusionScript.Runtime.Symbols;
 
 namespace IllusionScript.Runtime.Interpreting
 {
@@ -64,7 +65,7 @@ namespace IllusionScript.Runtime.Interpreting
             switch (expression.binaryOperator.operatorType)
             {
                 case BoundBinaryOperatorType.Addition:
-                    if (expression.type == typeof(int))
+                    if (expression.type == TypeSymbol.Int)
                     {
                         return (int)left + (int)right;
                     }
@@ -104,7 +105,7 @@ namespace IllusionScript.Runtime.Interpreting
                 case BoundBinaryOperatorType.Equals:
                     return Equals(left, right);
                 case BoundBinaryOperatorType.BitwiseAnd:
-                    if (expression.type == typeof(int))
+                    if (expression.type == TypeSymbol.Int)
                     {
                         return (int)left & (int)right;
                     }
@@ -113,7 +114,7 @@ namespace IllusionScript.Runtime.Interpreting
                         return (bool)left & (bool)right;
                     }
                 case BoundBinaryOperatorType.BitwiseOr:
-                    if (expression.type == typeof(int))
+                    if (expression.type == TypeSymbol.Int)
                     {
                         return (int)left | (int)right;
                     }
@@ -122,7 +123,7 @@ namespace IllusionScript.Runtime.Interpreting
                         return (bool)left | (bool)right;
                     }
                 case BoundBinaryOperatorType.BitwiseXor:
-                    if (expression.type == typeof(int))
+                    if (expression.type == TypeSymbol.Int)
                     {
                         return (int)left ^ (int)right;
                     }

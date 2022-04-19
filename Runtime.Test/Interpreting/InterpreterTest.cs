@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using IllusionScript.Runtime.Interface;
 using IllusionScript.Runtime.Parsing;
 using Xunit;
@@ -68,8 +67,7 @@ namespace Runtime.Test.Interpreting
         [InlineData("\"test\" == \"abc\"", false)]
         [InlineData("\"test\" != \"abc\"", true)]
         [InlineData("\"test\" + \"abc\"", "testabc")]
-        
-        public void Evaluator_Computes_CorrectValues(string text, object expectedValue)
+        public void InterpreterComputesCorrectValues(string text, object expectedValue)
         {
             AssertValue(text, expectedValue);
         }
