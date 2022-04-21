@@ -84,6 +84,8 @@ namespace IllusionScript.Runtime.Parsing
                     return SyntaxType.FunctionKeyword;
                 case "let":
                     return SyntaxType.LetKeyword;
+                case "const":
+                    return SyntaxType.ConstKeyword;
                 default:
                     return SyntaxType.IdentifierToken;
             }
@@ -205,6 +207,8 @@ namespace IllusionScript.Runtime.Parsing
                     return "true";
                 case SyntaxType.LetKeyword:
                     return "let";
+                case SyntaxType.ConstKeyword:
+                    return "const";
                 case SyntaxType.WhileKeyword:
                     return "while";
                 case SyntaxType.DoKeyword:

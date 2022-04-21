@@ -92,29 +92,29 @@ namespace IllusionScript
                     foreach (Diagnostic diagnostic in result.diagnostics)
                     {
                         int lineIndex = text.GetLineIndex(diagnostic.span.start);
-                        TextLine line = text.lines[lineIndex];
-                        int lineNumber = lineIndex + 1;
-                        int character = diagnostic.span.start - line.start + 1;
-
-                        Console.ForegroundColor = ConsoleColor.DarkRed;
-                        Console.Write($"({lineNumber}, {character}): ");
+                        // TextLine line = text.lines[lineIndex];
+                        // int lineNumber = lineIndex + 1;
+                        // int character = diagnostic.span.start - line.start + 1;
+                        //
+                        // Console.ForegroundColor = ConsoleColor.DarkRed;
+                        // Console.Write($"({lineNumber}, {character}): ");
                         Console.WriteLine(diagnostic);
                         Console.ResetColor();
 
-                        TextSpan prefixSpan = TextSpan.FromBounds(line.start, diagnostic.span.start);
-                        TextSpan suffixSpan = TextSpan.FromBounds(diagnostic.span.end, line.end);
-
-                        string prefix = syntaxThree.text.ToString(prefixSpan);
-                        string error = syntaxThree.text.ToString(diagnostic.span);
-                        string suffix = syntaxThree.text.ToString(suffixSpan);
-
-                        Console.Write(prefix);
-
-                        Console.ForegroundColor = ConsoleColor.DarkRed;
-                        Console.Write(error);
-                        Console.ResetColor();
-
-                        Console.Write(suffix);
+                        // TextSpan prefixSpan = TextSpan.FromBounds(line.start, diagnostic.span.start);
+                        // TextSpan suffixSpan = TextSpan.FromBounds(diagnostic.span.end, line.end);
+                        //
+                        // string prefix = syntaxThree.text.ToString(prefixSpan);
+                        // string error = syntaxThree.text.ToString(diagnostic.span);
+                        // string suffix = syntaxThree.text.ToString(suffixSpan);
+                        //
+                        // Console.Write(prefix);
+                        //
+                        // Console.ForegroundColor = ConsoleColor.DarkRed;
+                        // Console.Write(error);
+                        // Console.ResetColor();
+                        //
+                        // Console.Write(suffix);
                         Console.Write("\n\n");
                     }
                 }

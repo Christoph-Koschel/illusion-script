@@ -72,6 +72,7 @@
         FunctionKeyword,
         IfKeyword,
         LetKeyword,
+        ConstKeyword,
         ReturnKeyword,
         ToKeyword,
         WhileKeyword,
@@ -92,8 +93,9 @@
         CompilationUnit,
         
         // Statements
-        FunctionDeclaration,
         BlockStatement,
-        ExpressionStatement
+        ExpressionStatement,
+        FunctionDeclarationStatement,
+        VariableDeclarationStatement
     }
 }

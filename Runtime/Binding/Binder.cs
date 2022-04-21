@@ -32,19 +32,39 @@ namespace IllusionScript.Runtime.Binding
                     return BindBlockStatement((BlockStatement)syntax);
                 case SyntaxType.ExpressionStatement:
                     return BindExpressionStatement((ExpressionStatement)syntax);
+                case SyntaxType.VariableDeclarationStatement:
+                    return BindVariableDeclaration((VariableDeclarationStatement)syntax);
                 default:
                     throw new Exception($"Unexpected syntax {syntax.type}");
             }
         }
 
+        private BoundStatement BindVariableDeclaration(VariableDeclarationStatement syntax)
+        {
+            string name = syntax.identifier.text;
+            bool isReadOnly = syntax.keyword.type == SyntaxType.ConstKeyword;
+            BoundExpression initializer = BindExpression(syntax.initializer);
+            VariableSymbol variable = new VariableSymbol(name, isReadOnly, initializer.type);
+
+            if (!scope.TryDeclare(variable))
+            {
+                diagnostics.ReportVariableAlreadyDeclared(syntax.identifier.span, name);
+            }
+
+            return new BoundVariableDeclarationStatement(variable, initializer);
+        }
+
         private BoundStatement BindBlockStatement(BlockStatement syntax)
         {
             ImmutableArray<BoundStatement>.Builder statements = ImmutableArray.CreateBuilder<BoundStatement>();
+            scope = new Scope(scope);
             foreach (Statement statement in syntax.statements)
             {
                 BoundStatement boundStatement = BindStatement(statement);
                 statements.Add(boundStatement);
             }
+
+            scope = scope.parent;
 
             return new BoundBlockStatement(statements.ToImmutable());
         }
@@ -139,13 +159,19 @@ namespace IllusionScript.Runtime.Binding
 
             if (!scope.TryLookup(name, out VariableSymbol variable))
             {
-                variable = new VariableSymbol(name, boundExpression.type);
-                scope.TryDeclare(variable);
+                diagnostics.ReportUndefinedIdentifier(syntax.identifier.span, name);
+                return boundExpression;
             }
 
+            if (variable.isReadOnly)
+            {
+                diagnostics.ReportCannotAssign(syntax.identifier.span, name);
+            }
+            
             if (boundExpression.type != variable.type)
             {
                 diagnostics.ReportCannotConvert(syntax.expression.span, boundExpression.type, variable.type);
+                return boundExpression;
             }
 
             return new BoundAssignmentExpression(variable, boundExpression);

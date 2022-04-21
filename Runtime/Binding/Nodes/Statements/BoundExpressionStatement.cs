@@ -1,4 +1,5 @@
 ﻿using IllusionScript.Runtime.Binding.Nodes.Expressions;
+using IllusionScript.Runtime.Interpreting.Memory;
 
 namespace IllusionScript.Runtime.Binding.Nodes.Statements
 {
@@ -12,5 +13,19 @@ namespace IllusionScript.Runtime.Binding.Nodes.Statements
         }
 
         public override BoundNodeType boundType => BoundNodeType.ExpressionStatement;
+    }
+
+    internal sealed class BoundVariableDeclarationStatement : BoundStatement
+    {
+        public readonly VariableSymbol variable;
+        public readonly BoundExpression initializer;
+
+        public BoundVariableDeclarationStatement(VariableSymbol variable, BoundExpression initializer)
+        {
+            this.variable = variable;
+            this.initializer = initializer;
+        }
+
+        public override BoundNodeType boundType => BoundNodeType.VariableDeclarationStatement;
     }
 }

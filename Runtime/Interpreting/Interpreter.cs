@@ -38,9 +38,19 @@ namespace IllusionScript.Runtime.Interpreting
                 case BoundNodeType.ExpressionStatement:
                     InterpretExpressionStatement((BoundExpressionStatement)statement);
                     break;
+                case BoundNodeType.VariableDeclarationStatement:
+                    InterpretVariableDeclarationStatement((BoundVariableDeclarationStatement)statement);
+                    break;
                 default:
                     throw new Exception($"Unexpected node {statement.boundType}");
             }
+        }
+
+        private void InterpretVariableDeclarationStatement(BoundVariableDeclarationStatement statement)
+        {
+            object value = InterpretExpression(statement.initializer);
+            variables[statement.variable] = value;
+            lastValue = value;
         }
 
         private void InterpretBlockStatement(BoundBlockStatement statement)

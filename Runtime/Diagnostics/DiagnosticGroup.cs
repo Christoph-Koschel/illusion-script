@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Http.Headers;
 using IllusionScript.Runtime.Parsing;
 
 namespace IllusionScript.Runtime.Diagnostics
@@ -68,6 +69,18 @@ namespace IllusionScript.Runtime.Diagnostics
         public void ReportCannotConvert(TextSpan span, Type type1, Type type2)
         {
             string message = $"ERROR: Cannot convert type '{type1}' to {type2}";
+            Report(span, message);
+        }
+
+        public void ReportVariableAlreadyDeclared(TextSpan span, string name)
+        {
+            string message = $"ERROR: Variable '{name}' is already declared";
+            Report(span, message);
+        }
+
+        public void ReportCannotAssign(TextSpan span, string name)
+        {
+            string message = $"ERROR: Variable '{name}' is read-ony and cannot be assigned to";
             Report(span, message);
         }
     }

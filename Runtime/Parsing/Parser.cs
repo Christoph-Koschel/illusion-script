@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using IllusionScript.Runtime.Diagnostics;
@@ -75,12 +76,23 @@ namespace IllusionScript.Runtime.Parsing
 
         private Statement ParseStatement()
         {
-            if (current.type == SyntaxType.LBraceToken)
+            return current.type switch
             {
-                return ParseBlockStatement();
-            }
+                SyntaxType.LBraceToken => ParseBlockStatement(),
+                SyntaxType.LetKeyword or SyntaxType.ConstKeyword => ParseVariableDeclaration(),
+                _ => ParseExpressionStatement()
+            };
+        }
 
-            return ParseExpressionStatement();
+        private Statement ParseVariableDeclaration()
+        {
+            SyntaxType expected =
+                current.type == SyntaxType.LetKeyword ? SyntaxType.LetKeyword : SyntaxType.ConstKeyword;
+            Token keyword = Match(expected);
+            Token identifier = Match(SyntaxType.IdentifierToken);
+            Token equals = Match(SyntaxType.EqualsToken);
+            Expression initializer = ParseExpression();
+            return new VariableDeclarationStatement(keyword, identifier, equals, initializer);
         }
 
         private Statement ParseBlockStatement()
@@ -94,7 +106,7 @@ namespace IllusionScript.Runtime.Parsing
                 Statement statement = ParseStatement();
                 statements.Add(statement);
             }
-            
+
             Token rBrace = Match(SyntaxType.RBraceToken);
 
             return new BlockStatement(lBrace, statements.ToImmutable(), rBrace);
