@@ -39,7 +39,7 @@ namespace IllusionScript.Runtime.Extension
         public static void WriteKeyword(this TextWriter writer, SyntaxType type)
         {
             var text = Lexer.GetText(type);
-            Debug.Assert(Lexer.IsKeyword(type) && text != null);
+            // Debug.Assert(Lexer.IsKeyword(type) && text != null);
 
             writer.WriteKeyword(text);
         }

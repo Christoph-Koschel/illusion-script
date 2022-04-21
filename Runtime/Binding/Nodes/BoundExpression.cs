@@ -1,16 +1,9 @@
-﻿using IllusionScript.Runtime.Binding.Node;
-using IllusionScript.Runtime.Symbols;
+﻿using System;
 
 namespace IllusionScript.Runtime.Binding.Nodes
 {
-    public abstract class BoundExpression : BoundNode
+    internal abstract class BoundExpression : BoundNode
     {
-
-
-        protected BoundExpression(Parsing.Nodes.Node node) : base(node)
-        {
-        }
-        
-        public abstract TypeSymbol type { get; }
+        public abstract Type type { get;  }
     }
 }

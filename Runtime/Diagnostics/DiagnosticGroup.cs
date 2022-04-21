@@ -5,7 +5,7 @@ using IllusionScript.Runtime.Parsing;
 
 namespace IllusionScript.Runtime.Diagnostics
 {
-    public sealed class DiagnosticGroup : IEnumerable<Diagnostic>
+    internal class DiagnosticGroup : IEnumerable<Diagnostic>
     {
         private readonly List<Diagnostic> diagnostics;
 
@@ -28,6 +28,12 @@ namespace IllusionScript.Runtime.Diagnostics
         public IEnumerator<Diagnostic> GetEnumerator() => diagnostics.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+        public void ReportInvalidNumber(TextSpan span, string text, Type type)
+        {
+            string message = $"ERROR: The number {text} isn't valid {type}";
+            Report(span, message);
+        }
+
         public void ReportBadCharacter(int position, char current)
         {
             string message = $"ERROR: Bad character input: '{current}'";
@@ -35,27 +41,33 @@ namespace IllusionScript.Runtime.Diagnostics
             Report(span, message);
         }
 
-        public void ReportInvalidNumber(TextSpan span, string text, Type type)
+        public void ReportUnexpectedToken(TextSpan span, SyntaxType currentType, SyntaxType type)
         {
-            string message = $"ERROR: The number {text} isn't valid {type}";
+            string message = $"ERROR: Unexpected token <{currentType}>, expected <{type}>";
             Report(span, message);
         }
 
-        public void ReportExpectedToken(TextSpan span, SyntaxType expected, SyntaxType actually)
+        public void ReportUndefinedUnaryOperator(TextSpan span, string text, Type right)
         {
-            string message = $"ERROR: Expected <{expected}> got <{actually}>";
+            string message = $"ERROR: Unary operator '{text}' is not defined for type {right}";
             Report(span, message);
         }
 
-        public void ReportUnexpectedToken(TextSpan span, SyntaxType got, SyntaxType expected)
+        public void ReportUndefinedBinaryOperator(TextSpan span, string text, Type left, Type right)
         {
-            string message = $"ERROR: Unexpected token <{got}>, expected <{expected}>.";
+            string message = $"ERROR: Binary operator '{text}' is not defined for type {left} and {right}";
             Report(span, message);
         }
 
-        public void ReportUnterminatedString(TextSpan span)
+        public void ReportUndefinedIdentifier(TextSpan span, string name)
         {
-            string message = $"ERROR: Unterminated string literal";
+            string message = $"ERROR: Variable '{name}' doesnt exist";
+            Report(span, message);
+        }
+
+        public void ReportVariableAlreadyDeclared(TextSpan span, string name)
+        {
+            string message = $"ERROR: Variable '{name}' already declared";
             Report(span, message);
         }
     }

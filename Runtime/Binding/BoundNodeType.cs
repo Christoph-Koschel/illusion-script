@@ -9,6 +9,7 @@
         AssignmentExpression,
         ErrorExpression,
         ConversionExpression,
-        CompoundAssignmentExpression
+        CompoundAssignmentExpression,
+        CallExpression
     }
 }

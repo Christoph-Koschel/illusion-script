@@ -1,20 +1,20 @@
-﻿using IllusionScript.Runtime.Lexing;
+﻿using System.Collections.Generic;
+using IllusionScript.Runtime.Lexing;
 
 namespace IllusionScript.Runtime.Parsing.Nodes
 {
-    public class AssignmentExpression : Expression
+    public sealed class AssignmentExpression : Expression
     {
+        public override SyntaxType type => SyntaxType.AssignmentExpression;
         public readonly Token identifier;
-        public readonly Token operatorToken;
-        public readonly Expression right;
-
-        public AssignmentExpression(Token identifier, Token operatorToken, Expression right)
+        public readonly Node equalsToken;
+        public readonly Expression expression;
+        
+        public AssignmentExpression(Token identifier, Node equalsToken, Expression expression)
         {
             this.identifier = identifier;
-            this.operatorToken = operatorToken;
-            this.right = right;
+            this.equalsToken = equalsToken;
+            this.expression = expression;
         }
-        
-        public override SyntaxType type => SyntaxType.AssignmentExpression;
     }
 }

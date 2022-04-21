@@ -1,20 +1,20 @@
-﻿using IllusionScript.Runtime.Symbols;
+﻿using System;
+using IllusionScript.Runtime.Interpreting.Memory;
 
 namespace IllusionScript.Runtime.Binding.Nodes
 {
-    internal sealed class BoundAssignmentExpression : BoundExpression
+    internal class BoundAssignmentExpression : BoundExpression
     {
-        public readonly VariableSymbol variable;
-        public readonly BoundExpression right;
+        public readonly VariableSymbol variableSymbol;
+        public readonly BoundExpression expression;
 
-        public BoundAssignmentExpression(Parsing.Nodes.Node node, VariableSymbol variable, BoundExpression right) :
-            base(node)
+        public BoundAssignmentExpression(VariableSymbol variableSymbol, BoundExpression expression)
         {
-            this.variable = variable;
-            this.right = right;
+            this.variableSymbol = variableSymbol;
+            this.expression = expression;
         }
 
         public override BoundNodeType boundType => BoundNodeType.AssignmentExpression;
-        public override TypeSymbol type => right.type;
+        public override Type type => expression.type;
     }
 }

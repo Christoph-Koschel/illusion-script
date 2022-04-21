@@ -2,18 +2,18 @@
 {
     public sealed class Diagnostic
     {
-        public readonly string text;
         public readonly TextSpan span;
+        public readonly string message;
 
-        internal Diagnostic(TextSpan span, string text)
+        public Diagnostic(TextSpan span, string message)
         {
-            this.text = text;
             this.span = span;
+            this.message = message;
         }
 
         public override string ToString()
         {
-            return text;
+            return message;
         }
     }
 }

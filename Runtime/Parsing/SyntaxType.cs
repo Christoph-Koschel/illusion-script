@@ -10,7 +10,7 @@
 
         // Data Types
         NumberToken,
-        StringToken,
+        // StringToken,
         IdentifierToken,
 
         // Math operations
@@ -85,5 +85,14 @@
         AssignmentExpression,
         NameExpression,
         CallExpression,
+        
+        // Structure
+        Parameter,
+        TypeClause,
+        CompilationUnit,
+        
+        // Statements
+        FunctionDeclaration,
+        BlockStatement,
     }
 }

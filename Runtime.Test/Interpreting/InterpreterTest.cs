@@ -1,9 +1,10 @@
-﻿using System.Linq;
-using IllusionScript.Runtime.Interface;
+﻿using System.Collections.Generic;
+using IllusionScript.Runtime.Interpreting;
+using IllusionScript.Runtime.Interpreting.Memory;
 using IllusionScript.Runtime.Parsing;
 using Xunit;
 
-namespace Runtime.Test.Interpreting
+namespace IllusionScript.Runtime.Test.Interpreting
 {
     public class InterpreterTest
     {
@@ -60,13 +61,6 @@ namespace Runtime.Test.Interpreting
         [InlineData("false", false)]
         [InlineData("!true", false)]
         [InlineData("!false", true)]
-        [InlineData("\"test\"", "test")]
-        [InlineData("\"te\\\"st\"", "te\"st")]
-        [InlineData("\"test\" == \"test\"", true)]
-        [InlineData("\"test\" != \"test\"", false)]
-        [InlineData("\"test\" == \"abc\"", false)]
-        [InlineData("\"test\" != \"abc\"", true)]
-        [InlineData("\"test\" + \"abc\"", "testabc")]
         public void InterpreterComputesCorrectValues(string text, object expectedValue)
         {
             AssertValue(text, expectedValue);
@@ -74,12 +68,12 @@ namespace Runtime.Test.Interpreting
 
         private static void AssertValue(string text, object expectedValue)
         {
-            Compilation compilation = SyntaxTree.Parse(text);
-            Assert.False(compilation.diagnostics.Any());
-
-            InterpreterResult result = compilation.Interpret();
-
-            Assert.False(result.diagnostic.Any());
+            SyntaxTree syntaxThree = SyntaxTree.Parse(text);
+            Compilation compilation = new Compilation(syntaxThree);
+            Dictionary<VariableSymbol, object> variables = new Dictionary<VariableSymbol, object>();
+            InterpreterResult result = compilation.Interpret(variables);
+            
+            Assert.Empty(result.diagnostics);
             Assert.Equal(expectedValue, result.value);
         }
     }

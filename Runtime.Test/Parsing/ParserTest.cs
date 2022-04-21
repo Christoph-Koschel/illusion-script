@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
-using IllusionScript.Runtime.Interface;
-using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing;
 using IllusionScript.Runtime.Parsing.Nodes;
+using Runtime.Test;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Runtime.Test.Parsing
+namespace IllusionScript.Runtime.Test.Parsing
 {
     public class ParserTest
     {
@@ -22,20 +20,20 @@ namespace Runtime.Test.Parsing
         [MemberData(nameof(GetBinaryOperatorPairsData))]
         public void ParserBinaryExpressionPrecedences(SyntaxType op1, SyntaxType op2)
         {
-            string? op1Text = Lexer.GetText(op1);
-            string? op2Text = Lexer.GetText(op2);
+            string? op1Text = SyntaxFacts.GetText(op1);
+            string? op2Text = SyntaxFacts.GetText(op2);
             string text = $"1 {op1Text} 2 {op2Text} 3";
-            Expression expression = ParseExpression(text);
+            Expression expression = SyntaxTree.Parse(text).root.expression; 
 
-            testOutputHelper.WriteLine(Parser.GetBinaryOperatorIndex(op1).ToString());
-            testOutputHelper.WriteLine(Parser.GetBinaryOperatorIndex(op2).ToString());
+            testOutputHelper.WriteLine(SyntaxFacts.GetBinaryOperatorPrecedence(op1).ToString());
+            testOutputHelper.WriteLine(SyntaxFacts.GetBinaryOperatorPrecedence(op2).ToString());
             testOutputHelper.WriteLine(text);
             testOutputHelper.WriteLine(expression.ToString());
 
-            if (Parser.GetBinaryOperatorIndex(op1) == Parser.GetBinaryOperatorIndex(SyntaxType.DoubleStarToken) ||
-                Parser.GetBinaryOperatorIndex(op2) == Parser.GetBinaryOperatorIndex(SyntaxType.DoubleStarToken))
+            if (SyntaxFacts.GetBinaryOperatorPrecedence(op1) == SyntaxFacts.GetBinaryOperatorPrecedence(SyntaxType.DoubleStarToken) ||
+                SyntaxFacts.GetBinaryOperatorPrecedence(op2) == SyntaxFacts.GetBinaryOperatorPrecedence(SyntaxType.DoubleStarToken))
             {
-                if (Parser.GetBinaryOperatorIndex(op1) < Parser.GetBinaryOperatorIndex(op2))
+                if (SyntaxFacts.GetBinaryOperatorPrecedence(op1) < SyntaxFacts.GetBinaryOperatorPrecedence(op2))
                 {
                     using AssertingEnumerator e = new AssertingEnumerator(expression);
                     e.AssertNode(SyntaxType.BinaryExpression);
@@ -66,7 +64,7 @@ namespace Runtime.Test.Parsing
             }
             else
             {
-                if (Parser.GetBinaryOperatorIndex(op1) < Parser.GetBinaryOperatorIndex(op2))
+                if (SyntaxFacts.GetBinaryOperatorPrecedence(op1) < SyntaxFacts.GetBinaryOperatorPrecedence(op2))
                 {
                     using AssertingEnumerator e = new AssertingEnumerator(expression);
                     e.AssertNode(SyntaxType.BinaryExpression);
@@ -101,17 +99,17 @@ namespace Runtime.Test.Parsing
         [MemberData(nameof(GetUnaryOperatorPairsData))]
         public void ParserUnaryExpressionPrecedences(SyntaxType unaryType, SyntaxType binaryType)
         {
-            var unaryText = Lexer.GetText(unaryType);
-            var binaryText = Lexer.GetText(binaryType);
+            var unaryText = SyntaxFacts.GetText(unaryType);
+            var binaryText = SyntaxFacts.GetText(binaryType);
             string text = $"{unaryText} 1 {binaryText} 2";
-            Expression expression = ParseExpression(text);
+            Expression expression = SyntaxTree.Parse(text).root.expression; 
 
-            testOutputHelper.WriteLine(Parser.GetUnaryOperatorIndex(unaryType).ToString());
-            testOutputHelper.WriteLine(Parser.GetBinaryOperatorIndex(binaryType).ToString());
+            testOutputHelper.WriteLine(SyntaxFacts.GetUnaryOperatorPrecedence(unaryType).ToString());
+            testOutputHelper.WriteLine(SyntaxFacts.GetBinaryOperatorPrecedence(binaryType).ToString());
             testOutputHelper.WriteLine(text);
             testOutputHelper.WriteLine(expression.ToString());
 
-            if (Parser.GetUnaryOperatorIndex(unaryType) < Parser.GetBinaryOperatorIndex(binaryType))
+            if (SyntaxFacts.GetUnaryOperatorPrecedence(unaryType) < SyntaxFacts.GetBinaryOperatorPrecedence(binaryType))
             {
                 using AssertingEnumerator e = new AssertingEnumerator(expression);
                 e.AssertNode(SyntaxType.UnaryExpression);
@@ -135,12 +133,6 @@ namespace Runtime.Test.Parsing
                 e.AssertNode(SyntaxType.LiteralExpression);
                 e.AssertToken(SyntaxType.NumberToken, "2");
             }
-        }
-
-        private static Expression ParseExpression(string text)
-        {
-            Compilation compilation = SyntaxTree.Parse(text);
-            return compilation.SyntaxTree.root;
         }
 
         public static IEnumerable<object[]> GetBinaryOperatorPairsData()
