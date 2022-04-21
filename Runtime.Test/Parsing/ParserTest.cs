@@ -2,6 +2,7 @@
 using IllusionScript.Runtime.Parsing;
 using IllusionScript.Runtime.Parsing.Nodes;
 using IllusionScript.Runtime.Parsing.Nodes.Expressions;
+using IllusionScript.Runtime.Parsing.Nodes.Statements;
 using Runtime.Test;
 using Xunit;
 using Xunit.Abstractions;
@@ -24,8 +25,8 @@ namespace IllusionScript.Runtime.Test.Parsing
             string? op1Text = SyntaxFacts.GetText(op1);
             string? op2Text = SyntaxFacts.GetText(op2);
             string text = $"1 {op1Text} 2 {op2Text} 3";
-            Expression expression = SyntaxTree.Parse(text).root.expression; 
-
+            Expression expression = ParseExpression(text);
+            
             testOutputHelper.WriteLine(SyntaxFacts.GetBinaryOperatorPrecedence(op1).ToString());
             testOutputHelper.WriteLine(SyntaxFacts.GetBinaryOperatorPrecedence(op2).ToString());
             testOutputHelper.WriteLine(text);
@@ -103,7 +104,7 @@ namespace IllusionScript.Runtime.Test.Parsing
             var unaryText = SyntaxFacts.GetText(unaryType);
             var binaryText = SyntaxFacts.GetText(binaryType);
             string text = $"{unaryText} 1 {binaryText} 2";
-            Expression expression = SyntaxTree.Parse(text).root.expression; 
+            Expression expression = ParseExpression(text);
 
             testOutputHelper.WriteLine(SyntaxFacts.GetUnaryOperatorPrecedence(unaryType).ToString());
             testOutputHelper.WriteLine(SyntaxFacts.GetBinaryOperatorPrecedence(binaryType).ToString());
@@ -172,6 +173,14 @@ namespace IllusionScript.Runtime.Test.Parsing
             yield return SyntaxType.DoubleStarToken;
             yield return SyntaxType.SlashToken;
             yield return SyntaxType.PercentToken;
+        }
+
+        private static Expression ParseExpression(string text)
+        {
+            SyntaxTree syntaxTree = SyntaxTree.Parse(text);
+            CompilationUnit unit = syntaxTree.root;
+            Statement statement = unit.statement;
+            return Assert.IsType<ExpressionStatement>(statement).expression;
         }
     }
 }

@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using IllusionScript.Runtime.Binding.Nodes;
+using IllusionScript.Runtime.Binding.Nodes.Expressions;
+using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Binding.Operators;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Interpreting.Memory;
 using IllusionScript.Runtime.Parsing;
 using IllusionScript.Runtime.Parsing.Nodes;
 using IllusionScript.Runtime.Parsing.Nodes.Expressions;
+using IllusionScript.Runtime.Parsing.Nodes.Statements;
 
 namespace IllusionScript.Runtime.Binding
 {
@@ -22,18 +24,49 @@ namespace IllusionScript.Runtime.Binding
             scope = new Scope(parent);
         }
 
-        public BoundExpression BindExpression(Expression syntax)
+        private BoundStatement BindStatement(Statement syntax)
         {
             switch (syntax.type)
             {
+                case SyntaxType.BlockStatement:
+                    return BindBlockStatement((BlockStatement)syntax);
+                case SyntaxType.ExpressionStatement:
+                    return BindExpressionStatement((ExpressionStatement)syntax);
+                default:
+                    throw new Exception($"Unexpected syntax {syntax.type}");
+            }
+        }
+
+        private BoundStatement BindBlockStatement(BlockStatement syntax)
+        {
+            ImmutableArray<BoundStatement>.Builder statements = ImmutableArray.CreateBuilder<BoundStatement>();
+            foreach (Statement statement in syntax.statements)
+            {
+                BoundStatement boundStatement = BindStatement(statement);
+                statements.Add(boundStatement);
+            }
+
+            return new BoundBlockStatement(statements.ToImmutable());
+        }
+
+        private BoundStatement BindExpressionStatement(ExpressionStatement syntax)
+        {
+            BoundExpression expression = BindExpression(syntax.expression);
+            return new BoundExpressionStatement(expression);
+        }
+
+        private BoundExpression BindExpression(Expression syntax)
+        {
+            switch (syntax.type)
+            {
+                case SyntaxType.ParenExpression:
+                    return BindParenExpression((ParenExpression)syntax);
                 case SyntaxType.LiteralExpression:
                     return BindLiteralExpression((LiteralExpression)syntax);
                 case SyntaxType.UnaryExpression:
                     return BindUnaryExpression((UnaryExpression)syntax);
                 case SyntaxType.BinaryExpression:
                     return BindBinaryExpression((BinaryExpression)syntax);
-                case SyntaxType.ParenExpression:
-                    return BindParenExpression(((ParenExpression)syntax));
                 case SyntaxType.NameExpression:
                     return BindNameExpression((NameExpression)syntax);
                 case SyntaxType.AssignmentExpression:
@@ -122,7 +155,7 @@ namespace IllusionScript.Runtime.Binding
         {
             Scope parentScope = CreateParentScopes(previous);
             Binder binder = new Binder(parentScope);
-            BoundExpression expression = binder.BindExpression(syntax.expression);
+            BoundStatement expression = binder.BindStatement(syntax.statement);
             ImmutableArray<VariableSymbol> variables = binder.scope.GetDeclaredVariables();
             ImmutableArray<Diagnostic> diagnostics = binder.diagnostics.ToImmutableArray();
 

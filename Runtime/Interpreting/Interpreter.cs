@@ -1,17 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using IllusionScript.Runtime.Binding;
 using IllusionScript.Runtime.Binding.Nodes;
+using IllusionScript.Runtime.Binding.Nodes.Expressions;
+using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Binding.Operators;
 using IllusionScript.Runtime.Interpreting.Memory;
+using IllusionScript.Runtime.Parsing.Nodes.Statements;
 
 namespace IllusionScript.Runtime.Interpreting
 {
     internal sealed class Interpreter
     {
-        private readonly BoundExpression root;
+        private readonly BoundStatement root;
         private readonly Dictionary<VariableSymbol, object> variables;
+        private object lastValue;
 
-        public Interpreter(BoundExpression root, Dictionary<VariableSymbol, object> variables)
+        public Interpreter(BoundStatement root, Dictionary<VariableSymbol, object> variables)
         {
             this.root = root;
             this.variables = variables;
@@ -19,7 +24,36 @@ namespace IllusionScript.Runtime.Interpreting
 
         public object Interpret()
         {
-            return InterpretExpression(root);
+            InterpretStatement(root);
+            return lastValue;
+        }
+
+        private void InterpretStatement(BoundStatement statement)
+        {
+            switch (statement.boundType)
+            {
+                case BoundNodeType.BlockStatement:
+                    InterpretBlockStatement((BoundBlockStatement)statement);
+                    break;
+                case BoundNodeType.ExpressionStatement:
+                    InterpretExpressionStatement((BoundExpressionStatement)statement);
+                    break;
+                default:
+                    throw new Exception($"Unexpected node {statement.boundType}");
+            }
+        }
+
+        private void InterpretBlockStatement(BoundBlockStatement statement)
+        {
+            foreach (BoundStatement boundStatement in statement.statements)
+            {
+                InterpretStatement(boundStatement);
+            }
+        }
+
+        private void InterpretExpressionStatement(BoundExpressionStatement statement)
+        {
+            lastValue = InterpretExpression(statement.expression);
         }
 
         private object InterpretExpression(BoundExpression node)

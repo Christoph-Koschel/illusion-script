@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.IO;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing.Nodes;
 using IllusionScript.Runtime.Parsing.Nodes.Expressions;
+using IllusionScript.Runtime.Parsing.Nodes.Statements;
 
 namespace IllusionScript.Runtime.Parsing
 {
@@ -41,9 +44,9 @@ namespace IllusionScript.Runtime.Parsing
 
         public CompilationUnit ParseCompilationUnit()
         {
-            Expression expression = ParseExpression();
+            Statement statement = ParseStatement();
             Token end = Match(SyntaxType.EOFToken);
-            return new CompilationUnit(expression, end);
+            return new CompilationUnit(statement, end);
         }
 
         private Token NextToken()
@@ -70,6 +73,39 @@ namespace IllusionScript.Runtime.Parsing
             return new Token(type, current.position, null, null);
         }
 
+        private Statement ParseStatement()
+        {
+            if (current.type == SyntaxType.LBraceToken)
+            {
+                return ParseBlockStatement();
+            }
+
+            return ParseExpressionStatement();
+        }
+
+        private Statement ParseBlockStatement()
+        {
+            ImmutableArray<Statement>.Builder statements = ImmutableArray.CreateBuilder<Statement>();
+
+            Token lBrace = Match(SyntaxType.LBraceToken);
+
+            while (current.type != SyntaxType.EOFToken && current.type != SyntaxType.RBraceToken)
+            {
+                Statement statement = ParseStatement();
+                statements.Add(statement);
+            }
+            
+            Token rBrace = Match(SyntaxType.RBraceToken);
+
+            return new BlockStatement(lBrace, statements.ToImmutable(), rBrace);
+        }
+
+        private Statement ParseExpressionStatement()
+        {
+            Expression expression = ParseExpression();
+            return new ExpressionStatement(expression);
+        }
+
         private Expression ParseExpression()
         {
             return ParseAssignmentExpression();
@@ -79,7 +115,6 @@ namespace IllusionScript.Runtime.Parsing
         {
             if (current.type == SyntaxType.IdentifierToken)
             {
-                
                 switch (Peek(1).type)
                 {
                     case SyntaxType.PlusEqualsToken:
