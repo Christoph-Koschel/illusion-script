@@ -12,7 +12,7 @@ namespace IllusionScript.Runtime.Binding
 {
     internal sealed class Binder
     {
-        private readonly DiagnosticGroup diagnostics;
+        public readonly DiagnosticGroup diagnostics;
         private Scope scope;
 
         public Binder(Scope parent)
@@ -20,8 +20,6 @@ namespace IllusionScript.Runtime.Binding
             diagnostics = new DiagnosticGroup();
             scope = new Scope(parent);
         }
-
-        public DiagnosticGroup Diagnostics => diagnostics;
 
         public BoundExpression BindExpression(Expression syntax)
         {
@@ -104,11 +102,16 @@ namespace IllusionScript.Runtime.Binding
         {
             string name = syntax.identifier.text;
             BoundExpression boundExpression = BindExpression(syntax.expression);
-            VariableSymbol variable = new VariableSymbol(name, boundExpression.type);
 
-            if (!scope.TryDeclare(variable))
+            if (!scope.TryLookup(name, out VariableSymbol variable))
             {
-                diagnostics.ReportVariableAlreadyDeclared(syntax.identifier.span, name);
+                variable = new VariableSymbol(name, boundExpression.type);
+                scope.TryDeclare(variable);
+            }
+
+            if (boundExpression.type != variable.type)
+            {
+                diagnostics.ReportCannotConvert(syntax.expression.span, boundExpression.type, variable.type);
             }
 
             return new BoundAssignmentExpression(variable, boundExpression);
@@ -121,6 +124,11 @@ namespace IllusionScript.Runtime.Binding
             BoundExpression expression = binder.BindExpression(syntax.expression);
             ImmutableArray<VariableSymbol> variables = binder.scope.GetDeclaredVariables();
             ImmutableArray<Diagnostic> diagnostics = binder.diagnostics.ToImmutableArray();
+
+            if (previous != null)
+            {
+                diagnostics = diagnostics.InsertRange(0, previous.diagnostics);
+            }
 
             return new GlobalScope(previous, diagnostics, variables, expression);
         }

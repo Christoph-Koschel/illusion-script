@@ -65,9 +65,9 @@ namespace IllusionScript.Runtime.Diagnostics
             Report(span, message);
         }
 
-        public void ReportVariableAlreadyDeclared(TextSpan span, string name)
+        public void ReportCannotConvert(TextSpan span, Type type1, Type type2)
         {
-            string message = $"ERROR: Variable '{name}' already declared";
+            string message = $"ERROR: Cannot convert type '{type1}' to {type2}";
             Report(span, message);
         }
     }
