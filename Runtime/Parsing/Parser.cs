@@ -78,7 +78,8 @@ namespace IllusionScript.Runtime.Parsing
         {
             if (current.type == SyntaxType.IdentifierToken)
             {
-                switch (current.type)
+                
+                switch (Peek(1).type)
                 {
                     case SyntaxType.PlusEqualsToken:
                     case SyntaxType.MinusEqualsToken:
@@ -90,9 +91,9 @@ namespace IllusionScript.Runtime.Parsing
                     case SyntaxType.HatEqualsToken:
                     case SyntaxType.PercentEqualsToken:
                     case SyntaxType.EqualsToken:
-                        var identifierToken = NextToken();
-                        var operatorToken = NextToken();
-                        var right = ParseAssignmentExpression();
+                        Token identifierToken = NextToken();
+                        Token operatorToken = NextToken();
+                        Expression right = ParseAssignmentExpression();
                         return new AssignmentExpression(identifierToken, operatorToken, right);
                 }
             }

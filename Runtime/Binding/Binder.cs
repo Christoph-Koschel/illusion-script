@@ -130,8 +130,8 @@ namespace IllusionScript.Runtime.Binding
             Stack<GlobalScope> stack = new Stack<GlobalScope>();
             while (previous != null)
             {
-                previous = previous.previous;
                 stack.Push(previous);
+                previous = previous.previous;
             }
 
             Scope parent = null;

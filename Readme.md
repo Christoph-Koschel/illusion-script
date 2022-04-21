@@ -101,4 +101,4 @@ Distributed under the MIT License. See [LICENSE](https://github.com/christoph-ko
 
 ## Authors
 
-* **Christoph Koschel** - *A passionate fullstack developer from Germany* - [Christoph Koschel ](https://github.com/Christoph-Koschel) - *Creator of Illusion Script*
+* **Christoph Koschel** - *A passionate fullstack developer from Germany* - [Christoph Koschel ](https://github.com/Christoph-Koschel) - *Creator of IllusionScript*

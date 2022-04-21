@@ -13,8 +13,8 @@ namespace IllusionScript.Runtime
 {
     public sealed class Compilation
     {
-        private readonly Compilation previous;
-        private readonly SyntaxTree syntaxTree;
+        public readonly Compilation previous;
+        public readonly SyntaxTree syntaxTree;
         private GlobalScope globalScope;
 
         public Compilation(SyntaxTree syntaxThree)
@@ -48,7 +48,7 @@ namespace IllusionScript.Runtime
         }
 
         public InterpreterResult Interpret(Dictionary<VariableSymbol, object> variables)
-        {
+        { 
             ImmutableArray<Diagnostic> diagnostics =
                 syntaxTree.diagnostics.Concat(GlobalScope.diagnostics).ToImmutableArray();
             if (diagnostics.Any())
