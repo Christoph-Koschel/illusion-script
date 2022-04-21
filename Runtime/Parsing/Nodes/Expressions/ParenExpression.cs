@@ -1,16 +1,15 @@
-﻿using System.Collections.Generic;
-using IllusionScript.Runtime.Lexing;
+﻿using IllusionScript.Runtime.Lexing;
 
-namespace IllusionScript.Runtime.Parsing.Nodes
+namespace IllusionScript.Runtime.Parsing.Nodes.Expressions
 {
-    public class ParenExpression : Expression
+    public class ParenExpression : Expressions.Expression
     {
         public override SyntaxType type => SyntaxType.ParenExpression;
         public readonly Token openToken;
-        public readonly Expression expression;
+        public readonly Expressions.Expression expression;
         public readonly Token closeToken;
         
-        public ParenExpression(Token openToken, Expression expression, Token closeToken)
+        public ParenExpression(Token openToken, Expressions.Expression expression, Token closeToken)
         {
             this.openToken = openToken;
             this.expression = expression;

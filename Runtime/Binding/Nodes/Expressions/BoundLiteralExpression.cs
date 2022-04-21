@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace IllusionScript.Runtime.Binding.Nodes
+namespace IllusionScript.Runtime.Binding.Nodes.Expressions
 {
     internal sealed class BoundLiteralExpression : BoundExpression
     {

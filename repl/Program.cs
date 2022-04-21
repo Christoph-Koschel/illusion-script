@@ -46,6 +46,9 @@ namespace IllusionScript
                             Console.Clear();
                             Console.WriteLine("Console cleared");
                             continue;
+                        case "#reset":
+                            previous = null;
+                            continue;
                     }
                 }
 
@@ -62,7 +65,8 @@ namespace IllusionScript
                 Compilation compilation = previous == null
                     ? new Compilation(syntaxThree)
                     : previous.ContinueWith(syntaxThree);
-                
+
+                previous = compilation;
                 InterpreterResult result = compilation.Interpret(variables);
 
                 if (showTree)

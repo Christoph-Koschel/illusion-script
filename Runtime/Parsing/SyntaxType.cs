@@ -94,5 +94,6 @@
         // Statements
         FunctionDeclaration,
         BlockStatement,
+        ExpressionStatement
     }
 }

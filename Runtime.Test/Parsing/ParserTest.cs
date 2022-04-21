@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using IllusionScript.Runtime.Parsing;
 using IllusionScript.Runtime.Parsing.Nodes;
+using IllusionScript.Runtime.Parsing.Nodes.Expressions;
 using Runtime.Test;
 using Xunit;
 using Xunit.Abstractions;

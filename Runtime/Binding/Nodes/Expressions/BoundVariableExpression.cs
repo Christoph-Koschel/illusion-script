@@ -1,7 +1,7 @@
 ﻿using System;
 using IllusionScript.Runtime.Interpreting.Memory;
 
-namespace IllusionScript.Runtime.Binding.Nodes
+namespace IllusionScript.Runtime.Binding.Nodes.Expressions
 {
     internal sealed class BoundVariableExpression : BoundExpression
     {

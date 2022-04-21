@@ -7,6 +7,7 @@ using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Interpreting.Memory;
 using IllusionScript.Runtime.Parsing;
 using IllusionScript.Runtime.Parsing.Nodes;
+using IllusionScript.Runtime.Parsing.Nodes.Expressions;
 
 namespace IllusionScript.Runtime.Binding
 {

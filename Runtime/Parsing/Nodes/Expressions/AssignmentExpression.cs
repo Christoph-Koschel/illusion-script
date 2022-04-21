@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using IllusionScript.Runtime.Lexing;
+﻿using IllusionScript.Runtime.Lexing;
 
-namespace IllusionScript.Runtime.Parsing.Nodes
+namespace IllusionScript.Runtime.Parsing.Nodes.Expressions
 {
     public sealed class AssignmentExpression : Expression
     {
