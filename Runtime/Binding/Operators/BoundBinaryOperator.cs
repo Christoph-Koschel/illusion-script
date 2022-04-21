@@ -5,11 +5,11 @@ namespace IllusionScript.Runtime.Binding.Operators
 {
     internal sealed class BoundBinaryOperator
     {
-        public readonly SyntaxType type;
-        public readonly BoundBinaryOperatorType operatorType;
-        public readonly Type leftType;
-        public readonly Type rightType;
-        public readonly Type resultType;
+        public SyntaxType type;
+        public BoundBinaryOperatorType operatorType;
+        public Type leftType;
+        public Type rightType;
+        public Type resultType;
 
         private BoundBinaryOperator(SyntaxType type, BoundBinaryOperatorType operatorType, Type leftType,
             Type rightType, Type resultType)
@@ -31,7 +31,7 @@ namespace IllusionScript.Runtime.Binding.Operators
         {
         }
 
-        private static readonly BoundBinaryOperator[] operators =
+        private static BoundBinaryOperator[] operators = 
         {
             new(SyntaxType.PlusToken, BoundBinaryOperatorType.Addition, typeof(int)),
             new(SyntaxType.MinusToken, BoundBinaryOperatorType.Subtraction, typeof(int)),

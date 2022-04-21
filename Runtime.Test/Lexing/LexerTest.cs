@@ -6,7 +6,7 @@ using IllusionScript.Runtime.Parsing;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Runtime.Test.Lexing
+namespace IllusionScript.Runtime.Test.Lexing
 {
     public class LexerTest
     {
@@ -17,96 +17,159 @@ namespace Runtime.Test.Lexing
             this.testOutputHelper = testOutputHelper;
         }
 
-        [Theory]
-        [MemberData(nameof(GetTokensWithWhitespacesData))]
-        public void CheckLexerTokenInterpreter(string text, SyntaxType type)
+        [Fact]
+        public void LexerTestAllTokens()
         {
-            Token[] tokens = SyntaxTree.MakeTokens(text).ToArray();
-            Assert.Single(tokens);
-            Assert.Equal(type, tokens[0].type);
-            Assert.Equal(text, tokens[0].text);
+            List<SyntaxType> tokenTypes = Enum.GetValues(typeof(SyntaxType))
+                .Cast<SyntaxType>()
+                .Where(k => k.ToString().EndsWith("Keyword") || k.ToString().EndsWith("Token")).ToList();
+
+
+            IEnumerable<SyntaxType> testedTokenTypes = GetTokens().Concat(GetSeparators()).Select(t => t.type);
+            SortedSet<SyntaxType> untestedTypes = new SortedSet<SyntaxType>(tokenTypes);
+            untestedTypes.Remove(SyntaxType.BadToken);
+            untestedTypes.Remove(SyntaxType.EOFToken);
+            untestedTypes.ExceptWith(testedTokenTypes);
+
+            foreach (SyntaxType type in untestedTypes)
+            {
+                testOutputHelper.WriteLine(type.ToString());
+            }
+
+            Assert.Empty(untestedTypes);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetTokensData))]
+        public void LexerLexTokens(SyntaxType type, string text)
+        {
+            IEnumerable<Token> tokens = SyntaxTree.ParseTokens(text);
+
+            Token token = Assert.Single(tokens);
+            Assert.Equal(type, token.type);
+            Assert.Equal(text, token.text);
         }
 
         [Theory]
         [MemberData(nameof(GetTokensPairData))]
-        public static void CheckLexerTokenPairInterpreter(string text1, SyntaxType type1, string text2,
-            SyntaxType type2)
+        public void LexerLexPairTokens(SyntaxType type1, string text1,
+            SyntaxType type2, string text2)
         {
             string text = text1 + text2;
-            Token[] tokens = SyntaxTree.MakeTokens(text).ToArray();
+            Token[] tokens = SyntaxTree.ParseTokens(text).ToArray();
 
+            foreach (Token token in tokens)
+            {
+                testOutputHelper.WriteLine(token.type.ToString());
+            }
+            
             Assert.Equal(2, tokens.Length);
-            Assert.Equal(type1, tokens[0].type);
-            Assert.Equal(text1, tokens[0].text);
+            Assert.Equal(type1,tokens[0].type);
+            Assert.Equal(text1,tokens[0].text);
+            Assert.Equal(type2,tokens[1].type);
+            Assert.Equal(text2,tokens[1].text);
+        }
 
-            Assert.Equal(type2, tokens[1].type);
-            Assert.Equal(text2, tokens[1].text);
+        [Theory]
+        [MemberData(nameof(GetTokensPairWithSpacesData))]
+        public void LexerLexPairTokensWithSpaces(SyntaxType type1, string text1, SyntaxType separatorType,
+            string separatorText, SyntaxType type2, string text2)
+        {
+            string text = text1 + separatorText + text2;
+            Token[] tokens = SyntaxTree.ParseTokens(text).ToArray();
+            Assert.Equal(3, tokens.Length);
+            Assert.Equal(tokens[0].type, type1);
+            Assert.Equal(tokens[0].text, text1);
+            Assert.Equal(tokens[1].type, separatorType);
+            Assert.Equal(tokens[1].text, separatorText);
+            Assert.Equal(tokens[2].type, type2);
+            Assert.Equal(tokens[2].text, text2);
         }
 
         public static IEnumerable<object[]> GetTokensData()
         {
-            foreach ((string text, SyntaxType type) token in GetTokens())
+            foreach ((SyntaxType kind, string text) token in GetTokens().Concat(GetSeparators()))
             {
-                yield return new object[] { token.text, token.type };
-            }
-        }
-
-        public static IEnumerable<object[]> GetTokensWithWhitespacesData()
-        {
-            foreach ((string text, SyntaxType type) token in GetTokens().Concat(GetWhitespaceTokens()))
-            {
-                yield return new object[] { token.text, token.type };
+                yield return new object[] { token.kind, token.text };
             }
         }
 
         public static IEnumerable<object[]> GetTokensPairData()
         {
-            foreach ((string t1Text, SyntaxType t1Type, string t2Text, SyntaxType t2Type) pair in GetTokenPairs())
+            foreach ((SyntaxType t1Type, string t1Text, SyntaxType t2Type, string t2Text) pair in GetTokenPairs())
             {
-                yield return new object[] { pair.t1Text, pair.t1Type, pair.t2Text, pair.t2Type };
+                yield return new object[] { pair.t1Type, pair.t1Text, pair.t2Type, pair.t2Text };
             }
         }
 
-        private static IEnumerable<(string text, SyntaxType type)> GetTokens()
+        public static IEnumerable<object[]> GetTokensPairWithSpacesData()
         {
-            IEnumerable<(string text, SyntaxType type)> fixedTokens = Enum.GetValues(typeof(SyntaxType))
-                .Cast<SyntaxType>()
-                .Select(k => (text: Lexer.GetText(k), k))
-                .Where(t => t.text != null);
-
-            IEnumerable<(string text, SyntaxType type)> dynamicTokens = new[]
+            foreach ((SyntaxType t1Type, string t1Text, SyntaxType seperatorType, string seperatorText, SyntaxType
+                     t2Type, string t2Text) pair in GetTokensPairsWithSpaces())
             {
-                ("1", SyntaxType.NumberToken),
-                ("123", SyntaxType.NumberToken),
-                ("a", SyntaxType.IdentifierToken),
-                ("abc", SyntaxType.IdentifierToken),
-                ("\"Test\"", SyntaxType.StringToken),
-                ("\"Te\\\"st\\\"\"", SyntaxType.StringToken)
+                yield return new object[]
+                    { pair.t1Type, pair.t1Text, pair.seperatorType, pair.seperatorText, pair.t2Type, pair.t2Text };
+            }
+        }
+
+        private static IEnumerable<(SyntaxType type, string text)> GetTokens()
+        {
+            IEnumerable<(SyntaxType Type, string text)> fixedTokens = Enum.GetValues(typeof(SyntaxType))
+                .Cast<SyntaxType>()
+                .Select(v => (type: v, text: SyntaxFacts.GetText(v)))
+                .Where((t) => t.text != null);
+
+
+            IEnumerable<(SyntaxType Type, string text)> dynamicTokens = new[]
+            {
+                (SyntaxType.NumberToken, "1"),
+                (SyntaxType.NumberToken, "123"),
+                (SyntaxType.IdentifierToken, "a"),
+                (SyntaxType.IdentifierToken, "abc"),
             };
 
             return fixedTokens.Concat(dynamicTokens);
         }
 
-        private static IEnumerable<(string text, SyntaxType type)> GetWhitespaceTokens()
+        private static IEnumerable<(SyntaxType type, string text)> GetSeparators()
         {
             return new[]
             {
-                (" ", SyntaxType.WhiteSpaceToken),
-                ("\n", SyntaxType.WhiteSpaceToken),
-                ("\r", SyntaxType.WhiteSpaceToken),
-                ("\t", SyntaxType.WhiteSpaceToken),
-                ("  ", SyntaxType.WhiteSpaceToken)
+                (WhiteSpace: SyntaxType.WhiteSpaceToken, " "),
+                (WhiteSpace: SyntaxType.WhiteSpaceToken, "  "),
+                (WhiteSpace: SyntaxType.WhiteSpaceToken, "\r"),
+                (WhiteSpace: SyntaxType.WhiteSpaceToken, "\n"),
+                (WhiteSpace: SyntaxType.WhiteSpaceToken, "\r\n")
             };
         }
 
-        private static IEnumerable<(string t1Text, SyntaxType t1Type, string t2Text, SyntaxType t2Type)> GetTokenPairs()
+        private static IEnumerable<(SyntaxType t1Type, string t1Text, SyntaxType t2Type, string t2Text)> GetTokenPairs()
         {
-            foreach ((string text, SyntaxType type) t1 in GetTokens())
+            foreach ((SyntaxType type, string text) t1 in GetTokens())
             {
-                foreach ((string text, SyntaxType type) t2 in GetTokens())
+                foreach ((SyntaxType type, string text) t2 in GetTokens())
                 {
                     if (!RequiresSeparator(t1.type, t2.type))
-                        yield return (t1.text, t1.type, t2.text, t2.type);
+                        yield return (t1.type, t1.text, t2.type, t2.text);
+                }
+            }
+        }
+
+        private static IEnumerable<(SyntaxType t1Type, string t1Text,
+            SyntaxType seperatorKind, string seperatorText,
+            SyntaxType t2Type, string t2Text)> GetTokensPairsWithSpaces()
+        {
+            foreach ((SyntaxType type, string text) t1 in GetTokens())
+            {
+                foreach ((SyntaxType type, string text) t2 in GetTokens())
+                {
+                    if (RequiresSeparator(t1.type, t2.type))
+                    {
+                        foreach ((SyntaxType type, string text) separator in GetSeparators())
+                        {
+                            yield return (t1.type, t1.text, separator.type, separator.text, t2.type, t2.text);
+                        }
+                    }
                 }
             }
         }
@@ -147,6 +210,11 @@ namespace Runtime.Test.Lexing
             }
 
             if (t1Type == SyntaxType.StarToken && t2Type == SyntaxType.DoubleStarToken)
+            {
+                return true;
+            }
+            
+            if (t1Type == SyntaxType.StarToken && t2Type == SyntaxType.DoubleStarEqualsToken)
             {
                 return true;
             }

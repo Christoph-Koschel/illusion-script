@@ -5,10 +5,10 @@ namespace IllusionScript.Runtime.Binding.Operators
 {
     internal sealed class BoundUnaryOperator
     {
-        public readonly SyntaxType type;
-        public readonly BoundUnaryOperatorType operatorType;
-        public readonly Type rightType;
-        public readonly Type resultType;
+        public SyntaxType type;
+        public BoundUnaryOperatorType operatorType;
+        public Type rightType;
+        public Type resultType;
         
         private BoundUnaryOperator(SyntaxType type, BoundUnaryOperatorType operatorType,Type rightType, Type resultType)
         {
@@ -23,7 +23,7 @@ namespace IllusionScript.Runtime.Binding.Operators
         {
         }
 
-        private static readonly BoundUnaryOperator[] operators =
+        private static BoundUnaryOperator[] operators =
         {
             new (SyntaxType.TildeToken, BoundUnaryOperatorType.OnesComplement, typeof(int)),
             new (SyntaxType.BangToken, BoundUnaryOperatorType.LogicalNegation, typeof(bool)),

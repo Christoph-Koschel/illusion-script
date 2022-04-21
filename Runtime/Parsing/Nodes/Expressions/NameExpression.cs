@@ -1,16 +1,15 @@
 ﻿using IllusionScript.Runtime.Lexing;
 
-namespace IllusionScript.Runtime.Parsing.Nodes
+namespace IllusionScript.Runtime.Parsing.Nodes.Expressions
 {
-    public class NameExpression : Expression
+    public sealed class NameExpression : Expressions.Expression
     {
+        public override SyntaxType type => SyntaxType.NameExpression;
         public readonly Token identifier;
 
         public NameExpression(Token identifier)
         {
             this.identifier = identifier;
         }
-        
-        public override SyntaxType type => SyntaxType.NameExpression;
     }
 }

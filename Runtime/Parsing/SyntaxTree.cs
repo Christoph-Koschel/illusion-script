@@ -1,57 +1,57 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using IllusionScript.Runtime.Diagnostics;
-using IllusionScript.Runtime.Interface;
 using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing.Nodes;
 
 namespace IllusionScript.Runtime.Parsing
 {
-    public sealed class SyntaxTree
+    public class SyntaxTree
     {
-        public readonly DiagnosticGroup diagnostics;
         public readonly SourceText text;
-        public readonly Expression root;
+        public readonly CompilationUnit root;
+        public readonly ImmutableArray<Diagnostic> diagnostics;
 
         private SyntaxTree(SourceText text)
         {
             Parser parser = new Parser(text);
-            Expression root = parser.ParseText();
-
-            diagnostics = parser.diagnostics;
-            this.root = root;
+            CompilationUnit root = parser.ParseCompilationUnit();
+            
+            diagnostics = parser.Diagnostics.ToImmutableArray();
             this.text = text;
+            this.root = root;
         }
 
-        public static Compilation Parse(SourceText source)
+        public static SyntaxTree Parse(SourceText text)
         {
-            SyntaxTree syntaxTree = new SyntaxTree(source);
-            return new Compilation(syntaxTree.diagnostics, syntaxTree);
+            return new SyntaxTree(text);
         }
 
-        public static Compilation Parse(string text)
+        public static SyntaxTree Parse(string text)
         {
-            SourceText source = new SourceText(text);
-            return Parse(source);
+            SourceText sourceText = SourceText.From(text);
+            return Parse(sourceText);
         }
 
-        public static IEnumerable<Token> MakeTokens(SourceText text)
+        public static IEnumerable<Token> ParseTokens(string text)
+        {
+            SourceText sourceText = SourceText.From(text);
+            return ParseTokens(sourceText);
+        }
+
+        public static IEnumerable<Token> ParseTokens(SourceText text)
         {
             Lexer lexer = new Lexer(text);
-            Token token;
-            do
+            while (true)
             {
-                token = lexer.Lex();
-                if (token.type != SyntaxType.EOFToken)
+                Token token = lexer.Lex();
+                if (token.type == SyntaxType.EOFToken)
                 {
-                    yield return token;
+                    break;
                 }
-            } while (token.type != SyntaxType.EOFToken);
-        }
 
-        public static IEnumerable<Token> MakeTokens(string text)
-        {
-            SourceText source = new SourceText(text);
-            return MakeTokens(source);
+                yield return token;
+            }
         }
     }
 }

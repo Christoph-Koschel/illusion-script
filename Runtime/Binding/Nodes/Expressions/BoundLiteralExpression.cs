@@ -1,12 +1,12 @@
 ﻿using System;
 
-namespace IllusionScript.Runtime.Binding.Node
+namespace IllusionScript.Runtime.Binding.Nodes.Expressions
 {
-    internal sealed class BoundLiteral : BoundExpression
+    internal sealed class BoundLiteralExpression : BoundExpression
     {
         public readonly object value;
 
-        public BoundLiteral(object value)
+        public BoundLiteralExpression(object value)
         {
             this.value = value;
         }

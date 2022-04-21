@@ -10,7 +10,7 @@
 
         // Data Types
         NumberToken,
-        StringToken,
+        // StringToken,
         IdentifierToken,
 
         // Math operations
@@ -72,6 +72,7 @@
         FunctionKeyword,
         IfKeyword,
         LetKeyword,
+        ConstKeyword,
         ReturnKeyword,
         ToKeyword,
         WhileKeyword,
@@ -85,5 +86,16 @@
         AssignmentExpression,
         NameExpression,
         CallExpression,
+        
+        // Structure
+        Parameter,
+        TypeClause,
+        CompilationUnit,
+        
+        // Statements
+        BlockStatement,
+        ExpressionStatement,
+        FunctionDeclarationStatement,
+        VariableDeclarationStatement
     }
 }

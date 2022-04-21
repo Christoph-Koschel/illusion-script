@@ -1,70 +1,105 @@
 ﻿using System;
+using System.Collections.Generic;
 using IllusionScript.Runtime.Binding;
-using IllusionScript.Runtime.Binding.Node;
+using IllusionScript.Runtime.Binding.Nodes;
+using IllusionScript.Runtime.Binding.Nodes.Expressions;
+using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Binding.Operators;
-using IllusionScript.Runtime.Diagnostics;
+using IllusionScript.Runtime.Interpreting.Memory;
+using IllusionScript.Runtime.Parsing.Nodes.Statements;
 
 namespace IllusionScript.Runtime.Interpreting
 {
     internal sealed class Interpreter
     {
-        private readonly BoundExpression expression;
-        public readonly DiagnosticGroup diagnostic;
+        private readonly BoundStatement root;
+        private readonly Dictionary<VariableSymbol, object> variables;
+        private object lastValue;
 
-        internal Interpreter(BoundExpression expression)
+        public Interpreter(BoundStatement root, Dictionary<VariableSymbol, object> variables)
         {
-            this.expression = expression;
-            diagnostic = new DiagnosticGroup();
+            this.root = root;
+            this.variables = variables;
         }
 
         public object Interpret()
         {
-            return InterpretExpression(expression);
+            InterpretStatement(root);
+            return lastValue;
         }
 
-        private object InterpretExpression(BoundExpression expression)
+        private void InterpretStatement(BoundStatement statement)
         {
-            switch (expression.boundType)
+            switch (statement.boundType)
             {
-                case BoundNodeType.LiteralExpression:
-                    return InterpretLiteralExpression((BoundLiteral)expression);
-                case BoundNodeType.BinaryExpression:
-                    return InterpretBinaryExpression((BoundBinary)expression);
-                case BoundNodeType.UnaryExpression:
-                    return InterpretUnaryExpression((BoundUnary)expression);
+                case BoundNodeType.BlockStatement:
+                    InterpretBlockStatement((BoundBlockStatement)statement);
+                    break;
+                case BoundNodeType.ExpressionStatement:
+                    InterpretExpressionStatement((BoundExpressionStatement)statement);
+                    break;
+                case BoundNodeType.VariableDeclarationStatement:
+                    InterpretVariableDeclarationStatement((BoundVariableDeclarationStatement)statement);
+                    break;
                 default:
-                    throw new Exception($"Undefined expression type {expression.boundType}");
+                    throw new Exception($"Unexpected node {statement.boundType}");
             }
         }
 
-        private object InterpretUnaryExpression(BoundUnary expression)
+        private void InterpretVariableDeclarationStatement(BoundVariableDeclarationStatement statement)
         {
-            object right = InterpretExpression(expression.right);
+            object value = InterpretExpression(statement.initializer);
+            variables[statement.variable] = value;
+            lastValue = value;
+        }
 
-            switch (expression.unaryOperator.operatorType)
+        private void InterpretBlockStatement(BoundBlockStatement statement)
+        {
+            foreach (BoundStatement boundStatement in statement.statements)
             {
-                case BoundUnaryOperatorType.Identity:
-                    return right;
-                case BoundUnaryOperatorType.Negation:
-                    return -(int)right;
-                case BoundUnaryOperatorType.OnesComplement:
-                    return ~(int)right;
-                case BoundUnaryOperatorType.LogicalNegation:
-                    return !(bool)right;
-                default:
-                    throw new Exception($"Undefined unary operator: {expression.unaryOperator.operatorType}");
+                InterpretStatement(boundStatement);
             }
         }
 
-        private object InterpretBinaryExpression(BoundBinary expression)
+        private void InterpretExpressionStatement(BoundExpressionStatement statement)
         {
-            object left = InterpretExpression(expression.left);
-            object right = InterpretExpression(expression.right);
+            lastValue = InterpretExpression(statement.expression);
+        }
 
-            switch (expression.binaryOperator.operatorType)
+        private object InterpretExpression(BoundExpression node)
+        {
+            return node switch
+            {
+                BoundLiteralExpression n => InterpretLiteralExpression(n),
+                BoundUnaryExpression u => InterpretUnaryExpression(u),
+                BoundBinaryExpression b => InterpretBinaryExpression(b),
+                BoundVariableExpression v => InterpretVariableExpression(v),
+                BoundAssignmentExpression a => InterpretAssignmentExpression(a),
+                _ => throw new Exception($"Unexpected node {node.type}")
+            };
+        }
+
+        private object InterpretAssignmentExpression(BoundAssignmentExpression a)
+        {
+            object value = InterpretExpression(a.expression);
+            variables[a.variableSymbol] = value;
+            return value;
+        }
+
+        private object InterpretVariableExpression(BoundVariableExpression v)
+        {
+            return variables[v.variableSymbol];
+        }
+
+        private object InterpretBinaryExpression(BoundBinaryExpression b)
+        {
+            object left = InterpretExpression(b.left);
+            object right = InterpretExpression(b.right);
+
+            switch (b.binaryOperator.operatorType)
             {
                 case BoundBinaryOperatorType.Addition:
-                    if (expression.type == typeof(int))
+                    if (b.type == typeof(int))
                     {
                         return (int)left + (int)right;
                     }
@@ -104,7 +139,7 @@ namespace IllusionScript.Runtime.Interpreting
                 case BoundBinaryOperatorType.Equals:
                     return Equals(left, right);
                 case BoundBinaryOperatorType.BitwiseAnd:
-                    if (expression.type == typeof(int))
+                    if (b.type == typeof(int))
                     {
                         return (int)left & (int)right;
                     }
@@ -113,7 +148,7 @@ namespace IllusionScript.Runtime.Interpreting
                         return (bool)left & (bool)right;
                     }
                 case BoundBinaryOperatorType.BitwiseOr:
-                    if (expression.type == typeof(int))
+                    if (b.type == typeof(int))
                     {
                         return (int)left | (int)right;
                     }
@@ -122,7 +157,7 @@ namespace IllusionScript.Runtime.Interpreting
                         return (bool)left | (bool)right;
                     }
                 case BoundBinaryOperatorType.BitwiseXor:
-                    if (expression.type == typeof(int))
+                    if (b.type == typeof(int))
                     {
                         return (int)left ^ (int)right;
                     }
@@ -139,13 +174,26 @@ namespace IllusionScript.Runtime.Interpreting
                 case BoundBinaryOperatorType.GreaterEquals:
                     return (int)left >= (int)right;
                 default:
-                    throw new Exception($"Undefined binary operator: {expression.binaryOperator.operatorType}");
+                    throw new Exception($"Undefined binary operator: {b.binaryOperator.operatorType}");
             }
         }
 
-        private object InterpretLiteralExpression(BoundLiteral expression)
+        private object InterpretUnaryExpression(BoundUnaryExpression u)
         {
-            return expression.value;
+            object right = InterpretExpression(u.right);
+            return u.unaryOperator.operatorType switch
+            {
+                BoundUnaryOperatorType.Identity => right,
+                BoundUnaryOperatorType.Negation => -(int)right,
+                BoundUnaryOperatorType.OnesComplement => ~(int)right,
+                BoundUnaryOperatorType.LogicalNegation => !(bool)right,
+                _ => throw new Exception($"Undefined unary operator: {u.unaryOperator.operatorType}")
+            };
+        }
+
+        private static object InterpretLiteralExpression(BoundLiteralExpression n)
+        {
+            return n.value;
         }
     }
 }

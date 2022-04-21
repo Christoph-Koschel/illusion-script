@@ -2,10 +2,20 @@
 {
     public enum BoundNodeType
     {
+        // Expressions
         UnaryExpression,
         LiteralExpression,
         BinaryExpression,
         VariableExpression,
-        AssignmentExpression
+        AssignmentExpression,
+        ErrorExpression,
+        ConversionExpression,
+        CompoundAssignmentExpression,
+        CallExpression,
+        
+        // Statements
+        BlockStatement,
+        ExpressionStatement,
+        VariableDeclarationStatement
     }
 }
