@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace IllusionScript.Runtime.Interpreting.Memory
+namespace IllusionScript.Runtime.Interpreting.Memory.Symbols
 {
     public sealed class VariableSymbol
     {
@@ -13,6 +13,11 @@ namespace IllusionScript.Runtime.Interpreting.Memory
             this.name = name;
             this.isReadOnly = isReadOnly;
             this.type = type;
+        }
+
+        public override string ToString()
+        {
+            return name;
         }
     }
 }

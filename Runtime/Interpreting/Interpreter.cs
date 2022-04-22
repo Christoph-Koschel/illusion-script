@@ -1,22 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using IllusionScript.Runtime.Binding;
-using IllusionScript.Runtime.Binding.Nodes;
 using IllusionScript.Runtime.Binding.Nodes.Expressions;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Binding.Operators;
-using IllusionScript.Runtime.Interpreting.Memory;
-using IllusionScript.Runtime.Parsing.Nodes.Statements;
+using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 
 namespace IllusionScript.Runtime.Interpreting
 {
     internal sealed class Interpreter
     {
-        private readonly BoundStatement root;
+        private readonly BoundBlockStatement root;
         private readonly Dictionary<VariableSymbol, object> variables;
         private object lastValue;
 
-        public Interpreter(BoundStatement root, Dictionary<VariableSymbol, object> variables)
+        public Interpreter(BoundBlockStatement root, Dictionary<VariableSymbol, object> variables)
         {
             this.root = root;
             this.variables = variables;
@@ -24,68 +22,63 @@ namespace IllusionScript.Runtime.Interpreting
 
         public object Interpret()
         {
-            InterpretStatement(root);
+            Dictionary<LabelSymbol, int> labelToIndex = new Dictionary<LabelSymbol, int>();
+
+            for (int i = 0; i < root.statements.Length; i++)
+            {
+                if (root.statements[i] is BoundLabelStatement l)
+                {
+                    labelToIndex.Add(l.label, i + 1);
+                }
+            }
+
+            int index = 0;
+            while (index < root.statements.Length)
+            {
+                BoundStatement statement = root.statements[index];
+
+                switch (statement.boundType)
+                {
+                    case BoundNodeType.ExpressionStatement:
+                        InterpretExpressionStatement((BoundExpressionStatement)statement);
+                        index++;
+                        break;
+                    case BoundNodeType.VariableDeclarationStatement:
+                        InterpretVariableDeclarationStatement((BoundVariableDeclarationStatement)statement);
+                        index++;
+                        break;
+                    case BoundNodeType.ConditionalGotoStatement:
+                    {
+                        BoundConditionalGotoStatement cgs = (BoundConditionalGotoStatement)statement;
+                        var condition = (bool)InterpretExpression(cgs.condition);
+                        if (condition && !cgs.jmpIFalse ||
+                            !condition && cgs.jmpIFalse)
+                        {
+                            index = labelToIndex[cgs.label];
+                        }
+                        else
+                        {
+                            index++;
+                        }
+                        
+                        break;
+                    }
+                    case BoundNodeType.GotoStatement:
+                    {
+                        BoundGotoStatement gs = (BoundGotoStatement)statement;
+
+                        index = labelToIndex[gs.label];
+                        break;
+                    }
+                    case BoundNodeType.LabelStatement:
+                        index++;
+                        break;
+                    default:
+                        throw new Exception($"Unexpected node {statement.boundType}");
+                }
+            }
+
             return lastValue;
-        }
-
-        private void InterpretStatement(BoundStatement statement)
-        {
-            switch (statement.boundType)
-            {
-                case BoundNodeType.BlockStatement:
-                    InterpretBlockStatement((BoundBlockStatement)statement);
-                    break;
-                case BoundNodeType.ExpressionStatement:
-                    InterpretExpressionStatement((BoundExpressionStatement)statement);
-                    break;
-                case BoundNodeType.VariableDeclarationStatement:
-                    InterpretVariableDeclarationStatement((BoundVariableDeclarationStatement)statement);
-                    break;
-                case BoundNodeType.IfStatement:
-                    InterpretIfStatement((BoundIfStatement)statement);
-                    break;
-                case BoundNodeType.WhileStatement:
-                    InterpretWhileStatement((BoundWhileStatement)statement);
-                    break;
-                case BoundNodeType.ForStatement:
-                    InterpretForStatement((BoundForStatement)statement);
-                    break;
-                default:
-                    throw new Exception($"Unexpected node {statement.boundType}");
-            }
-        }
-
-        private void InterpretForStatement(BoundForStatement statement)
-        {
-            var startExpression = (int)InterpretExpression(statement.startExpression);
-            var endExpression = (int)InterpretExpression(statement.endExpression);
-
-            for (int i = startExpression; i < endExpression; i++)
-            {
-                variables[statement.variable] = i;
-                InterpretStatement(statement.body);
-            }
-        }
-
-        private void InterpretWhileStatement(BoundWhileStatement statement)
-        {
-            while ((bool)InterpretExpression(statement.condition))
-            {
-                InterpretStatement(statement.body);
-            }
-        }
-
-        private void InterpretIfStatement(BoundIfStatement statement)
-        {
-            bool condition = (bool)InterpretExpression(statement.condition);
-            if (condition)
-            {
-                InterpretStatement(statement.body);
-            }
-            else if (statement.elseBody != null)
-            {
-                InterpretStatement(statement.elseBody);
-            }
         }
 
         private void InterpretVariableDeclarationStatement(BoundVariableDeclarationStatement statement)
@@ -93,14 +86,6 @@ namespace IllusionScript.Runtime.Interpreting
             object value = InterpretExpression(statement.initializer);
             variables[statement.variable] = value;
             lastValue = value;
-        }
-
-        private void InterpretBlockStatement(BoundBlockStatement statement)
-        {
-            foreach (BoundStatement boundStatement in statement.statements)
-            {
-                InterpretStatement(boundStatement);
-            }
         }
 
         private void InterpretExpressionStatement(BoundExpressionStatement statement)

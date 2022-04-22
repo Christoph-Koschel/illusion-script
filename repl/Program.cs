@@ -6,6 +6,7 @@ using IllusionScript.Runtime;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Interpreting;
 using IllusionScript.Runtime.Interpreting.Memory;
+using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 using IllusionScript.Runtime.Parsing;
 
 namespace IllusionScript
@@ -15,6 +16,7 @@ namespace IllusionScript
         public static void Main(string[] args)
         {
             bool showTree = true;
+            bool showProgram = true;
             StringBuilder textBuilder = new StringBuilder();
             Dictionary<VariableSymbol, object> variables = new Dictionary<VariableSymbol, object>();
             Compilation previous = null;
@@ -42,6 +44,10 @@ namespace IllusionScript
                             showTree = !showTree;
                             Console.WriteLine($"$showTree has set to {showTree}");
                             continue;
+                        case "#showprogram":
+                            showProgram = !showProgram;
+                            Console.WriteLine($"$showProgram has set to {showProgram}");
+                            continue;
                         case "#cls":
                             Console.Clear();
                             Console.WriteLine("Console cleared");
@@ -67,7 +73,6 @@ namespace IllusionScript
                     : previous.ContinueWith(syntaxThree);
 
                 previous = compilation;
-                InterpreterResult result = compilation.Interpret(variables);
 
                 if (showTree)
                 {
@@ -76,6 +81,12 @@ namespace IllusionScript
 
                     Console.ResetColor();
                 }
+                if (showProgram)
+                {
+                    compilation.EmitTree(Console.Out);
+                }
+
+                InterpreterResult result = compilation.Interpret(variables);
 
                 if (!result.diagnostics.Any())
                 {

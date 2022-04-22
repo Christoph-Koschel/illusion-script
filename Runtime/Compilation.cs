@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using IllusionScript.Runtime.Binding;
+using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Interpreting;
 using IllusionScript.Runtime.Interpreting.Memory;
+using IllusionScript.Runtime.Interpreting.Memory.Symbols;
+using IllusionScript.Runtime.Lowering;
 using IllusionScript.Runtime.Parsing;
 
 namespace IllusionScript.Runtime
@@ -48,7 +52,7 @@ namespace IllusionScript.Runtime
         }
 
         public InterpreterResult Interpret(Dictionary<VariableSymbol, object> variables)
-        { 
+        {
             ImmutableArray<Diagnostic> diagnostics =
                 syntaxTree.diagnostics.Concat(GlobalScope.diagnostics).ToImmutableArray();
             if (diagnostics.Any())
@@ -56,10 +60,23 @@ namespace IllusionScript.Runtime
                 return new InterpreterResult(diagnostics, null);
             }
 
-            Interpreter interpreter = new Interpreter(GlobalScope.expression, variables);
+            BoundBlockStatement statement = GetStatement();
+            Interpreter interpreter = new Interpreter(statement, variables);
             object value = interpreter.Interpret();
 
             return new InterpreterResult(Array.Empty<Diagnostic>(), value);
+        }
+
+        public void EmitTree(TextWriter writer)
+        {
+            BoundStatement expression = GetStatement();
+            expression.WriteTo(writer);
+        }
+
+        private BoundBlockStatement GetStatement()
+        {
+            BoundStatement result = GlobalScope.statement;
+            return Lowerer.Lower(result);
         }
     }
 }
