@@ -15,6 +15,7 @@ namespace IllusionScript
         public static void Main(string[] args)
         {
             bool showTree = true;
+            bool showProgram = true;
             StringBuilder textBuilder = new StringBuilder();
             Dictionary<VariableSymbol, object> variables = new Dictionary<VariableSymbol, object>();
             Compilation previous = null;
@@ -41,6 +42,10 @@ namespace IllusionScript
                         case "#showtree":
                             showTree = !showTree;
                             Console.WriteLine($"$showTree has set to {showTree}");
+                            continue;
+                        case "#showprogram":
+                            showProgram = !showProgram;
+                            Console.WriteLine($"$showProgram has set to {showProgram}");
                             continue;
                         case "#cls":
                             Console.Clear();
@@ -75,6 +80,10 @@ namespace IllusionScript
                     Console.Write("\n");
 
                     Console.ResetColor();
+                }
+                if (showProgram)
+                {
+                    compilation.EmitTree(Console.Out);
                 }
 
                 if (!result.diagnostics.Any())

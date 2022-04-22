@@ -11,14 +11,14 @@ namespace IllusionScript.Runtime.Interpreting.Memory
         public readonly GlobalScope previous;
         public readonly ImmutableArray<Diagnostic> diagnostics;
         public readonly ImmutableArray<VariableSymbol> variables;
-        public readonly BoundStatement expression;
+        public readonly BoundStatement statement;
 
-        public GlobalScope(GlobalScope previous, ImmutableArray<Diagnostic> diagnostics, ImmutableArray<VariableSymbol> variables, BoundStatement expression)
+        public GlobalScope(GlobalScope previous, ImmutableArray<Diagnostic> diagnostics, ImmutableArray<VariableSymbol> variables, BoundStatement statement)
         {
             this.previous = previous;
             this.diagnostics = diagnostics;
             this.variables = variables;
-            this.expression = expression;
+            this.statement = statement;
         }
     }
 }

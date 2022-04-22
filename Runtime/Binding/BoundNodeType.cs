@@ -8,10 +8,6 @@
         BinaryExpression,
         VariableExpression,
         AssignmentExpression,
-        ErrorExpression,
-        ConversionExpression,
-        CompoundAssignmentExpression,
-        CallExpression,
         
         // Statements
         BlockStatement,

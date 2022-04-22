@@ -5,9 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using IllusionScript.Runtime.Binding;
+using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Interpreting;
 using IllusionScript.Runtime.Interpreting.Memory;
+using IllusionScript.Runtime.Lowering;
 using IllusionScript.Runtime.Parsing;
 
 namespace IllusionScript.Runtime
@@ -57,7 +59,8 @@ namespace IllusionScript.Runtime
                 return new InterpreterResult(diagnostics, null);
             }
 
-            Interpreter interpreter = new Interpreter(GlobalScope.expression, variables);
+            BoundStatement statement = GetStatement();
+            Interpreter interpreter = new Interpreter(statement, variables);
             object value = interpreter.Interpret();
 
             return new InterpreterResult(Array.Empty<Diagnostic>(), value);
@@ -65,7 +68,14 @@ namespace IllusionScript.Runtime
 
         public void EmitTree(TextWriter writer)
         {
-            GlobalScope.expression.WriteTo(writer);
+            BoundStatement expression = GetStatement();
+            expression.WriteTo(writer);
+        }
+
+        private BoundStatement GetStatement()
+        {
+            BoundStatement result = GlobalScope.statement;
+            return Lowerer.Lower(result);
         }
     }
 }
