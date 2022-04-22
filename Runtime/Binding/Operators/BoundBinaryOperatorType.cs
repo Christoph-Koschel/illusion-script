@@ -19,10 +19,12 @@
         BitwiseAnd,
         BitwiseOr,
         BitwiseXor,
+        BitwiseShiftLeft,
+        BitwiseShiftRight,
         
         Less,
         LessEquals,
         Greater,
-        GreaterEquals
+        GreaterEquals,
     }
 }

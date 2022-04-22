@@ -101,8 +101,8 @@ namespace IllusionScript.Runtime.Test.Parsing
         [MemberData(nameof(GetUnaryOperatorPairsData))]
         public void ParserUnaryExpressionPrecedences(SyntaxType unaryType, SyntaxType binaryType)
         {
-            var unaryText = SyntaxFacts.GetText(unaryType);
-            var binaryText = SyntaxFacts.GetText(binaryType);
+            string? unaryText = SyntaxFacts.GetText(unaryType);
+            string? binaryText = SyntaxFacts.GetText(binaryType);
             string text = $"{unaryText} 1 {binaryText} 2";
             Expression expression = ParseExpression(text);
 
@@ -139,9 +139,9 @@ namespace IllusionScript.Runtime.Test.Parsing
 
         public static IEnumerable<object[]> GetBinaryOperatorPairsData()
         {
-            foreach (var op1 in GetBinaryOperatorTypes())
+            foreach (SyntaxType op1 in GetBinaryOperatorTypes())
             {
-                foreach (var op2 in GetBinaryOperatorTypes())
+                foreach (SyntaxType op2 in GetBinaryOperatorTypes())
                 {
                     yield return new object[] { op1, op2 };
                 }
@@ -150,9 +150,9 @@ namespace IllusionScript.Runtime.Test.Parsing
 
         public static IEnumerable<object[]> GetUnaryOperatorPairsData()
         {
-            foreach (var unary in GetUnaryOperatorTypes())
+            foreach (SyntaxType unary in GetUnaryOperatorTypes())
             {
-                foreach (var binary in GetBinaryOperatorTypes())
+                foreach (SyntaxType binary in GetBinaryOperatorTypes())
                 {
                     yield return new object[] { unary, binary };
                 }

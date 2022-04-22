@@ -30,14 +30,21 @@ namespace IllusionScript.Runtime.Parsing.Nodes
             {
                 if (typeof(Node).IsAssignableFrom(field.FieldType))
                 {
-                    yield return (Node)field.GetValue(this);
+                    Node child = (Node)field.GetValue(this);
+                    if (child != null)
+                    {
+                        yield return child;
+                    }
                 }
                 else if (typeof(IEnumerable<Node>).IsAssignableFrom(field.FieldType))
                 {
                     IEnumerable<Node> children = (IEnumerable<Node>)field.GetValue(this);
                     foreach (Node child in children)
                     {
-                        yield return child;
+                        if (child != null)
+                        {
+                            yield return child;
+                        }
                     }
                 }
             }

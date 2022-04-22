@@ -41,8 +41,50 @@ namespace IllusionScript.Runtime.Interpreting
                 case BoundNodeType.VariableDeclarationStatement:
                     InterpretVariableDeclarationStatement((BoundVariableDeclarationStatement)statement);
                     break;
+                case BoundNodeType.IfStatement:
+                    InterpretIfStatement((BoundIfStatement)statement);
+                    break;
+                case BoundNodeType.WhileStatement:
+                    InterpretWhileStatement((BoundWhileStatement)statement);
+                    break;
+                case BoundNodeType.ForStatement:
+                    InterpretForStatement((BoundForStatement)statement);
+                    break;
                 default:
                     throw new Exception($"Unexpected node {statement.boundType}");
+            }
+        }
+
+        private void InterpretForStatement(BoundForStatement statement)
+        {
+            var startExpression = (int)InterpretExpression(statement.startExpression);
+            var endExpression = (int)InterpretExpression(statement.endExpression);
+
+            for (int i = startExpression; i < endExpression; i++)
+            {
+                variables[statement.variable] = i;
+                InterpretStatement(statement.body);
+            }
+        }
+
+        private void InterpretWhileStatement(BoundWhileStatement statement)
+        {
+            while ((bool)InterpretExpression(statement.condition))
+            {
+                InterpretStatement(statement.body);
+            }
+        }
+
+        private void InterpretIfStatement(BoundIfStatement statement)
+        {
+            bool condition = (bool)InterpretExpression(statement.condition);
+            if (condition)
+            {
+                InterpretStatement(statement.body);
+            }
+            else if (statement.elseBody != null)
+            {
+                InterpretStatement(statement.elseBody);
             }
         }
 
@@ -165,6 +207,10 @@ namespace IllusionScript.Runtime.Interpreting
                     {
                         return (bool)left ^ (bool)right;
                     }
+                case BoundBinaryOperatorType.BitwiseShiftLeft:
+                    return (int)left << (int)right;
+                case BoundBinaryOperatorType.BitwiseShiftRight:
+                    return (int)left >> (int)right;
                 case BoundBinaryOperatorType.Less:
                     return (int)left < (int)right;
                 case BoundBinaryOperatorType.LessEquals:

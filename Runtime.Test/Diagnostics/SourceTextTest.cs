@@ -13,7 +13,7 @@ namespace IllusionScript.Runtime.Test.Diagnostics
             [InlineData(".\r\n\r\n", 3)]
             public void SourceTextIncludesLastLine(string text, int expectedLineCount)
             {
-                var sourceText = SourceText.From(text);
+                SourceText sourceText = SourceText.From(text);
                 Assert.Equal(expectedLineCount, sourceText.lines.Length);
             }
         }

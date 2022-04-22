@@ -40,6 +40,9 @@
         HatToken,
         HatEqualsToken,
         
+        DoubleGreaterToken,
+        DoubleLessToken,
+        
         // Logical Tokens
         LessToken,
         LessEqualsToken,
@@ -96,6 +99,10 @@
         BlockStatement,
         ExpressionStatement,
         FunctionDeclarationStatement,
-        VariableDeclarationStatement
+        VariableDeclarationStatement,
+        IfStatement,
+        ElseClause,
+        WhileStatement,
+        ForStatement
     }
 }

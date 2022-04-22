@@ -68,7 +68,7 @@ namespace IllusionScript.Runtime.Diagnostics
 
         public void ReportCannotConvert(TextSpan span, Type type1, Type type2)
         {
-            string message = $"ERROR: Cannot convert type '{type1}' to {type2}";
+            string message = $"ERROR: Cannot convert type '{type1}' to '{type2}'";
             Report(span, message);
         }
 

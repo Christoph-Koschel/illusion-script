@@ -319,6 +319,21 @@ namespace IllusionScript.Runtime.Test.Lexing
                 return true;
             }
 
+            if (t1Type == SyntaxType.LessToken && t2Type == SyntaxType.DoubleLessToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.LessToken && t2Type == SyntaxType.LessEqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.LessToken && t2Type == SyntaxType.LessToken)
+            {
+                return true;
+            }
+
             if (t1Type == SyntaxType.EqualsToken && t2Type == SyntaxType.EqualsToken)
             {
                 return true;
@@ -335,6 +350,21 @@ namespace IllusionScript.Runtime.Test.Lexing
             }
 
             if (t1Type == SyntaxType.GreaterToken && t2Type == SyntaxType.DoubleEqualsToken)
+            {
+                return true;
+            }
+
+            if (t1Type == SyntaxType.GreaterToken && t2Type == SyntaxType.DoubleGreaterToken)
+            {
+                return true;
+            }
+            
+            if (t1Type == SyntaxType.GreaterToken && t2Type == SyntaxType.GreaterEqualsToken)
+            {
+                return true;
+            }
+            
+            if (t1Type == SyntaxType.GreaterToken && t2Type == SyntaxType.GreaterToken)
             {
                 return true;
             }

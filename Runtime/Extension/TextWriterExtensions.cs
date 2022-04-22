@@ -38,7 +38,7 @@ namespace IllusionScript.Runtime.Extension
 
         public static void WriteKeyword(this TextWriter writer, SyntaxType type)
         {
-            var text = Lexer.GetText(type);
+            string? text = Lexer.GetText(type);
             // Debug.Assert(Lexer.IsKeyword(type) && text != null);
 
             writer.WriteKeyword(text);
@@ -79,7 +79,7 @@ namespace IllusionScript.Runtime.Extension
 
         public static void WritePunctuation(this TextWriter writer, SyntaxType kind)
         {
-            var text = Lexer.GetText(kind);
+            string? text = Lexer.GetText(kind);
             Debug.Assert(text != null);
 
             writer.WritePunctuation(text);

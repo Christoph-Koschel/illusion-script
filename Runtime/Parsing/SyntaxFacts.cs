@@ -30,6 +30,8 @@ namespace IllusionScript.Runtime.Parsing
                 case SyntaxType.AndToken:
                 case SyntaxType.DoubleAndToken:
                     return 2;
+                case SyntaxType.DoubleLessToken:
+                case SyntaxType.DoubleGreaterToken:
                 case SyntaxType.SplitToken:
                 case SyntaxType.DoubleSplitToken:
                 case SyntaxType.HatToken:
@@ -149,10 +151,14 @@ namespace IllusionScript.Runtime.Parsing
                     return "<";
                 case SyntaxType.LessEqualsToken:
                     return "<=";
+                case SyntaxType.DoubleLessToken:
+                    return "<<";
                 case SyntaxType.GreaterToken:
                     return ">";
                 case SyntaxType.GreaterEqualsToken:
                     return ">=";
+                case SyntaxType.DoubleGreaterToken:
+                    return ">>";
                 case SyntaxType.AndToken:
                     return "&";
                 case SyntaxType.DoubleAndToken:

@@ -80,8 +80,61 @@ namespace IllusionScript.Runtime.Parsing
             {
                 SyntaxType.LBraceToken => ParseBlockStatement(),
                 SyntaxType.LetKeyword or SyntaxType.ConstKeyword => ParseVariableDeclaration(),
+                SyntaxType.IfKeyword => ParseIfStatement(),
+                SyntaxType.WhileKeyword => ParseWhileStatement(),
+                SyntaxType.ForKeyword => ParseForStatement(),
                 _ => ParseExpressionStatement()
             };
+        }
+
+        private Statement ParseForStatement()
+        {
+            Token keyword = Match(SyntaxType.ForKeyword);
+            Token lParen = Match(SyntaxType.LParenToken);
+            Token identifier = Match(SyntaxType.IdentifierToken);
+            Token equalsToken = Match(SyntaxType.EqualsToken);
+            Expression startExpression = ParseExpression();
+            Token toKeyword = Match(SyntaxType.ToKeyword);
+            Expression endExpression = ParseExpression();
+            Token rParen = Match(SyntaxType.RParenToken);
+            Statement body = ParseStatement();
+
+            return new ForStatement(keyword, lParen, identifier, equalsToken, startExpression, toKeyword, endExpression, rParen, body);
+        }
+
+        private Statement ParseWhileStatement()
+        {
+            Token keyword = Match(SyntaxType.WhileKeyword);
+            Token lParen = Match(SyntaxType.LParenToken);
+            Expression condition = ParseExpression();
+            Token rParen = Match(SyntaxType.RParenToken);
+            Statement body = ParseStatement();
+
+            return new WhileStatement(keyword, lParen, condition, rParen, body);
+        }
+
+        private Statement ParseIfStatement()
+        {
+            Token keyword = Match(SyntaxType.IfKeyword);
+            Token lParen = Match(SyntaxType.LParenToken);
+            Expression condition = ParseExpression();
+            Token rParen = Match(SyntaxType.RParenToken);
+            Statement statement = ParseStatement();
+            ElseClause elseClause = ParseElseClause();
+
+            return new IfStatement(keyword, lParen, condition, rParen, statement, elseClause);
+        }
+
+        private ElseClause ParseElseClause()
+        {
+            if (current.type != SyntaxType.ElseKeyword)
+            {
+                return null;
+            }
+
+            Token keyword = NextToken();
+            Statement statement = ParseStatement();
+            return new ElseClause(keyword, statement);
         }
 
         private Statement ParseVariableDeclaration()

@@ -51,6 +51,8 @@ namespace IllusionScript.Runtime.Binding.Operators
             new(SyntaxType.AndToken, BoundBinaryOperatorType.BitwiseAnd, typeof(int)),
             new(SyntaxType.SplitToken, BoundBinaryOperatorType.BitwiseOr, typeof(int)),
             new(SyntaxType.HatToken, BoundBinaryOperatorType.BitwiseXor, typeof(int)),
+            new(SyntaxType.DoubleLessToken, BoundBinaryOperatorType.BitwiseShiftLeft, typeof(int)),
+            new(SyntaxType.DoubleGreaterToken, BoundBinaryOperatorType.BitwiseShiftRight, typeof(int)),
 
             new(SyntaxType.DoubleEqualsToken, BoundBinaryOperatorType.Equals, typeof(int), typeof(bool)),
             new(SyntaxType.BangEqualsToken, BoundBinaryOperatorType.NotEquals, typeof(int), typeof(bool)),
