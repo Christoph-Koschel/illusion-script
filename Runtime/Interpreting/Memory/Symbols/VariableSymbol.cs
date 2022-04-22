@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace IllusionScript.Runtime.Interpreting.Memory
+namespace IllusionScript.Runtime.Interpreting.Memory.Symbols
 {
     public sealed class VariableSymbol
     {

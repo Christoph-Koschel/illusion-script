@@ -23,9 +23,36 @@ namespace IllusionScript.Runtime.Binding
                     return RewriteWhileStatement((BoundWhileStatement)node);
                 case BoundNodeType.ForStatement:
                     return RewriteForStatement((BoundForStatement)node);
+                case BoundNodeType.GotoStatement:
+                    return RewriteGotoStatement((BoundGotoStatement)node);
+                case BoundNodeType.ConditionalGotoStatement:
+                    return RewriteConditionalGotoStatement((BoundConditionalGotoStatement)node);
+                case BoundNodeType.LabelStatement:
+                    return RewriteLabelStatement((BoundLabelStatement)node);
                 default:
                     throw new Exception($"Unexpected node: {node.boundType}");
             }
+        }
+
+        protected virtual BoundStatement RewriteLabelStatement(BoundLabelStatement node)
+        {
+            return node;
+        }
+
+        protected virtual BoundStatement RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)
+        {
+            BoundExpression condition = RewriteExpression(node.condition);
+            if (condition == node.condition)
+            {
+                return node;
+            }
+
+            return new BoundConditionalGotoStatement(node.label, condition, node.jmpIFalse);
+        }
+
+        protected virtual BoundStatement RewriteGotoStatement(BoundGotoStatement node)
+        {
+            return node;
         }
 
         protected virtual BoundStatement RewriteForStatement(BoundForStatement node)

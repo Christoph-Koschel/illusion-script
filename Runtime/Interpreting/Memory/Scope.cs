@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 
 namespace IllusionScript.Runtime.Interpreting.Memory
 {

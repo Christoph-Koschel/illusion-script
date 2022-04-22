@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Interpreting;
 using IllusionScript.Runtime.Interpreting.Memory;
+using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 using IllusionScript.Runtime.Parsing;
 using Xunit;
 using Xunit.Abstractions;

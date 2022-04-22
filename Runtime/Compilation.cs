@@ -9,6 +9,7 @@ using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Interpreting;
 using IllusionScript.Runtime.Interpreting.Memory;
+using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 using IllusionScript.Runtime.Lowering;
 using IllusionScript.Runtime.Parsing;
 
@@ -59,7 +60,7 @@ namespace IllusionScript.Runtime
                 return new InterpreterResult(diagnostics, null);
             }
 
-            BoundStatement statement = GetStatement();
+            BoundBlockStatement statement = GetStatement();
             Interpreter interpreter = new Interpreter(statement, variables);
             object value = interpreter.Interpret();
 
@@ -72,7 +73,7 @@ namespace IllusionScript.Runtime
             expression.WriteTo(writer);
         }
 
-        private BoundStatement GetStatement()
+        private BoundBlockStatement GetStatement()
         {
             BoundStatement result = GlobalScope.statement;
             return Lowerer.Lower(result);

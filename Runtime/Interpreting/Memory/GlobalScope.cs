@@ -3,6 +3,7 @@ using IllusionScript.Runtime.Binding.Nodes;
 using IllusionScript.Runtime.Binding.Nodes.Expressions;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Diagnostics;
+using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 
 namespace IllusionScript.Runtime.Interpreting.Memory
 {

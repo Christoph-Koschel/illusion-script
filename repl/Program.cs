@@ -6,6 +6,7 @@ using IllusionScript.Runtime;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Interpreting;
 using IllusionScript.Runtime.Interpreting.Memory;
+using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 using IllusionScript.Runtime.Parsing;
 
 namespace IllusionScript
@@ -72,7 +73,6 @@ namespace IllusionScript
                     : previous.ContinueWith(syntaxThree);
 
                 previous = compilation;
-                InterpreterResult result = compilation.Interpret(variables);
 
                 if (showTree)
                 {
@@ -85,6 +85,8 @@ namespace IllusionScript
                 {
                     compilation.EmitTree(Console.Out);
                 }
+
+                InterpreterResult result = compilation.Interpret(variables);
 
                 if (!result.diagnostics.Any())
                 {

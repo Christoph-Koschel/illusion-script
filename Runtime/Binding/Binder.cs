@@ -6,6 +6,7 @@ using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Binding.Operators;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Interpreting.Memory;
+using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 using IllusionScript.Runtime.Parsing;
 using IllusionScript.Runtime.Parsing.Nodes;
 using IllusionScript.Runtime.Parsing.Nodes.Expressions;
