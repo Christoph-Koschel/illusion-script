@@ -31,7 +31,7 @@ namespace IllusionScript.Runtime.Binding.Operators
         {
         }
 
-        private static BoundBinaryOperator[] operators = 
+        private static BoundBinaryOperator[] operators =
         {
             new(SyntaxType.PlusToken, BoundBinaryOperatorType.Addition, typeof(int)),
             new(SyntaxType.MinusToken, BoundBinaryOperatorType.Subtraction, typeof(int)),

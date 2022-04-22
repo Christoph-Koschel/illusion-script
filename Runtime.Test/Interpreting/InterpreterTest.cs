@@ -5,11 +5,19 @@ using IllusionScript.Runtime.Interpreting;
 using IllusionScript.Runtime.Interpreting.Memory;
 using IllusionScript.Runtime.Parsing;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace IllusionScript.Runtime.Test.Interpreting
 {
     public class InterpreterTest
     {
+        private readonly ITestOutputHelper testOutputHelper;
+
+        public InterpreterTest(ITestOutputHelper testOutputHelper)
+        {
+            this.testOutputHelper = testOutputHelper;
+        }
+
         [Theory]
         [InlineData("1", 1)]
         [InlineData("+1", 1)]
@@ -265,6 +273,33 @@ namespace IllusionScript.Runtime.Test.Interpreting
 
             AssertDiagnostics(text, diagnostics);
         }
+        
+        [Fact]
+        public void InterpreterNoInfiniteLoop()
+        {
+            string text = @"
+            {
+            [)][]
+            ";
+
+            string diagnostics = @"
+                ERROR: Unexpected token <RParenToken>, expected <IdentifierToken>
+                ERROR: Unexpected token <EOFToken>, expected <RBraceToken> infinite
+            ";
+            AssertDiagnostics(text, diagnostics);
+        }
+        
+        [Fact]
+        public void InterpreterErrorForInsertedToken()
+        {
+            string text = @"[]";
+
+            string diagnostics = @"
+              ERROR: Unexpected token <EOFToken>, expected <IdentifierToken>
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
 
         private void AssertDiagnostics(string text, string diagnosticsText)
         {
@@ -279,6 +314,11 @@ namespace IllusionScript.Runtime.Test.Interpreting
                 throw new Exception("ERROR: Must mark as many spans as there are expected diagnostics");
             }
 
+            foreach (Diagnostic diagnostic in result.diagnostics)
+            {
+                testOutputHelper.WriteLine(diagnostic.message);
+            }
+            
             Assert.Equal(diagnostics.Length, result.diagnostics.Length);
 
             for (int i = 0; i < diagnostics.Length; i++)

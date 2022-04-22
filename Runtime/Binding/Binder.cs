@@ -51,7 +51,7 @@ namespace IllusionScript.Runtime.Binding
             var endExpression = BindExpression(syntax.endExpression, typeof(int));
 
             scope = new Scope(scope);
-            
+
             var name = syntax.identifier.text;
             var variable = new VariableSymbol(name, true, typeof(int));
             if (!scope.TryDeclare(variable))
@@ -196,6 +196,10 @@ namespace IllusionScript.Runtime.Binding
         private BoundExpression BindNameExpression(NameExpression syntax)
         {
             string name = syntax.identifier.text;
+            if (string.IsNullOrEmpty(name))
+            {
+                return new BoundLiteralExpression(0);
+            }
 
             if (!scope.TryLookup(name, out VariableSymbol variable))
             {

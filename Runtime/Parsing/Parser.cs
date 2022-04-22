@@ -153,11 +153,17 @@ namespace IllusionScript.Runtime.Parsing
             ImmutableArray<Statement>.Builder statements = ImmutableArray.CreateBuilder<Statement>();
 
             Token lBrace = Match(SyntaxType.LBraceToken);
-
             while (current.type != SyntaxType.EOFToken && current.type != SyntaxType.RBraceToken)
             {
+                Token startToken = current;
+                
                 Statement statement = ParseStatement();
                 statements.Add(statement);
+
+                if (current == startToken)
+                {
+                    NextToken();
+                }
             }
 
             Token rBrace = Match(SyntaxType.RBraceToken);
@@ -244,11 +250,11 @@ namespace IllusionScript.Runtime.Parsing
                 case SyntaxType.FalseKeyword:
                 case SyntaxType.TrueKeyword:
                     return ParseBooleanLiteral();
-                case SyntaxType.IdentifierToken:
-                    return ParseNameExpression();
                 case SyntaxType.NumberToken:
-                default:
                     return ParseNumberLiteral();
+                case SyntaxType.IdentifierToken:
+                default:
+                    return ParseNameExpression();
             }
         }
 
