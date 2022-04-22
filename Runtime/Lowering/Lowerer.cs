@@ -58,7 +58,7 @@ namespace IllusionScript.Runtime.Lowering
 
             return new BoundBlockStatement(builder.ToImmutable());
         }
-        
+
         protected override BoundStatement RewriteIfStatement(BoundIfStatement node)
         {
             if (node.elseBody == null)
@@ -78,7 +78,7 @@ namespace IllusionScript.Runtime.Lowering
                 LabelSymbol endLabel = GenerateLabel();
 
                 BoundConditionalGotoStatement gotoEnd =
-                    new BoundConditionalGotoStatement(endLabel, node.condition, true);
+                    new BoundConditionalGotoStatement(endLabel, node.condition, false);
                 BoundLabelStatement endLabelStatement = new BoundLabelStatement(endLabel);
                 BoundBlockStatement result =
                     new BoundBlockStatement(
@@ -109,7 +109,7 @@ namespace IllusionScript.Runtime.Lowering
                 LabelSymbol endLabel = GenerateLabel();
 
                 BoundConditionalGotoStatement gotoFalse =
-                    new BoundConditionalGotoStatement(elseLabel, node.condition, true);
+                    new BoundConditionalGotoStatement(elseLabel, node.condition, false);
                 BoundGotoStatement gotoEnd =
                     new BoundGotoStatement(endLabel);
                 BoundLabelStatement elseLabelStatement = new BoundLabelStatement(elseLabel);
@@ -174,12 +174,13 @@ namespace IllusionScript.Runtime.Lowering
         {
             /*
              * Before:
-             * for (i = 0 to 10) { <body> }
+             * for (i = <start> to <end>) { <body> }
              *
              * After:
              * {
-             *      let i = 0
-             *      while(i < 10)
+             *      let i = <start>
+             *      let end = <end>
+             *      while(i < end)
              *      {
              *          {
              *              <body>
@@ -192,10 +193,13 @@ namespace IllusionScript.Runtime.Lowering
             BoundVariableDeclarationStatement variableDeclaration =
                 new BoundVariableDeclarationStatement(node.variable, node.startExpression);
             BoundVariableExpression variableExpression = new BoundVariableExpression(node.variable);
+            var endBoundSymbol = new VariableSymbol("__while__end__", true, typeof(int));
+            var endDeclaration = new BoundVariableDeclarationStatement(endBoundSymbol, node.endExpression);
             BoundBinaryExpression condition = new BoundBinaryExpression(
                 variableExpression,
                 BoundBinaryOperator.Bind(SyntaxType.LessToken, typeof(int), typeof(int)),
-                node.endExpression);
+                new BoundVariableExpression(endBoundSymbol)
+            );
 
             BoundExpressionStatement increment = new BoundExpressionStatement(
                 new BoundAssignmentExpression(
@@ -212,7 +216,11 @@ namespace IllusionScript.Runtime.Lowering
                 new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(node.body, increment));
             BoundWhileStatement whileStatement = new BoundWhileStatement(condition, whileBlock);
             BoundBlockStatement result =
-                new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(variableDeclaration, whileStatement));
+                new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
+                    variableDeclaration,
+                    endDeclaration,
+                    whileStatement
+                ));
 
             return RewriteStatement(result);
         }

@@ -7,13 +7,13 @@ namespace IllusionScript.Runtime.Binding.Nodes.Statements
     {
         public readonly LabelSymbol label;
         public readonly BoundExpression condition;
-        public readonly bool jmpIFalse;
+        public readonly bool JmpIfTrue;
 
-        public BoundConditionalGotoStatement(LabelSymbol label, BoundExpression condition, bool jmpIFalse = false)
+        public BoundConditionalGotoStatement(LabelSymbol label, BoundExpression condition, bool jmpIfTrue = true)
         {
             this.label = label;
             this.condition = condition;
-            this.jmpIFalse = jmpIFalse;
+            this.JmpIfTrue = jmpIfTrue;
         }
 
         public override BoundNodeType boundType => BoundNodeType.ConditionalGotoStatement;
