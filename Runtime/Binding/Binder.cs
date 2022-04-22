@@ -38,9 +38,31 @@ namespace IllusionScript.Runtime.Binding
                     return BindIfStatement((IfStatement)syntax);
                 case SyntaxType.WhileStatement:
                     return BindWhileStatement((WhileStatement)syntax);
+                case SyntaxType.ForStatement:
+                    return BindForStatement((ForStatement)syntax);
                 default:
                     throw new Exception($"Unexpected syntax {syntax.type}");
             }
+        }
+
+        private BoundStatement BindForStatement(ForStatement syntax)
+        {
+            var startExpression = BindExpression(syntax.startExpression, typeof(int));
+            var endExpression = BindExpression(syntax.endExpression, typeof(int));
+
+            scope = new Scope(scope);
+            
+            var name = syntax.identifier.text;
+            var variable = new VariableSymbol(name, true, typeof(int));
+            if (!scope.TryDeclare(variable))
+            {
+                diagnostics.ReportVariableAlreadyDeclared(syntax.identifier.span, name);
+            }
+
+            BoundStatement body = BindStatement(syntax.body);
+
+            scope = scope.parent;
+            return new BoundForStatement(variable, startExpression, endExpression, body);
         }
 
         private BoundStatement BindWhileStatement(WhileStatement syntax)

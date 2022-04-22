@@ -82,8 +82,24 @@ namespace IllusionScript.Runtime.Parsing
                 SyntaxType.LetKeyword or SyntaxType.ConstKeyword => ParseVariableDeclaration(),
                 SyntaxType.IfKeyword => ParseIfStatement(),
                 SyntaxType.WhileKeyword => ParseWhileStatement(),
+                SyntaxType.ForKeyword => ParseForStatement(),
                 _ => ParseExpressionStatement()
             };
+        }
+
+        private Statement ParseForStatement()
+        {
+            Token keyword = Match(SyntaxType.ForKeyword);
+            Token lParen = Match(SyntaxType.LParenToken);
+            Token identifier = Match(SyntaxType.IdentifierToken);
+            Token equalsToken = Match(SyntaxType.EqualsToken);
+            Expression startExpression = ParseExpression();
+            Token toKeyword = Match(SyntaxType.ToKeyword);
+            Expression endExpression = ParseExpression();
+            Token rParen = Match(SyntaxType.RParenToken);
+            Statement body = ParseStatement();
+
+            return new ForStatement(keyword, lParen, identifier, equalsToken, startExpression, toKeyword, endExpression, rParen, body);
         }
 
         private Statement ParseWhileStatement()

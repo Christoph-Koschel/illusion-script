@@ -102,6 +102,7 @@
         VariableDeclarationStatement,
         IfStatement,
         ElseClause,
-        WhileStatement
+        WhileStatement,
+        ForStatement
     }
 }
