@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using IllusionScript.Runtime.Binding;
@@ -48,7 +49,7 @@ namespace IllusionScript.Runtime
         }
 
         public InterpreterResult Interpret(Dictionary<VariableSymbol, object> variables)
-        { 
+        {
             ImmutableArray<Diagnostic> diagnostics =
                 syntaxTree.diagnostics.Concat(GlobalScope.diagnostics).ToImmutableArray();
             if (diagnostics.Any())
@@ -60,6 +61,11 @@ namespace IllusionScript.Runtime
             object value = interpreter.Interpret();
 
             return new InterpreterResult(Array.Empty<Diagnostic>(), value);
+        }
+
+        public void EmitTree(TextWriter writer)
+        {
+            GlobalScope.expression.WriteTo(writer);
         }
     }
 }

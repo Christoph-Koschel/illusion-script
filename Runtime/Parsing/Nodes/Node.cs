@@ -61,25 +61,24 @@ namespace IllusionScript.Runtime.Parsing.Nodes
 
             string marker = isLast ? "└──" : "├──";
 
-            writer.Write(indent);
-
             if (isConsole)
             {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
             }
 
+            writer.Write(indent);
             writer.Write(marker);
 
             if (isConsole)
             {
-                Console.ForegroundColor = node is Token ? ConsoleColor.Blue : ConsoleColor.Cyan;
+                Console.ForegroundColor = node is Token ? ConsoleColor.DarkBlue : ConsoleColor.DarkCyan;
             }
 
             writer.Write(node.type);
 
             if (isConsole)
             {
-                Console.ForegroundColor = node is Token ? ConsoleColor.Blue : ConsoleColor.Cyan;
+                Console.ForegroundColor = node is Token ? ConsoleColor.DarkBlue : ConsoleColor.DarkCyan;
             }
 
             if (node is Token t && t.value != null)

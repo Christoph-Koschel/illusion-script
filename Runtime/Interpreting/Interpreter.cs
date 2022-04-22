@@ -57,8 +57,8 @@ namespace IllusionScript.Runtime.Interpreting
 
         private void InterpretForStatement(BoundForStatement statement)
         {
-            var startExpression = (int)InterpretExpression(statement.startExpression);
-            var endExpression = (int)InterpretExpression(statement.endExpression);
+            int startExpression = (int)InterpretExpression(statement.startExpression);
+            int endExpression = (int)InterpretExpression(statement.endExpression);
 
             for (int i = startExpression; i < endExpression; i++)
             {

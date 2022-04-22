@@ -47,13 +47,13 @@ namespace IllusionScript.Runtime.Binding
 
         private BoundStatement BindForStatement(ForStatement syntax)
         {
-            var startExpression = BindExpression(syntax.startExpression, typeof(int));
-            var endExpression = BindExpression(syntax.endExpression, typeof(int));
+            BoundExpression startExpression = BindExpression(syntax.startExpression, typeof(int));
+            BoundExpression endExpression = BindExpression(syntax.endExpression, typeof(int));
 
             scope = new Scope(scope);
 
-            var name = syntax.identifier.text;
-            var variable = new VariableSymbol(name, true, typeof(int));
+            string name = syntax.identifier.text;
+            VariableSymbol variable = new VariableSymbol(name, true, typeof(int));
             if (!scope.TryDeclare(variable))
             {
                 diagnostics.ReportVariableAlreadyDeclared(syntax.identifier.span, name);
