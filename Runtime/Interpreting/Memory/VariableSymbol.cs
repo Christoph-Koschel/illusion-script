@@ -14,5 +14,10 @@ namespace IllusionScript.Runtime.Interpreting.Memory
             this.isReadOnly = isReadOnly;
             this.type = type;
         }
+
+        public override string ToString()
+        {
+            return name;
+        }
     }
 }

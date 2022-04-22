@@ -81,7 +81,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         [InlineData("{ let a = 0 if (a == 0) a = 10 else a = 5 }", 10)]
         [InlineData("{ let a = 0 if (a == 4) a = 10 else a = 5 }", 5)]
         [InlineData("{ let a = 0 while (a != 4) a = a + 1 }", 4)]
-        [InlineData("{ let a = 0 for (i = 0 to 10) a = a + i}", 45)]
+        [InlineData("{ let a = 0 for (i = 1 to 10) { a = a + i } a }", 45)]
         public void InterpreterComputesCorrectValues(string text, object expectedValue)
         {
             AssertValue(text, expectedValue);
@@ -284,7 +284,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
 
             string diagnostics = @"
                 ERROR: Unexpected token <RParenToken>, expected <IdentifierToken>
-                ERROR: Unexpected token <EOFToken>, expected <RBraceToken> infinite
+                ERROR: Unexpected token <EOFToken>, expected <RBraceToken>
             ";
             AssertDiagnostics(text, diagnostics);
         }
