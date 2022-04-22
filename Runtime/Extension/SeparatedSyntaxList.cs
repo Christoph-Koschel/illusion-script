@@ -42,7 +42,7 @@ namespace IllusionScript.Runtime.Extension
 
         public IEnumerator<T> GetEnumerator()
         {
-            for (var i = 0; i < Length; i++)
+            for (int i = 0; i < Length; i++)
                 yield return this[i];
         }
 

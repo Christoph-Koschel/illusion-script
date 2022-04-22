@@ -34,15 +34,15 @@ namespace Runtime.Test
 
         private static IEnumerable<Node> Flatten(Node node)
         {
-            var stack = new Stack<Node>();
+            Stack<Node> stack = new Stack<Node>();
             stack.Push(node);
 
             while (stack.Count > 0)
             {
-                var n = stack.Pop();
+                Node n = stack.Pop();
                 yield return n;
 
-                foreach (var child in n.GetChildren().Reverse())
+                foreach (Node child in n.GetChildren().Reverse())
                     stack.Push(child);
             }
         }
@@ -67,7 +67,7 @@ namespace Runtime.Test
             {
                 Assert.True(enumerator.MoveNext());
                 Assert.Equal(type,enumerator.Current.type);
-                var token = Assert.IsType<Token>(enumerator.Current);
+                Token token = Assert.IsType<Token>(enumerator.Current);
                 Assert.Equal(text, token.text);
             }
             catch when (MarkFailed())

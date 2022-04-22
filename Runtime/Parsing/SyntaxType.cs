@@ -100,5 +100,7 @@
         ExpressionStatement,
         FunctionDeclarationStatement,
         VariableDeclarationStatement,
+        IfStatement,
+        ElseClause
     }
 }

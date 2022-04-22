@@ -41,8 +41,24 @@ namespace IllusionScript.Runtime.Interpreting
                 case BoundNodeType.VariableDeclarationStatement:
                     InterpretVariableDeclarationStatement((BoundVariableDeclarationStatement)statement);
                     break;
+                case BoundNodeType.IfStatement:
+                    InterpretIfStatement((BoundIfStatement)statement);
+                    break;
                 default:
                     throw new Exception($"Unexpected node {statement.boundType}");
+            }
+        }
+
+        private void InterpretIfStatement(BoundIfStatement statement)
+        {
+            bool condition = (bool)InterpretExpression(statement.condition);
+            if (condition)
+            {
+                InterpretStatement(statement.body);
+            }
+            else if (statement.elseBody != null)
+            {
+                InterpretStatement(statement.elseBody);
             }
         }
 

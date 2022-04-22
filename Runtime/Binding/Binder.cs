@@ -34,9 +34,20 @@ namespace IllusionScript.Runtime.Binding
                     return BindExpressionStatement((ExpressionStatement)syntax);
                 case SyntaxType.VariableDeclarationStatement:
                     return BindVariableDeclaration((VariableDeclarationStatement)syntax);
+                case SyntaxType.IfStatement:
+                    return BindIfStatement((IfStatement)syntax);
                 default:
                     throw new Exception($"Unexpected syntax {syntax.type}");
             }
+        }
+
+        private BoundStatement BindIfStatement(IfStatement syntax)
+        {
+            BoundExpression condition = BindExpression(syntax.condition, typeof(bool));
+            BoundStatement statement = BindStatement(syntax.body);
+            BoundStatement elseStatement = syntax.elseClause == null ? null : BindStatement(syntax.elseClause.body);
+
+            return new BoundIfStatement(condition, statement, elseStatement);
         }
 
         private BoundStatement BindVariableDeclaration(VariableDeclarationStatement syntax)
@@ -73,6 +84,17 @@ namespace IllusionScript.Runtime.Binding
         {
             BoundExpression expression = BindExpression(syntax.expression);
             return new BoundExpressionStatement(expression);
+        }
+
+        private BoundExpression BindExpression(Expression syntax, Type target)
+        {
+            BoundExpression result = BindExpression(syntax);
+            if (result.type != target)
+            {
+                diagnostics.ReportCannotConvert(syntax.span, result.type, target);
+            }
+
+            return result;
         }
 
         private BoundExpression BindExpression(Expression syntax)
@@ -167,7 +189,7 @@ namespace IllusionScript.Runtime.Binding
             {
                 diagnostics.ReportCannotAssign(syntax.identifier.span, name);
             }
-            
+
             if (boundExpression.type != variable.type)
             {
                 diagnostics.ReportCannotConvert(syntax.expression.span, boundExpression.type, variable.type);

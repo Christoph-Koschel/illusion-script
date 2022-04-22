@@ -80,8 +80,31 @@ namespace IllusionScript.Runtime.Parsing
             {
                 SyntaxType.LBraceToken => ParseBlockStatement(),
                 SyntaxType.LetKeyword or SyntaxType.ConstKeyword => ParseVariableDeclaration(),
+                SyntaxType.IfKeyword => ParseIfStatement(),
                 _ => ParseExpressionStatement()
             };
+        }
+
+        private Statement ParseIfStatement()
+        {
+            Token keyword = Match(SyntaxType.IfKeyword);
+            Expression condition = ParseExpression();
+            Statement statement = ParseStatement();
+            ElseClause elseClause = ParseElseClause();
+
+            return new IfStatement(keyword, condition, statement, elseClause);
+        }
+
+        private ElseClause ParseElseClause()
+        {
+            if (current.type != SyntaxType.ElseKeyword)
+            {
+                return null;
+            }
+
+            Token keyword = NextToken();
+            Statement statement = ParseStatement();
+            return new ElseClause(keyword, statement);
         }
 
         private Statement ParseVariableDeclaration()
