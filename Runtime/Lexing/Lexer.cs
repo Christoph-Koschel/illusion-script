@@ -201,6 +201,10 @@ namespace IllusionScript.Runtime.Lexing
                     {
                         position++;
                         type = SyntaxType.LessEqualsToken;
+                    } else if (current == '<')
+                    {
+                        position++;
+                        type = SyntaxType.DoubleLessToken;
                     }
 
                     break;
@@ -211,9 +215,13 @@ namespace IllusionScript.Runtime.Lexing
                     {
                         position++;
                         type = SyntaxType.GreaterEqualsToken;
+                    } else if (current == '>')
+                    {
+                        position++;
+                        type = SyntaxType.DoubleGreaterToken;
                     }
 
-                    break;
+                        break;
                 case '!':
                     position++;
                     if (current != '=')

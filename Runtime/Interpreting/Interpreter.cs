@@ -165,6 +165,10 @@ namespace IllusionScript.Runtime.Interpreting
                     {
                         return (bool)left ^ (bool)right;
                     }
+                case BoundBinaryOperatorType.BitwiseShiftLeft:
+                    return (int)left << (int)right;
+                case BoundBinaryOperatorType.BitwiseShiftRight:
+                    return (int)left >> (int)right;
                 case BoundBinaryOperatorType.Less:
                     return (int)left < (int)right;
                 case BoundBinaryOperatorType.LessEquals:

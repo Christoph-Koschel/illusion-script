@@ -61,6 +61,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         [InlineData("false", false)]
         [InlineData("!true", false)]
         [InlineData("!false", true)]
+        [InlineData("{ let a = 0 (a = 10) * a }", 100)]
         public void InterpreterComputesCorrectValues(string text, object expectedValue)
         {
             AssertValue(text, expectedValue);
