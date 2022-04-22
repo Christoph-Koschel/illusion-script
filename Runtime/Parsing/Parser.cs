@@ -81,18 +81,32 @@ namespace IllusionScript.Runtime.Parsing
                 SyntaxType.LBraceToken => ParseBlockStatement(),
                 SyntaxType.LetKeyword or SyntaxType.ConstKeyword => ParseVariableDeclaration(),
                 SyntaxType.IfKeyword => ParseIfStatement(),
+                SyntaxType.WhileKeyword => ParseWhileStatement(),
                 _ => ParseExpressionStatement()
             };
+        }
+
+        private Statement ParseWhileStatement()
+        {
+            Token keyword = Match(SyntaxType.WhileKeyword);
+            Token lParen = Match(SyntaxType.LParenToken);
+            Expression condition = ParseExpression();
+            Token rParen = Match(SyntaxType.RParenToken);
+            Statement body = ParseStatement();
+
+            return new WhileStatement(keyword, lParen, condition, rParen, body);
         }
 
         private Statement ParseIfStatement()
         {
             Token keyword = Match(SyntaxType.IfKeyword);
+            Token lParen = Match(SyntaxType.LParenToken);
             Expression condition = ParseExpression();
+            Token rParen = Match(SyntaxType.RParenToken);
             Statement statement = ParseStatement();
             ElseClause elseClause = ParseElseClause();
 
-            return new IfStatement(keyword, condition, statement, elseClause);
+            return new IfStatement(keyword, lParen, condition, rParen, statement, elseClause);
         }
 
         private ElseClause ParseElseClause()

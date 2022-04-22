@@ -36,9 +36,19 @@ namespace IllusionScript.Runtime.Binding
                     return BindVariableDeclaration((VariableDeclarationStatement)syntax);
                 case SyntaxType.IfStatement:
                     return BindIfStatement((IfStatement)syntax);
+                case SyntaxType.WhileStatement:
+                    return BindWhileStatement((WhileStatement)syntax);
                 default:
                     throw new Exception($"Unexpected syntax {syntax.type}");
             }
+        }
+
+        private BoundStatement BindWhileStatement(WhileStatement syntax)
+        {
+            BoundExpression condition = BindExpression(syntax.condition, typeof(bool));
+            BoundStatement statement = BindStatement(syntax.body);
+
+            return new BoundWhileStatement(condition, statement);
         }
 
         private BoundStatement BindIfStatement(IfStatement syntax)

@@ -17,6 +17,7 @@
         BlockStatement,
         ExpressionStatement,
         VariableDeclarationStatement,
-        IfStatement
+        IfStatement,
+        WhileStatement
     }
 }

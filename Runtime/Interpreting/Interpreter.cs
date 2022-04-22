@@ -44,8 +44,19 @@ namespace IllusionScript.Runtime.Interpreting
                 case BoundNodeType.IfStatement:
                     InterpretIfStatement((BoundIfStatement)statement);
                     break;
+                case BoundNodeType.WhileStatement:
+                    InterpretWhileStatement((BoundWhileStatement)statement);
+                    break;
                 default:
                     throw new Exception($"Unexpected node {statement.boundType}");
+            }
+        }
+
+        private void InterpretWhileStatement(BoundWhileStatement statement)
+        {
+            while ((bool)InterpretExpression(statement.condition))
+            {
+                InterpretStatement(statement.body);
             }
         }
 

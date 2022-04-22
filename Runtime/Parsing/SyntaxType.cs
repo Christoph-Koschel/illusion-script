@@ -101,6 +101,7 @@
         FunctionDeclarationStatement,
         VariableDeclarationStatement,
         IfStatement,
-        ElseClause
+        ElseClause,
+        WhileStatement
     }
 }
