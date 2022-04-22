@@ -193,6 +193,78 @@ namespace IllusionScript.Runtime.Test.Interpreting
 
             AssertDiagnostics(text, diagnostics);
         }
+        
+        [Fact]
+        public void InterpreterIfConvert()
+        {
+            string text = @"
+            {
+                let x = 0
+                if ([10])
+                    x = 10
+            }
+            ";
+
+            string diagnostics = @"
+              ERROR: Cannot convert type 'System.Int32' to 'System.Boolean'
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
+        
+        [Fact]
+        public void InterpreterWhileConvert()
+        {
+            string text = @"
+            {
+                let x = 0
+                while ([10])
+                    x = 10
+            }
+            ";
+
+            string diagnostics = @"
+              ERROR: Cannot convert type 'System.Int32' to 'System.Boolean'
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
+        
+        [Fact]
+        public void InterpreterForConvertStart()
+        {
+            string text = @"
+            {
+                let x = 0
+                for (i = [false] to 10)
+                    x = 10
+            }
+            ";
+
+            string diagnostics = @"
+              ERROR: Cannot convert type 'System.Boolean' to 'System.Int32'
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
+        
+        [Fact]
+        public void InterpreterForConvertEnd()
+        {
+            string text = @"
+            {
+                let x = 0
+                for (i = 10 to [false])
+                    x = 10
+            }
+            ";
+
+            string diagnostics = @"
+              ERROR: Cannot convert type 'System.Boolean' to 'System.Int32'
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
 
         private void AssertDiagnostics(string text, string diagnosticsText)
         {
