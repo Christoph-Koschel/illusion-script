@@ -133,17 +133,25 @@ namespace IllusionScript
 
         protected override void Renderer(string line)
         {
+            if (Program.args.Contains("-d"))
+            {
+                base.Renderer(line);
+                return;
+            }
+
             IEnumerable<Token> tokens = SyntaxTree.ParseTokens(line);
-            
+
             foreach (Token token in tokens)
             {
                 if (token.type.ToString().EndsWith("Keyword"))
                 {
                     Console.ForegroundColor = ConsoleColor.DarkBlue;
-                } else if (token.type == SyntaxType.IdentifierToken)
+                }
+                else if (token.type == SyntaxType.IdentifierToken)
                 {
                     Console.ForegroundColor = ConsoleColor.Gray;
-                } else if (token.type != SyntaxType.NumberToken)
+                }
+                else if (token.type != SyntaxType.NumberToken)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkGray;
                 }

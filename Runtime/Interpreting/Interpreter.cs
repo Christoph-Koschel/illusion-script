@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using IllusionScript.Runtime.Binding;
+using IllusionScript.Runtime.Binding.Nodes;
 using IllusionScript.Runtime.Binding.Nodes.Expressions;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Binding.Operators;
@@ -22,13 +23,13 @@ namespace IllusionScript.Runtime.Interpreting
 
         public object Interpret()
         {
-            Dictionary<LabelSymbol, int> labelToIndex = new Dictionary<LabelSymbol, int>();
+            Dictionary<BoundLabel, int> labelToIndex = new Dictionary<BoundLabel, int>();
 
             for (int i = 0; i < root.statements.Length; i++)
             {
                 if (root.statements[i] is BoundLabelStatement l)
                 {
-                    labelToIndex.Add(l.label, i + 1);
+                    labelToIndex.Add(l.BoundLabel, i + 1);
                 }
             }
 
@@ -53,7 +54,7 @@ namespace IllusionScript.Runtime.Interpreting
                         bool condition = (bool)InterpretExpression(cgs.condition);
                         if (condition == cgs.JmpIfTrue)
                         {
-                            index = labelToIndex[cgs.label];
+                            index = labelToIndex[cgs.BoundLabel];
                         }
                         else
                         {
@@ -66,7 +67,7 @@ namespace IllusionScript.Runtime.Interpreting
                     {
                         BoundGotoStatement gs = (BoundGotoStatement)statement;
 
-                        index = labelToIndex[gs.label];
+                        index = labelToIndex[gs.BoundLabel];
                         break;
                     }
                     case BoundNodeType.LabelStatement:

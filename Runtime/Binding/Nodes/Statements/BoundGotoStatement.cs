@@ -4,11 +4,11 @@ namespace IllusionScript.Runtime.Binding.Nodes.Statements
 {
     internal sealed class BoundGotoStatement : BoundStatement
     {
-        public readonly LabelSymbol label;
+        public readonly BoundLabel BoundLabel;
 
-        public BoundGotoStatement(LabelSymbol label)
+        public BoundGotoStatement(BoundLabel boundLabel)
         {
-            this.label = label;
+            this.BoundLabel = boundLabel;
         }
 
         public override BoundNodeType boundType => BoundNodeType.GotoStatement;

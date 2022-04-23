@@ -5,13 +5,13 @@ namespace IllusionScript.Runtime.Binding.Nodes.Statements
 {
     internal sealed class BoundConditionalGotoStatement : BoundStatement
     {
-        public readonly LabelSymbol label;
+        public readonly BoundLabel BoundLabel;
         public readonly BoundExpression condition;
         public readonly bool JmpIfTrue;
 
-        public BoundConditionalGotoStatement(LabelSymbol label, BoundExpression condition, bool jmpIfTrue = true)
+        public BoundConditionalGotoStatement(BoundLabel boundLabel, BoundExpression condition, bool jmpIfTrue = true)
         {
-            this.label = label;
+            this.BoundLabel = boundLabel;
             this.condition = condition;
             this.JmpIfTrue = jmpIfTrue;
         }

@@ -47,7 +47,7 @@ namespace IllusionScript.Runtime.Binding
                 return node;
             }
 
-            return new BoundConditionalGotoStatement(node.label, condition, node.JmpIfTrue);
+            return new BoundConditionalGotoStatement(node.BoundLabel, condition, node.JmpIfTrue);
         }
 
         protected virtual BoundStatement RewriteGotoStatement(BoundGotoStatement node)

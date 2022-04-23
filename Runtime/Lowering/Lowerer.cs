@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using IllusionScript.Runtime.Binding;
+using IllusionScript.Runtime.Binding.Nodes;
 using IllusionScript.Runtime.Binding.Nodes.Expressions;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Binding.Operators;
@@ -20,11 +21,11 @@ namespace IllusionScript.Runtime.Lowering
             labelCount = 0;
         }
 
-        private LabelSymbol GenerateLabel()
+        private BoundLabel GenerateLabel()
         {
             string name = $"l" + labelCount;
             labelCount++;
-            return new LabelSymbol(name);
+            return new BoundLabel(name);
         }
 
         public static BoundBlockStatement Lower(BoundStatement statement)
@@ -75,11 +76,11 @@ namespace IllusionScript.Runtime.Lowering
                  * <body>
                  * end:
                  */
-                LabelSymbol endLabel = GenerateLabel();
+                BoundLabel endBoundLabel = GenerateLabel();
 
                 BoundConditionalGotoStatement gotoEnd =
-                    new BoundConditionalGotoStatement(endLabel, node.condition, false);
-                BoundLabelStatement endLabelStatement = new BoundLabelStatement(endLabel);
+                    new BoundConditionalGotoStatement(endBoundLabel, node.condition, false);
+                BoundLabelStatement endLabelStatement = new BoundLabelStatement(endBoundLabel);
                 BoundBlockStatement result =
                     new BoundBlockStatement(
                         ImmutableArray.Create<BoundStatement>(gotoEnd, node.body, endLabelStatement));
@@ -105,15 +106,15 @@ namespace IllusionScript.Runtime.Lowering
                 * end:
                 */
 
-                LabelSymbol elseLabel = GenerateLabel();
-                LabelSymbol endLabel = GenerateLabel();
+                BoundLabel elseBoundLabel = GenerateLabel();
+                BoundLabel endBoundLabel = GenerateLabel();
 
                 BoundConditionalGotoStatement gotoFalse =
-                    new BoundConditionalGotoStatement(elseLabel, node.condition, false);
+                    new BoundConditionalGotoStatement(elseBoundLabel, node.condition, false);
                 BoundGotoStatement gotoEnd =
-                    new BoundGotoStatement(endLabel);
-                BoundLabelStatement elseLabelStatement = new BoundLabelStatement(elseLabel);
-                BoundLabelStatement endLabelStatement = new BoundLabelStatement(endLabel);
+                    new BoundGotoStatement(endBoundLabel);
+                BoundLabelStatement elseLabelStatement = new BoundLabelStatement(elseBoundLabel);
+                BoundLabelStatement endLabelStatement = new BoundLabelStatement(endBoundLabel);
 
                 BoundBlockStatement result =
                     new BoundBlockStatement(
@@ -147,16 +148,16 @@ namespace IllusionScript.Runtime.Lowering
              * 
              */
 
-            LabelSymbol endLabel = GenerateLabel();
-            LabelSymbol checkLabel = GenerateLabel();
-            LabelSymbol continueLabel = GenerateLabel();
+            BoundLabel endBoundLabel = GenerateLabel();
+            BoundLabel checkBoundLabel = GenerateLabel();
+            BoundLabel continueBoundLabel = GenerateLabel();
 
-            BoundLabelStatement endLabelStatement = new BoundLabelStatement(endLabel);
-            BoundLabelStatement checkLabelStatement = new BoundLabelStatement(checkLabel);
-            BoundLabelStatement continueLabelStatement = new BoundLabelStatement(continueLabel);
+            BoundLabelStatement endLabelStatement = new BoundLabelStatement(endBoundLabel);
+            BoundLabelStatement checkLabelStatement = new BoundLabelStatement(checkBoundLabel);
+            BoundLabelStatement continueLabelStatement = new BoundLabelStatement(continueBoundLabel);
 
-            BoundGotoStatement gotoCheck = new BoundGotoStatement(checkLabel);
-            BoundConditionalGotoStatement goToTrue = new BoundConditionalGotoStatement(continueLabel, node.condition);
+            BoundGotoStatement gotoCheck = new BoundGotoStatement(checkBoundLabel);
+            BoundConditionalGotoStatement goToTrue = new BoundConditionalGotoStatement(continueBoundLabel, node.condition);
 
             BoundBlockStatement result = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
                 gotoCheck,
