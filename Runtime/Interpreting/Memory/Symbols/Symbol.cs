@@ -4,11 +4,11 @@
     {
         public readonly string name;
 
-        private protected Symbol(string name)
+        internal Symbol(string name)
         {
             this.name = name;
         }
-        
+
         public abstract SymbolType symbolType { get; }
 
         public override string ToString()

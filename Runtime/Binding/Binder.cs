@@ -7,6 +7,7 @@ using IllusionScript.Runtime.Binding.Operators;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Interpreting.Memory;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
+using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing;
 using IllusionScript.Runtime.Parsing.Nodes;
 using IllusionScript.Runtime.Parsing.Nodes.Expressions;
@@ -36,7 +37,7 @@ namespace IllusionScript.Runtime.Binding
                 case SyntaxType.ExpressionStatement:
                     return BindExpressionStatement((ExpressionStatement)syntax);
                 case SyntaxType.VariableDeclarationStatement:
-                    return BindVariableDeclaration((VariableDeclarationStatement)syntax);
+                    return BindVariableDeclarationStatement((VariableDeclarationStatement)syntax);
                 case SyntaxType.IfStatement:
                     return BindIfStatement((IfStatement)syntax);
                 case SyntaxType.WhileStatement:
@@ -55,13 +56,7 @@ namespace IllusionScript.Runtime.Binding
 
             scope = new Scope(scope);
 
-            string name = syntax.identifier.text;
-            VariableSymbol variable = new VariableSymbol(name, true, TypeSymbol.Int);
-            if (!scope.TryDeclare(variable))
-            {
-                diagnostics.ReportVariableAlreadyDeclared(syntax.identifier.span, name);
-            }
-
+            VariableSymbol variable = BindVariable(syntax.identifier, true, TypeSymbol.Int);
             BoundStatement body = BindStatement(syntax.body);
 
             scope = scope.parent;
@@ -85,17 +80,11 @@ namespace IllusionScript.Runtime.Binding
             return new BoundIfStatement(condition, statement, elseStatement);
         }
 
-        private BoundStatement BindVariableDeclaration(VariableDeclarationStatement syntax)
+        private BoundStatement BindVariableDeclarationStatement(VariableDeclarationStatement syntax)
         {
-            string name = syntax.identifier.text;
             bool isReadOnly = syntax.keyword.type == SyntaxType.ConstKeyword;
             BoundExpression initializer = BindExpression(syntax.initializer);
-            VariableSymbol variable = new VariableSymbol(name, isReadOnly, initializer.type);
-
-            if (!scope.TryDeclare(variable))
-            {
-                diagnostics.ReportVariableAlreadyDeclared(syntax.identifier.span, name);
-            }
+            VariableSymbol variable = BindVariable(syntax.identifier, isReadOnly, initializer.type);
 
             return new BoundVariableDeclarationStatement(variable, initializer);
         }
@@ -124,7 +113,10 @@ namespace IllusionScript.Runtime.Binding
         private BoundExpression BindExpression(Expression syntax, TypeSymbol target)
         {
             BoundExpression result = BindExpression(syntax);
-            if (result.type != target)
+            if (
+                target != TypeSymbol.Error && 
+                result.type != TypeSymbol.Error &&
+                result.type != target)
             {
                 diagnostics.ReportCannotConvert(syntax.span, result.type, target);
             }
@@ -297,5 +289,19 @@ namespace IllusionScript.Runtime.Binding
         }
 
         #endregion
+
+        private VariableSymbol BindVariable(Token identifier, bool isReadOnly, TypeSymbol type)
+        {
+            string name = identifier.text ?? "?";
+            bool declare = !identifier.isMissing;
+            VariableSymbol variable = new VariableSymbol(name, isReadOnly, type);
+
+            if (declare && !scope.TryDeclare(variable))
+            {
+                diagnostics.ReportVariableAlreadyDeclared(identifier.span, name);
+            }
+
+            return variable;
+        }
     }
 }
