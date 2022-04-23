@@ -42,6 +42,12 @@ namespace IllusionScript.Runtime.Diagnostics
             Report(span, message);
         }
 
+        public void ReportUnterminatedString(TextSpan span)
+        {
+            string message = "ERROR: Unterminated string literal";
+            Report(span, message);
+        }
+
         public void ReportUnexpectedToken(TextSpan span, SyntaxType currentType, SyntaxType type)
         {
             string message = $"ERROR: Unexpected token <{currentType}>, expected <{type}>";

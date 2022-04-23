@@ -99,7 +99,8 @@ namespace IllusionScript.Runtime.Parsing
             Token rParen = Match(SyntaxType.RParenToken);
             Statement body = ParseStatement();
 
-            return new ForStatement(keyword, lParen, identifier, equalsToken, startExpression, toKeyword, endExpression, rParen, body);
+            return new ForStatement(keyword, lParen, identifier, equalsToken, startExpression, toKeyword, endExpression,
+                rParen, body);
         }
 
         private Statement ParseWhileStatement()
@@ -156,7 +157,7 @@ namespace IllusionScript.Runtime.Parsing
             while (current.type != SyntaxType.EOFToken && current.type != SyntaxType.RBraceToken)
             {
                 Token startToken = current;
-                
+
                 Statement statement = ParseStatement();
                 statements.Add(statement);
 
@@ -252,6 +253,8 @@ namespace IllusionScript.Runtime.Parsing
                     return ParseBooleanLiteral();
                 case SyntaxType.NumberToken:
                     return ParseNumberLiteral();
+                case SyntaxType.StringToken:
+                    return ParseStringLiteral();
                 case SyntaxType.IdentifierToken:
                 default:
                     return ParseNameExpression();
@@ -268,6 +271,12 @@ namespace IllusionScript.Runtime.Parsing
         {
             Token numberToken = Match(SyntaxType.NumberToken);
             return new LiteralExpression(numberToken, numberToken.value);
+        }
+
+        private Expression ParseStringLiteral()
+        {
+            Token stringToken = Match(SyntaxType.StringToken);
+            return new LiteralExpression(stringToken, stringToken.value);
         }
 
         private Expression ParseBooleanLiteral()

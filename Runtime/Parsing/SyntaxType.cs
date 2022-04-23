@@ -10,7 +10,7 @@
 
         // Data Types
         NumberToken,
-        // StringToken,
+        StringToken,
         IdentifierToken,
 
         // Math operations

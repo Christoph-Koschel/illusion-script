@@ -10,6 +10,7 @@ namespace IllusionScript.Runtime.Lexing
         public override TextSpan span => new TextSpan(position, text?.Length ?? 0);
         public readonly string text;
         public readonly object value;
+        public readonly bool isMissing;
 
         public Token(SyntaxType type, int position, string text, object value)
         {
@@ -17,6 +18,7 @@ namespace IllusionScript.Runtime.Lexing
             this.position = position;
             this.text = text;
             this.value = value;
+            isMissing = text == null;
         }
 
         public override SyntaxType type { get; }

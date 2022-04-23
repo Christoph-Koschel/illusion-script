@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Parsing;
 
@@ -16,6 +17,7 @@ namespace IllusionScript.Runtime.Lexing
         private object value;
 
         private char current => Peek(0);
+        private char next => Peek(1);
 
         internal Lexer(SourceText text)
         {
@@ -201,7 +203,8 @@ namespace IllusionScript.Runtime.Lexing
                     {
                         position++;
                         type = SyntaxType.LessEqualsToken;
-                    } else if (current == '<')
+                    }
+                    else if (current == '<')
                     {
                         position++;
                         type = SyntaxType.DoubleLessToken;
@@ -215,13 +218,14 @@ namespace IllusionScript.Runtime.Lexing
                     {
                         position++;
                         type = SyntaxType.GreaterEqualsToken;
-                    } else if (current == '>')
+                    }
+                    else if (current == '>')
                     {
                         position++;
                         type = SyntaxType.DoubleGreaterToken;
                     }
 
-                        break;
+                    break;
                 case '!':
                     position++;
                     if (current != '=')
@@ -234,6 +238,9 @@ namespace IllusionScript.Runtime.Lexing
                         type = SyntaxType.BangEqualsToken;
                     }
 
+                    break;
+                case '"':
+                    GenerateString();
                     break;
                 case '0':
                 case '1':
@@ -266,8 +273,7 @@ namespace IllusionScript.Runtime.Lexing
 
                     break;
             }
-
-
+            
             string text = GetText(type);
             if (text == null)
             {
@@ -276,6 +282,43 @@ namespace IllusionScript.Runtime.Lexing
             }
 
             return new Token(type, start, text, value);
+        }
+
+        private void GenerateString()
+        {
+            position++;
+            StringBuilder stringBuilder = new StringBuilder();
+            bool done = false;
+
+            while (!done)
+            {
+                switch (current)
+                {
+                    case '\0':
+                    case '\r':
+                    case '\n':
+                        TextSpan span = new TextSpan(start, 1);
+                        diagnostics.ReportUnterminatedString(span);
+                        done = true;
+                        break;
+                    case '\\':
+                        position++;
+                        stringBuilder.Append(current);
+                        position++;
+                        break;
+                    case '"':
+                        position++;
+                        done = true;
+                        break;
+                    default:
+                        stringBuilder.Append(current);
+                        position++;
+                        break;
+                }
+            }
+
+            type = SyntaxType.StringToken;
+            value = stringBuilder.ToString();
         }
 
         private void GenerateKeyword()

@@ -272,6 +272,11 @@ namespace IllusionScript
 
         private void UpdateDocumentFromHistory(ObservableCollection<string> document, SubmissionView view)
         {
+            if (submissionHistory.Count == 0)
+            {
+                return;
+            }
+            
             document.Clear();
 
             string history = submissionHistory[submissionHistoryIndex];
