@@ -2,15 +2,13 @@
 
 namespace IllusionScript.Runtime.Interpreting.Memory.Symbols
 {
-    public sealed class VariableSymbol
+    public sealed class VariableSymbol : Symbol
     {
-        public readonly string name;
         public readonly bool isReadOnly;
         public readonly Type type;
 
-        internal VariableSymbol(string name, bool isReadOnly, Type type)
+        internal VariableSymbol(string name, bool isReadOnly, Type type) : base(name)
         {
-            this.name = name;
             this.isReadOnly = isReadOnly;
             this.type = type;
         }
@@ -19,5 +17,7 @@ namespace IllusionScript.Runtime.Interpreting.Memory.Symbols
         {
             return name;
         }
+
+        public override SymbolType symbolType => SymbolType.Variable;
     }
 }
