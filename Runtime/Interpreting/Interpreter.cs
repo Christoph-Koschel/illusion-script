@@ -50,7 +50,7 @@ namespace IllusionScript.Runtime.Interpreting
                     case BoundNodeType.ConditionalGotoStatement:
                     {
                         BoundConditionalGotoStatement cgs = (BoundConditionalGotoStatement)statement;
-                        var condition = (bool)InterpretExpression(cgs.condition);
+                        bool condition = (bool)InterpretExpression(cgs.condition);
                         if (condition == cgs.JmpIfTrue)
                         {
                             index = labelToIndex[cgs.label];
