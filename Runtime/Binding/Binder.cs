@@ -48,13 +48,13 @@ namespace IllusionScript.Runtime.Binding
 
         private BoundStatement BindForStatement(ForStatement syntax)
         {
-            BoundExpression startExpression = BindExpression(syntax.startExpression, typeof(int));
-            BoundExpression endExpression = BindExpression(syntax.endExpression, typeof(int));
+            BoundExpression startExpression = BindExpression(syntax.startExpression, TypeSymbol.Int);
+            BoundExpression endExpression = BindExpression(syntax.endExpression, TypeSymbol.Int);
 
             scope = new Scope(scope);
 
             string name = syntax.identifier.text;
-            VariableSymbol variable = new VariableSymbol(name, true, typeof(int));
+            VariableSymbol variable = new VariableSymbol(name, true, TypeSymbol.Int);
             if (!scope.TryDeclare(variable))
             {
                 diagnostics.ReportVariableAlreadyDeclared(syntax.identifier.span, name);
@@ -68,7 +68,7 @@ namespace IllusionScript.Runtime.Binding
 
         private BoundStatement BindWhileStatement(WhileStatement syntax)
         {
-            BoundExpression condition = BindExpression(syntax.condition, typeof(bool));
+            BoundExpression condition = BindExpression(syntax.condition, TypeSymbol.Bool);
             BoundStatement statement = BindStatement(syntax.body);
 
             return new BoundWhileStatement(condition, statement);
@@ -76,7 +76,7 @@ namespace IllusionScript.Runtime.Binding
 
         private BoundStatement BindIfStatement(IfStatement syntax)
         {
-            BoundExpression condition = BindExpression(syntax.condition, typeof(bool));
+            BoundExpression condition = BindExpression(syntax.condition, TypeSymbol.Bool);
             BoundStatement statement = BindStatement(syntax.body);
             BoundStatement elseStatement = syntax.elseClause == null ? null : BindStatement(syntax.elseClause.body);
 
@@ -119,7 +119,7 @@ namespace IllusionScript.Runtime.Binding
             return new BoundExpressionStatement(expression);
         }
 
-        private BoundExpression BindExpression(Expression syntax, Type target)
+        private BoundExpression BindExpression(Expression syntax, TypeSymbol target)
         {
             BoundExpression result = BindExpression(syntax);
             if (result.type != target)

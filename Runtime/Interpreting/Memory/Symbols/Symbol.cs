@@ -10,5 +10,10 @@
         }
         
         public abstract SymbolType symbolType { get; }
+
+        public override string ToString()
+        {
+            return name;
+        }
     }
 }
