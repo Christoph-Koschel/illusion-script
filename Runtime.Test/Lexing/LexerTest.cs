@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
+using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing;
 using Xunit;
@@ -15,6 +17,20 @@ namespace IllusionScript.Runtime.Test.Lexing
         public LexerTest(ITestOutputHelper testOutputHelper)
         {
             this.testOutputHelper = testOutputHelper;
+        }
+
+        [Fact]
+        public void LexerLexesUnterminatedString()
+        {
+            string text = "\"string";
+            IEnumerable<Token> tokens = SyntaxTree.ParseTokens(text, out ImmutableArray<Diagnostic> diagnostics);
+
+            Token token = Assert.Single(tokens);
+            Assert.Equal(SyntaxType.StringToken, token.type);
+            Assert.Equal(text, token.text);
+            Diagnostic diagnostic = Assert.Single(diagnostics);
+            Assert.Equal("ERROR: Unterminated string literal", diagnostic.message);
+            Assert.Equal(new TextSpan(0, 1), diagnostic.span);
         }
 
         [Fact]
@@ -62,12 +78,12 @@ namespace IllusionScript.Runtime.Test.Lexing
             {
                 testOutputHelper.WriteLine(token.type.ToString());
             }
-            
+
             Assert.Equal(2, tokens.Length);
-            Assert.Equal(type1,tokens[0].type);
-            Assert.Equal(text1,tokens[0].text);
-            Assert.Equal(type2,tokens[1].type);
-            Assert.Equal(text2,tokens[1].text);
+            Assert.Equal(type1, tokens[0].type);
+            Assert.Equal(text1, tokens[0].text);
+            Assert.Equal(type2, tokens[1].type);
+            Assert.Equal(text2, tokens[1].text);
         }
 
         [Theory]
@@ -126,6 +142,8 @@ namespace IllusionScript.Runtime.Test.Lexing
                 (SyntaxType.NumberToken, "123"),
                 (SyntaxType.IdentifierToken, "a"),
                 (SyntaxType.IdentifierToken, "abc"),
+                (SyntaxType.StringToken, "\"this is a string\""),
+                (SyntaxType.StringToken, "\"this is a string \\\" with a escaped quote\"")
             };
 
             return fixedTokens.Concat(dynamicTokens);
@@ -213,7 +231,7 @@ namespace IllusionScript.Runtime.Test.Lexing
             {
                 return true;
             }
-            
+
             if (t1Type == SyntaxType.StarToken && t2Type == SyntaxType.DoubleStarEqualsToken)
             {
                 return true;
@@ -358,12 +376,12 @@ namespace IllusionScript.Runtime.Test.Lexing
             {
                 return true;
             }
-            
+
             if (t1Type == SyntaxType.GreaterToken && t2Type == SyntaxType.GreaterEqualsToken)
             {
                 return true;
             }
-            
+
             if (t1Type == SyntaxType.GreaterToken && t2Type == SyntaxType.GreaterToken)
             {
                 return true;

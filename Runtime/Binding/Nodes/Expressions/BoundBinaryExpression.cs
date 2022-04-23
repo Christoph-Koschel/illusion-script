@@ -1,5 +1,6 @@
 ﻿using System;
 using IllusionScript.Runtime.Binding.Operators;
+using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 
 namespace IllusionScript.Runtime.Binding.Nodes.Expressions
 {
@@ -18,6 +19,6 @@ namespace IllusionScript.Runtime.Binding.Nodes.Expressions
 
 
         public override BoundNodeType boundType => BoundNodeType.BinaryExpression;
-        public override Type type => binaryOperator.resultType;
+        public override TypeSymbol type => binaryOperator.resultType;
     }
 }

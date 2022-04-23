@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing.Nodes;
+using Microsoft.VisualBasic;
 
 namespace IllusionScript.Runtime.Parsing
 {
@@ -52,6 +53,35 @@ namespace IllusionScript.Runtime.Parsing
 
                 yield return token;
             }
+        }
+        
+        public static ImmutableArray<Token> ParseTokens(string text,out ImmutableArray<Diagnostic> diagnostics)
+        {
+            SourceText sourceText = SourceText.From(text);
+            return ParseTokens(sourceText, out diagnostics);
+        }
+
+
+        public static ImmutableArray<Token> ParseTokens(SourceText text, out ImmutableArray<Diagnostic> diagnostics)
+        {
+            IEnumerable<Token> LexTokens(Lexer lexer)
+            {
+                while (true)
+                {
+                    Token token = lexer.Lex();
+                    if (token.type == SyntaxType.EOFToken)
+                    {
+                        break;
+                    }
+
+                    yield return token;
+                }
+            }
+
+            Lexer l = new Lexer(text);
+            ImmutableArray<Token> result = LexTokens(l).ToImmutableArray();
+            diagnostics = l.Diagnostics().ToImmutableArray();
+            return result;
         }
     }
 }

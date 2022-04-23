@@ -4,11 +4,11 @@ namespace IllusionScript.Runtime.Binding.Nodes.Statements
 {
     internal sealed class BoundLabelStatement : BoundStatement
     {
-        public readonly LabelSymbol label;
+        public readonly BoundLabel BoundLabel;
 
-        public BoundLabelStatement(LabelSymbol label)
+        public BoundLabelStatement(BoundLabel boundLabel)
         {
-            this.label = label;
+            this.BoundLabel = boundLabel;
         }
 
 

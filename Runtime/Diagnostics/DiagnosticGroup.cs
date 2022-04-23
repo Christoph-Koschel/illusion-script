@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Net.Http.Headers;
+using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 using IllusionScript.Runtime.Parsing;
 
 namespace IllusionScript.Runtime.Diagnostics
@@ -42,19 +43,25 @@ namespace IllusionScript.Runtime.Diagnostics
             Report(span, message);
         }
 
+        public void ReportUnterminatedString(TextSpan span)
+        {
+            string message = "ERROR: Unterminated string literal";
+            Report(span, message);
+        }
+
         public void ReportUnexpectedToken(TextSpan span, SyntaxType currentType, SyntaxType type)
         {
             string message = $"ERROR: Unexpected token <{currentType}>, expected <{type}>";
             Report(span, message);
         }
 
-        public void ReportUndefinedUnaryOperator(TextSpan span, string text, Type right)
+        public void ReportUndefinedUnaryOperator(TextSpan span, string text, TypeSymbol right)
         {
             string message = $"ERROR: Unary operator '{text}' is not defined for type {right}";
             Report(span, message);
         }
 
-        public void ReportUndefinedBinaryOperator(TextSpan span, string text, Type left, Type right)
+        public void ReportUndefinedBinaryOperator(TextSpan span, string text, TypeSymbol left, TypeSymbol right)
         {
             string message = $"ERROR: Binary operator '{text}' is not defined for type {left} and {right}";
             Report(span, message);
@@ -66,7 +73,7 @@ namespace IllusionScript.Runtime.Diagnostics
             Report(span, message);
         }
 
-        public void ReportCannotConvert(TextSpan span, Type type1, Type type2)
+        public void ReportCannotConvert(TextSpan span, TypeSymbol type1, TypeSymbol type2)
         {
             string message = $"ERROR: Cannot convert type '{type1}' to '{type2}'";
             Report(span, message);

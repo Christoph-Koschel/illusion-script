@@ -47,7 +47,7 @@ namespace IllusionScript.Runtime.Binding
                 return node;
             }
 
-            return new BoundConditionalGotoStatement(node.label, condition, node.JmpIfTrue);
+            return new BoundConditionalGotoStatement(node.BoundLabel, condition, node.JmpIfTrue);
         }
 
         protected virtual BoundStatement RewriteGotoStatement(BoundGotoStatement node)
@@ -159,9 +159,16 @@ namespace IllusionScript.Runtime.Binding
                     return RewriteLiteralExpression((BoundLiteralExpression)node);
                 case BoundNodeType.VariableExpression:
                     return RewriteVariableExpression((BoundVariableExpression)node);
+                case BoundNodeType.ErrorExpression:
+                    return RewriteErrorExpression((BoundErrorExpression)node);
                 default:
                     throw new Exception($"Unexpected node: {node.boundType}");
             }
+        }
+
+        protected virtual BoundExpression RewriteErrorExpression(BoundErrorExpression node)
+        {
+            return node;
         }
 
         protected virtual BoundExpression RewriteBinaryExpression(BoundBinaryExpression node)

@@ -173,7 +173,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
             ";
 
             string diagnostics = @"
-                ERROR: Cannot convert type 'System.Boolean' to 'System.Int32'
+                ERROR: Cannot convert type 'Boolean' to 'Int'
             ";
 
             AssertDiagnostics(text, diagnostics);
@@ -185,7 +185,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
             string text = @"[+]true";
 
             string diagnostics = @"
-                ERROR: Unary operator '+' is not defined for type System.Boolean
+                ERROR: Unary operator '+' is not defined for type Boolean
             ";
 
             AssertDiagnostics(text, diagnostics);
@@ -197,7 +197,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
             string text = @"10 [+] true";
 
             string diagnostics = @"
-                ERROR: Binary operator '+' is not defined for type System.Int32 and System.Boolean
+                ERROR: Binary operator '+' is not defined for type Int and Boolean
             ";
 
             AssertDiagnostics(text, diagnostics);
@@ -215,7 +215,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
             ";
 
             string diagnostics = @"
-              ERROR: Cannot convert type 'System.Int32' to 'System.Boolean'
+              ERROR: Cannot convert type 'Int' to 'Boolean'
             ";
 
             AssertDiagnostics(text, diagnostics);
@@ -233,7 +233,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
             ";
 
             string diagnostics = @"
-              ERROR: Cannot convert type 'System.Int32' to 'System.Boolean'
+              ERROR: Cannot convert type 'Int' to 'Boolean'
             ";
 
             AssertDiagnostics(text, diagnostics);
@@ -251,7 +251,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
             ";
 
             string diagnostics = @"
-              ERROR: Cannot convert type 'System.Boolean' to 'System.Int32'
+              ERROR: Cannot convert type 'Boolean' to 'Int'
             ";
 
             AssertDiagnostics(text, diagnostics);
@@ -269,7 +269,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
             ";
 
             string diagnostics = @"
-              ERROR: Cannot convert type 'System.Boolean' to 'System.Int32'
+              ERROR: Cannot convert type 'Boolean' to 'Int'
             ";
 
             AssertDiagnostics(text, diagnostics);

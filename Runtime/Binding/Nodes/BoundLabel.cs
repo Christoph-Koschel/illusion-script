@@ -1,10 +1,10 @@
-﻿namespace IllusionScript.Runtime.Interpreting.Memory.Symbols
+﻿namespace IllusionScript.Runtime.Binding.Nodes
 {
-    internal sealed class LabelSymbol
+    internal sealed class BoundLabel
     {
         public readonly string name;
 
-        public LabelSymbol(string name)
+        public BoundLabel(string name)
         {
             this.name = name;
         }

@@ -7,6 +7,7 @@ using IllusionScript.Runtime.Binding.Operators;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Interpreting.Memory;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
+using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing;
 using IllusionScript.Runtime.Parsing.Nodes;
 using IllusionScript.Runtime.Parsing.Nodes.Expressions;
@@ -25,6 +26,8 @@ namespace IllusionScript.Runtime.Binding
             scope = new Scope(parent);
         }
 
+        #region Statements
+
         private BoundStatement BindStatement(Statement syntax)
         {
             switch (syntax.type)
@@ -34,7 +37,7 @@ namespace IllusionScript.Runtime.Binding
                 case SyntaxType.ExpressionStatement:
                     return BindExpressionStatement((ExpressionStatement)syntax);
                 case SyntaxType.VariableDeclarationStatement:
-                    return BindVariableDeclaration((VariableDeclarationStatement)syntax);
+                    return BindVariableDeclarationStatement((VariableDeclarationStatement)syntax);
                 case SyntaxType.IfStatement:
                     return BindIfStatement((IfStatement)syntax);
                 case SyntaxType.WhileStatement:
@@ -48,18 +51,12 @@ namespace IllusionScript.Runtime.Binding
 
         private BoundStatement BindForStatement(ForStatement syntax)
         {
-            BoundExpression startExpression = BindExpression(syntax.startExpression, typeof(int));
-            BoundExpression endExpression = BindExpression(syntax.endExpression, typeof(int));
+            BoundExpression startExpression = BindExpression(syntax.startExpression, TypeSymbol.Int);
+            BoundExpression endExpression = BindExpression(syntax.endExpression, TypeSymbol.Int);
 
             scope = new Scope(scope);
 
-            string name = syntax.identifier.text;
-            VariableSymbol variable = new VariableSymbol(name, true, typeof(int));
-            if (!scope.TryDeclare(variable))
-            {
-                diagnostics.ReportVariableAlreadyDeclared(syntax.identifier.span, name);
-            }
-
+            VariableSymbol variable = BindVariable(syntax.identifier, true, TypeSymbol.Int);
             BoundStatement body = BindStatement(syntax.body);
 
             scope = scope.parent;
@@ -68,7 +65,7 @@ namespace IllusionScript.Runtime.Binding
 
         private BoundStatement BindWhileStatement(WhileStatement syntax)
         {
-            BoundExpression condition = BindExpression(syntax.condition, typeof(bool));
+            BoundExpression condition = BindExpression(syntax.condition, TypeSymbol.Bool);
             BoundStatement statement = BindStatement(syntax.body);
 
             return new BoundWhileStatement(condition, statement);
@@ -76,24 +73,18 @@ namespace IllusionScript.Runtime.Binding
 
         private BoundStatement BindIfStatement(IfStatement syntax)
         {
-            BoundExpression condition = BindExpression(syntax.condition, typeof(bool));
+            BoundExpression condition = BindExpression(syntax.condition, TypeSymbol.Bool);
             BoundStatement statement = BindStatement(syntax.body);
             BoundStatement elseStatement = syntax.elseClause == null ? null : BindStatement(syntax.elseClause.body);
 
             return new BoundIfStatement(condition, statement, elseStatement);
         }
 
-        private BoundStatement BindVariableDeclaration(VariableDeclarationStatement syntax)
+        private BoundStatement BindVariableDeclarationStatement(VariableDeclarationStatement syntax)
         {
-            string name = syntax.identifier.text;
             bool isReadOnly = syntax.keyword.type == SyntaxType.ConstKeyword;
             BoundExpression initializer = BindExpression(syntax.initializer);
-            VariableSymbol variable = new VariableSymbol(name, isReadOnly, initializer.type);
-
-            if (!scope.TryDeclare(variable))
-            {
-                diagnostics.ReportVariableAlreadyDeclared(syntax.identifier.span, name);
-            }
+            VariableSymbol variable = BindVariable(syntax.identifier, isReadOnly, initializer.type);
 
             return new BoundVariableDeclarationStatement(variable, initializer);
         }
@@ -119,16 +110,23 @@ namespace IllusionScript.Runtime.Binding
             return new BoundExpressionStatement(expression);
         }
 
-        private BoundExpression BindExpression(Expression syntax, Type target)
+        private BoundExpression BindExpression(Expression syntax, TypeSymbol target)
         {
             BoundExpression result = BindExpression(syntax);
-            if (result.type != target)
+            if (
+                target != TypeSymbol.Error && 
+                result.type != TypeSymbol.Error &&
+                result.type != target)
             {
                 diagnostics.ReportCannotConvert(syntax.span, result.type, target);
             }
 
             return result;
         }
+
+        #endregion
+
+        #region Expression
 
         private BoundExpression BindExpression(Expression syntax)
         {
@@ -160,12 +158,18 @@ namespace IllusionScript.Runtime.Binding
         private BoundExpression BindUnaryExpression(UnaryExpression syntax)
         {
             BoundExpression right = BindExpression(syntax.right);
+
+            if (right.type == TypeSymbol.Error)
+            {
+                return new BoundErrorExpression();
+            }
+
             BoundUnaryOperator unaryOperator = BoundUnaryOperator.Bind(syntax.operatorToken.type, right.type);
             if (unaryOperator == null)
             {
                 diagnostics.ReportUndefinedUnaryOperator(syntax.operatorToken.span, syntax.operatorToken.text,
                     right.type);
-                return right;
+                return new BoundErrorExpression();
             }
 
             return new BoundUnaryExpression(unaryOperator, right);
@@ -176,6 +180,12 @@ namespace IllusionScript.Runtime.Binding
         {
             BoundExpression left = BindExpression(syntax.left);
             BoundExpression right = BindExpression(syntax.right);
+
+            if (left.type == TypeSymbol.Error || right.type == TypeSymbol.Error)
+            {
+                return new BoundErrorExpression();
+            }
+
             BoundBinaryOperator binaryOperator =
                 BoundBinaryOperator.Bind(syntax.operatorToken.type, left.type, right.type);
 
@@ -183,7 +193,7 @@ namespace IllusionScript.Runtime.Binding
             {
                 diagnostics.ReportUndefinedBinaryOperator(syntax.operatorToken.span, syntax.operatorToken.text,
                     left.type, right.type);
-                return left;
+                return new BoundErrorExpression();
             }
 
             return new BoundBinaryExpression(left, binaryOperator, right);
@@ -199,13 +209,13 @@ namespace IllusionScript.Runtime.Binding
             string name = syntax.identifier.text;
             if (string.IsNullOrEmpty(name))
             {
-                return new BoundLiteralExpression(0);
+                return new BoundErrorExpression();
             }
 
             if (!scope.TryLookup(name, out VariableSymbol variable))
             {
                 diagnostics.ReportUndefinedIdentifier(syntax.identifier.span, name);
-                return new BoundLiteralExpression(0);
+                return new BoundErrorExpression();
             }
 
             return new BoundVariableExpression(variable);
@@ -276,6 +286,22 @@ namespace IllusionScript.Runtime.Binding
             }
 
             return parent;
+        }
+
+        #endregion
+
+        private VariableSymbol BindVariable(Token identifier, bool isReadOnly, TypeSymbol type)
+        {
+            string name = identifier.text ?? "?";
+            bool declare = !identifier.isMissing;
+            VariableSymbol variable = new VariableSymbol(name, isReadOnly, type);
+
+            if (declare && !scope.TryDeclare(variable))
+            {
+                diagnostics.ReportVariableAlreadyDeclared(identifier.span, name);
+            }
+
+            return variable;
         }
     }
 }
