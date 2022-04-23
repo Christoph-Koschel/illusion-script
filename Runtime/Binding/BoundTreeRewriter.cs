@@ -159,9 +159,16 @@ namespace IllusionScript.Runtime.Binding
                     return RewriteLiteralExpression((BoundLiteralExpression)node);
                 case BoundNodeType.VariableExpression:
                     return RewriteVariableExpression((BoundVariableExpression)node);
+                case BoundNodeType.ErrorExpression:
+                    return RewriteErrorExpression((BoundErrorExpression)node);
                 default:
                     throw new Exception($"Unexpected node: {node.boundType}");
             }
+        }
+
+        protected virtual BoundExpression RewriteErrorExpression(BoundErrorExpression node)
+        {
+            return node;
         }
 
         protected virtual BoundExpression RewriteBinaryExpression(BoundBinaryExpression node)

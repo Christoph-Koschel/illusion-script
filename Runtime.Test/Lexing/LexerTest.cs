@@ -25,10 +25,10 @@ namespace IllusionScript.Runtime.Test.Lexing
             string text = "\"string";
             IEnumerable<Token> tokens = SyntaxTree.ParseTokens(text, out ImmutableArray<Diagnostic> diagnostics);
 
-            var token = Assert.Single(tokens);
+            Token token = Assert.Single(tokens);
             Assert.Equal(SyntaxType.StringToken, token.type);
             Assert.Equal(text, token.text);
-            var diagnostic = Assert.Single(diagnostics);
+            Diagnostic diagnostic = Assert.Single(diagnostics);
             Assert.Equal("ERROR: Unterminated string literal", diagnostic.message);
             Assert.Equal(new TextSpan(0, 1), diagnostic.span);
         }

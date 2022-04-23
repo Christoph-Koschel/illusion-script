@@ -1,4 +1,6 @@
-﻿namespace IllusionScript
+﻿using System;
+
+namespace IllusionScript
 {
     internal static class Program
     {
@@ -7,8 +9,19 @@
         public static void Main(string[] args)
         {
             Program.args = args;
-            IlsRepl repl = new IlsRepl();
-            repl.Run();
+            try
+            {
+                IlsRepl repl = new IlsRepl();
+                repl.Run();
+            }
+            catch (Exception err)
+            {
+                Console.WriteLine(err);
+            } 
+
+            // Disable console closing
+            end: // <<-- TODO Remove
+            goto end; // <<-- TODO Remove
         }
     }
 }

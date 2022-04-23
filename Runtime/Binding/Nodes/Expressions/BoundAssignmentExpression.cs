@@ -16,6 +16,6 @@ namespace IllusionScript.Runtime.Binding.Nodes.Expressions
         }
 
         public override BoundNodeType boundType => BoundNodeType.AssignmentExpression;
-        public override Type type => expression.type;
+        public override TypeSymbol type => expression.type;
     }
 }

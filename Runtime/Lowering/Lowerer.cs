@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using IllusionScript.Runtime.Binding;
@@ -194,11 +193,11 @@ namespace IllusionScript.Runtime.Lowering
             BoundVariableDeclarationStatement variableDeclaration =
                 new BoundVariableDeclarationStatement(node.variable, node.startExpression);
             BoundVariableExpression variableExpression = new BoundVariableExpression(node.variable);
-            VariableSymbol endBoundSymbol = new VariableSymbol("__while__end__", true, typeof(int));
+            VariableSymbol endBoundSymbol = new VariableSymbol("__while__end__", true, TypeSymbol.Int);
             BoundVariableDeclarationStatement endDeclaration = new BoundVariableDeclarationStatement(endBoundSymbol, node.endExpression);
             BoundBinaryExpression condition = new BoundBinaryExpression(
                 variableExpression,
-                BoundBinaryOperator.Bind(SyntaxType.LessToken, typeof(int), typeof(int)),
+                BoundBinaryOperator.Bind(SyntaxType.LessToken, TypeSymbol.Int, TypeSymbol.Int),
                 new BoundVariableExpression(endBoundSymbol)
             );
 
@@ -207,7 +206,7 @@ namespace IllusionScript.Runtime.Lowering
                     node.variable,
                     new BoundBinaryExpression(
                         variableExpression,
-                        BoundBinaryOperator.Bind(SyntaxType.PlusToken, typeof(int), typeof(int)),
+                        BoundBinaryOperator.Bind(SyntaxType.PlusToken, TypeSymbol.Int, TypeSymbol.Int),
                         new BoundLiteralExpression(1)
                     )
                 )
