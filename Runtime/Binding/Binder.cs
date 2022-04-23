@@ -25,6 +25,8 @@ namespace IllusionScript.Runtime.Binding
             scope = new Scope(parent);
         }
 
+        #region Statements
+
         private BoundStatement BindStatement(Statement syntax)
         {
             switch (syntax.type)
@@ -130,6 +132,10 @@ namespace IllusionScript.Runtime.Binding
             return result;
         }
 
+        #endregion
+
+        #region Expression
+
         private BoundExpression BindExpression(Expression syntax)
         {
             switch (syntax.type)
@@ -160,12 +166,18 @@ namespace IllusionScript.Runtime.Binding
         private BoundExpression BindUnaryExpression(UnaryExpression syntax)
         {
             BoundExpression right = BindExpression(syntax.right);
+
+            if (right.type == TypeSymbol.Error)
+            {
+                return new BoundErrorExpression();
+            }
+
             BoundUnaryOperator unaryOperator = BoundUnaryOperator.Bind(syntax.operatorToken.type, right.type);
             if (unaryOperator == null)
             {
                 diagnostics.ReportUndefinedUnaryOperator(syntax.operatorToken.span, syntax.operatorToken.text,
                     right.type);
-                return right;
+                return new BoundErrorExpression();
             }
 
             return new BoundUnaryExpression(unaryOperator, right);
@@ -176,6 +188,12 @@ namespace IllusionScript.Runtime.Binding
         {
             BoundExpression left = BindExpression(syntax.left);
             BoundExpression right = BindExpression(syntax.right);
+
+            if (left.type == TypeSymbol.Error || right.type == TypeSymbol.Error)
+            {
+                return new BoundErrorExpression();
+            }
+
             BoundBinaryOperator binaryOperator =
                 BoundBinaryOperator.Bind(syntax.operatorToken.type, left.type, right.type);
 
@@ -183,7 +201,7 @@ namespace IllusionScript.Runtime.Binding
             {
                 diagnostics.ReportUndefinedBinaryOperator(syntax.operatorToken.span, syntax.operatorToken.text,
                     left.type, right.type);
-                return left;
+                return new BoundErrorExpression();
             }
 
             return new BoundBinaryExpression(left, binaryOperator, right);
@@ -199,13 +217,13 @@ namespace IllusionScript.Runtime.Binding
             string name = syntax.identifier.text;
             if (string.IsNullOrEmpty(name))
             {
-                return new BoundLiteralExpression(0);
+                return new BoundErrorExpression();
             }
 
             if (!scope.TryLookup(name, out VariableSymbol variable))
             {
                 diagnostics.ReportUndefinedIdentifier(syntax.identifier.span, name);
-                return new BoundLiteralExpression(0);
+                return new BoundErrorExpression();
             }
 
             return new BoundVariableExpression(variable);
@@ -277,5 +295,7 @@ namespace IllusionScript.Runtime.Binding
 
             return parent;
         }
+
+        #endregion
     }
 }
