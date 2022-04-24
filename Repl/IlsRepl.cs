@@ -65,7 +65,7 @@ namespace IllusionScript
 
             if (!result.diagnostics.Any())
             {
-                Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                Console.ForegroundColor = ConsoleColor.Gray;
                 Console.WriteLine(result.value);
                 Console.ResetColor();
 
@@ -145,11 +145,15 @@ namespace IllusionScript
             {
                 if (token.type.ToString().EndsWith("Keyword"))
                 {
-                    Console.ForegroundColor = ConsoleColor.DarkBlue;
+                    Console.ForegroundColor = ConsoleColor.Blue;
                 }
                 else if (token.type == SyntaxType.IdentifierToken)
                 {
                     Console.ForegroundColor = ConsoleColor.Gray;
+                }
+                else if (token.type == SyntaxType.StringToken)
+                {
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                 }
                 else if (token.type != SyntaxType.NumberToken)
                 {
