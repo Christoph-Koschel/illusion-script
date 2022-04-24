@@ -7,17 +7,19 @@ namespace IllusionScript.Runtime.Interpreting.Memory
     internal sealed class Scope
     {
         public readonly Scope parent;
-        private Dictionary<string, VariableSymbol> variableSymbols;
+        private Dictionary<string, VariableSymbol> variables;
+        private Dictionary<string, FunctionSymbol> functions;
 
         public Scope(Scope parent)
         {
             this.parent = parent;
-            variableSymbols = new Dictionary<string, VariableSymbol>();
+            variables = new Dictionary<string, VariableSymbol>();
+            functions = new Dictionary<string, FunctionSymbol>();
         }
 
-        public bool TryLookup(string name, out VariableSymbol variable)
+        public bool TryLookupVariable(string name, out VariableSymbol variable)
         {
-            if (variableSymbols.TryGetValue(name, out variable))
+            if (variables.TryGetValue(name, out variable))
             {
                 return true;
             }
@@ -27,23 +29,54 @@ namespace IllusionScript.Runtime.Interpreting.Memory
                 return false;
             }
 
-            return parent.TryLookup(name, out variable);
+            return parent.TryLookupVariable(name, out variable);
         }
 
-        public bool TryDeclare(VariableSymbol variable)
+        public bool TryDeclareVariable(VariableSymbol variable)
         {
-            if (variableSymbols.ContainsKey(variable.name))
+            if (variables.ContainsKey(variable.name))
             {
                 return false;
             }
 
-            variableSymbols.Add(variable.name, variable);
+            variables.Add(variable.name, variable);
+            return true;
+        }
+        
+        public bool TryLookupFunction(string name, out FunctionSymbol variable)
+        {
+            if (functions.TryGetValue(name, out variable))
+            {
+                return true;
+            }
+
+            if (parent == null)
+            {
+                return false;
+            }
+
+            return parent.TryLookupFunction(name, out variable);
+        }
+
+        public bool TryDeclareFunction(FunctionSymbol variable)
+        {
+            if (functions.ContainsKey(variable.name))
+            {
+                return false;
+            }
+
+            functions.Add(variable.name, variable);
             return true;
         }
 
         public ImmutableArray<VariableSymbol> GetDeclaredVariables()
         {
-            return variableSymbols.Values.ToImmutableArray();
+            return variables.Values.ToImmutableArray();
+        }
+        
+        public ImmutableArray<FunctionSymbol> GetDeclaredFunctions()
+        {
+            return functions.Values.ToImmutableArray();
         }
     }
 }

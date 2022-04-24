@@ -105,7 +105,8 @@ namespace IllusionScript.Runtime.Diagnostics
 
         public void WrongArgumentType(TextSpan span, string name, TypeSymbol parameterType, TypeSymbol argumentType)
         {
-            string message = $"Parameter '{name}' requires a value of type {parameterType} but was given a value of type {argumentType}";
+            string message =
+                $"Parameter '{name}' requires a value of type {parameterType} but was given a value of type {argumentType}";
             Report(span, message);
         }
 

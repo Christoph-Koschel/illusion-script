@@ -174,9 +174,7 @@ namespace IllusionScript.Runtime.Binding
                 arguments.Add(boundArgument);
             }
 
-            IEnumerable<FunctionSymbol> functions = BuiltInFunctions.GetAll();
-            FunctionSymbol? function = functions.SingleOrDefault(f => f.name == syntax.identifier.text);
-            if (function == null)
+            if (!scope.TryLookupFunction(syntax.identifier.text, out FunctionSymbol function))
             {
                 diagnostics.ReportUndefinedFunction(syntax.identifier.span, syntax.identifier.text);
                 return new BoundErrorExpression();
@@ -267,7 +265,7 @@ namespace IllusionScript.Runtime.Binding
                 return new BoundErrorExpression();
             }
 
-            if (!scope.TryLookup(name, out VariableSymbol variable))
+            if (!scope.TryLookupVariable(name, out VariableSymbol variable))
             {
                 diagnostics.ReportUndefinedIdentifier(syntax.identifier.span, name);
                 return new BoundErrorExpression();
@@ -281,7 +279,7 @@ namespace IllusionScript.Runtime.Binding
             string name = syntax.identifier.text;
             BoundExpression boundExpression = BindExpression(syntax.expression);
 
-            if (!scope.TryLookup(name, out VariableSymbol variable))
+            if (!scope.TryLookupVariable(name, out VariableSymbol variable))
             {
                 diagnostics.ReportUndefinedIdentifier(syntax.identifier.span, name);
                 return boundExpression;
@@ -326,7 +324,8 @@ namespace IllusionScript.Runtime.Binding
                 previous = previous.previous;
             }
 
-            Scope parent = null;
+            Scope parent = CreateRootScope();
+
 
             while (stack.Count > 0)
             {
@@ -334,13 +333,24 @@ namespace IllusionScript.Runtime.Binding
                 Scope scope = new Scope(parent);
                 foreach (VariableSymbol variable in previous.variables)
                 {
-                    scope.TryDeclare(variable);
+                    scope.TryDeclareVariable(variable);
                 }
 
                 parent = scope;
             }
 
             return parent;
+        }
+
+        private static Scope CreateRootScope()
+        {
+            var result = new Scope(null);
+            foreach (FunctionSymbol symbol in BuiltInFunctions.GetAll())
+            {
+                result.TryDeclareFunction(symbol);
+            }
+
+            return result;
         }
 
         #endregion
@@ -351,7 +361,7 @@ namespace IllusionScript.Runtime.Binding
             bool declare = !identifier.isMissing;
             VariableSymbol variable = new VariableSymbol(name, isReadOnly, type);
 
-            if (declare && !scope.TryDeclare(variable))
+            if (declare && !scope.TryDeclareVariable(variable))
             {
                 diagnostics.ReportVariableAlreadyDeclared(identifier.span, name);
             }
