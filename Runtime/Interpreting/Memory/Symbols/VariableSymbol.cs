@@ -2,7 +2,7 @@
 
 namespace IllusionScript.Runtime.Interpreting.Memory.Symbols
 {
-    public sealed class VariableSymbol : Symbol
+    public class VariableSymbol : Symbol
     {
         public readonly bool isReadOnly;
         public readonly TypeSymbol type;

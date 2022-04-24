@@ -2,10 +2,11 @@
 {
     public sealed class TypeSymbol : Symbol
     {
-        public static readonly TypeSymbol Int = new TypeSymbol("Int");
-        public static readonly TypeSymbol Bool = new TypeSymbol("Boolean");
-        public static readonly TypeSymbol String = new TypeSymbol("String");
-        public static readonly TypeSymbol Error = new TypeSymbol("?");
+        public static readonly TypeSymbol Int = new ("Int");
+        public static readonly TypeSymbol Bool = new ("Boolean");
+        public static readonly TypeSymbol String = new ("String");
+        public static readonly TypeSymbol Void = new TypeSymbol("Void");
+        public static readonly TypeSymbol Error = new ("?");
 
         private TypeSymbol(string name) : base(name)
         {
