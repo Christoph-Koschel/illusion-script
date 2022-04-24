@@ -22,6 +22,8 @@ namespace IllusionScript.Runtime.Binding
                     return RewriteIfStatement((BoundIfStatement)node);
                 case BoundNodeType.WhileStatement:
                     return RewriteWhileStatement((BoundWhileStatement)node);
+                case BoundNodeType.DoWhileStatement:
+                    return RewriteDoWhileStatement((BoundDoWhileStatement)node);
                 case BoundNodeType.ForStatement:
                     return RewriteForStatement((BoundForStatement)node);
                 case BoundNodeType.GotoStatement:
@@ -68,6 +70,19 @@ namespace IllusionScript.Runtime.Binding
             }
 
             return new BoundForStatement(node.variable, startExpression, endExpression, body);
+        }
+
+        protected virtual BoundStatement RewriteDoWhileStatement(BoundDoWhileStatement node)
+        {
+            BoundStatement body = RewriteStatement(node.body);
+            BoundExpression condition = RewriteExpression(node.condition);
+
+            if (body == node.body && condition == node.condition)
+            {
+                return node;
+            }
+
+            return new BoundDoWhileStatement(body, condition);
         }
 
         protected virtual BoundStatement RewriteWhileStatement(BoundWhileStatement node)

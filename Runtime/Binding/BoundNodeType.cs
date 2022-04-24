@@ -18,6 +18,7 @@
         VariableDeclarationStatement,
         IfStatement,
         WhileStatement,
+        DoWhileStatement,
         ForStatement,
         GotoStatement,
         LabelStatement,

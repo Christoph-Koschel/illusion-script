@@ -83,6 +83,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         [InlineData("{ let a = 0 if (a == 4) a = 10 else a = 5 }", 5)]
         [InlineData("{ let a = 0 while (a != 4) a = a + 1 }", 4)]
         [InlineData("{ let a = 0 for (i = 1 to 10) { a = a + i } a }", 45)]
+        [InlineData("{ let a = 0 do  a = a + 1 while (a < 10) }", 10)]
         public void InterpreterComputesCorrectValues(string text, object expectedValue)
         {
             AssertValue(text, expectedValue);
@@ -297,6 +298,25 @@ namespace IllusionScript.Runtime.Test.Interpreting
 
             string diagnostics = @"
               ERROR: Unexpected token <EOFToken>, expected <IdentifierToken>
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
+        
+        [Fact]
+        public void InterpretErrDoWhileStatement()
+        {
+            string text = @"
+                {
+                    let x = 0
+                    do {
+                        x = 10
+                    } while ([10])
+                }
+            ";
+
+            string diagnostics = @"
+              ERROR: Cannot convert type 'Int' to 'Boolean'
             ";
 
             AssertDiagnostics(text, diagnostics);

@@ -42,6 +42,8 @@ namespace IllusionScript.Runtime.Binding
                     return BindIfStatement((IfStatement)syntax);
                 case SyntaxType.WhileStatement:
                     return BindWhileStatement((WhileStatement)syntax);
+                case SyntaxType.DoWhileStatement:
+                    return BindDoWhileStatement((DoWhileStatement)syntax);
                 case SyntaxType.ForStatement:
                     return BindForStatement((ForStatement)syntax);
                 default:
@@ -61,6 +63,13 @@ namespace IllusionScript.Runtime.Binding
 
             scope = scope.parent;
             return new BoundForStatement(variable, startExpression, endExpression, body);
+        }
+        
+        private BoundStatement BindDoWhileStatement(DoWhileStatement syntax)
+        {
+            BoundStatement body = BindStatement(syntax.body);
+            BoundExpression condition = BindExpression(syntax.condition, TypeSymbol.Bool);
+            return new BoundDoWhileStatement(body, condition);
         }
 
         private BoundStatement BindWhileStatement(WhileStatement syntax)
@@ -130,7 +139,7 @@ namespace IllusionScript.Runtime.Binding
 
         private BoundExpression BindExpression(Expression syntax, bool canBeVoid = false)
         {
-            var result = BindExpressionInternal(syntax);
+            BoundExpression result = BindExpressionInternal(syntax);
             if (!canBeVoid && result.type == TypeSymbol.Void)
             {
                 diagnostics.ReportExpressionMustHaveValue(syntax.span);
@@ -350,7 +359,7 @@ namespace IllusionScript.Runtime.Binding
 
         private static Scope CreateRootScope()
         {
-            var result = new Scope(null);
+            Scope result = new Scope(null);
             foreach (FunctionSymbol symbol in BuiltInFunctions.GetAll())
             {
                 result.TryDeclareFunction(symbol);
@@ -376,8 +385,8 @@ namespace IllusionScript.Runtime.Binding
 
         private BoundExpression BindConversion(TypeSymbol type, Expression syntax)
         {
-            var expression = BindExpression(syntax);
-            var conversion = Conversion.Classify(expression.type, type);
+            BoundExpression expression = BindExpression(syntax);
+            Conversion conversion = Conversion.Classify(expression.type, type);
             if (!conversion.exists)
             {
                 diagnostics.ReportCannotConvert(syntax.span, expression.type, type);

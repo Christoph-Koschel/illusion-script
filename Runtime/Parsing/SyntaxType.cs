@@ -103,6 +103,7 @@
         IfStatement,
         ElseClause,
         WhileStatement,
+        DoWhileStatement,
         ForStatement
     }
 }

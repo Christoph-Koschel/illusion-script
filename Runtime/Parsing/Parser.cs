@@ -83,6 +83,7 @@ namespace IllusionScript.Runtime.Parsing
                 SyntaxType.LetKeyword or SyntaxType.ConstKeyword => ParseVariableDeclaration(),
                 SyntaxType.IfKeyword => ParseIfStatement(),
                 SyntaxType.WhileKeyword => ParseWhileStatement(),
+                SyntaxType.DoKeyword => ParseDoWhileStatement(),
                 SyntaxType.ForKeyword => ParseForStatement(),
                 _ => ParseExpressionStatement()
             };
@@ -102,6 +103,17 @@ namespace IllusionScript.Runtime.Parsing
 
             return new ForStatement(keyword, lParen, identifier, equalsToken, startExpression, toKeyword, endExpression,
                 rParen, body);
+        }
+        
+        private Statement ParseDoWhileStatement()
+        {
+            Token doKeyword = Match(SyntaxType.DoKeyword);
+            Statement body = ParseStatement();
+            Token whileKeyword = Match(SyntaxType.WhileKeyword);
+            Token lParen = Match(SyntaxType.LParenToken);
+            Expression condition = ParseExpression();
+            Token rParent = Match(SyntaxType.RParenToken);
+            return new DoWhileStatement(doKeyword, body, whileKeyword, lParen, condition, rParent);
         }
 
         private Statement ParseWhileStatement()
