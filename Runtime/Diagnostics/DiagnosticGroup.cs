@@ -97,7 +97,7 @@ namespace IllusionScript.Runtime.Diagnostics
             Report(span, message);
         }
 
-        public void ReportWrongArgumentCount(TextSpan span, string name,  int parametersLength, int argumentsLength)
+        public void ReportWrongArgumentCount(TextSpan span, string name, int parametersLength, int argumentsLength)
         {
             string message = $"Function '{name}' requires {parametersLength} arguments but was given {argumentsLength}";
             Report(span, message);
@@ -106,6 +106,12 @@ namespace IllusionScript.Runtime.Diagnostics
         public void WrongArgumentType(TextSpan span, string name, TypeSymbol parameterType, TypeSymbol argumentType)
         {
             string message = $"Parameter '{name}' requires a value of type {parameterType} but was given a value of type {argumentType}";
+            Report(span, message);
+        }
+
+        public void ReportExpressionMustHaveValue(TextSpan span)
+        {
+            string message = $"Expression must have a value";
             Report(span, message);
         }
     }

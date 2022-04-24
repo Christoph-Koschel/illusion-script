@@ -107,7 +107,7 @@ namespace IllusionScript.Runtime.Binding
 
         private BoundStatement BindExpressionStatement(ExpressionStatement syntax)
         {
-            BoundExpression expression = BindExpression(syntax.expression);
+            BoundExpression expression = BindExpression(syntax.expression, true);
             return new BoundExpressionStatement(expression);
         }
 
@@ -129,7 +129,20 @@ namespace IllusionScript.Runtime.Binding
 
         #region Expression
 
-        private BoundExpression BindExpression(Expression syntax)
+        private BoundExpression BindExpression(Expression syntax, bool canBeVoid = false)
+        {
+            var result = BindExpressionInternal(syntax);
+            if (!canBeVoid && result.type == TypeSymbol.Void)
+            {
+                diagnostics.ReportExpressionMustHaveValue(syntax.span);
+                return new BoundErrorExpression();
+            }
+
+            return result;
+        }
+
+
+        private BoundExpression BindExpressionInternal(Expression syntax)
         {
             switch (syntax.type)
             {
