@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using IllusionScript.Runtime.Binding.Nodes.Expressions;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Binding.Operators;
@@ -167,6 +166,11 @@ namespace IllusionScript.Runtime.Binding
 
         private BoundExpression BindCallExpression(CallExpression syntax)
         {
+            if (syntax.arguments.Length == 1 && LookupType(syntax.identifier.text) is TypeSymbol type)
+            {
+                return BindConversion(type, syntax.arguments[0]);
+            }
+
             ImmutableArray<BoundExpression>.Builder arguments = ImmutableArray.CreateBuilder<BoundExpression>();
             foreach (Expression argument in syntax.arguments)
             {
@@ -299,6 +303,8 @@ namespace IllusionScript.Runtime.Binding
             return new BoundAssignmentExpression(variable, boundExpression);
         }
 
+        #endregion
+
         public static GlobalScope BindGlobalScope(GlobalScope previous, CompilationUnit syntax)
         {
             Scope parentScope = CreateParentScopes(previous);
@@ -353,7 +359,6 @@ namespace IllusionScript.Runtime.Binding
             return result;
         }
 
-        #endregion
 
         private VariableSymbol BindVariable(Token identifier, bool isReadOnly, TypeSymbol type)
         {
@@ -367,6 +372,30 @@ namespace IllusionScript.Runtime.Binding
             }
 
             return variable;
+        }
+
+        private BoundExpression BindConversion(TypeSymbol type, Expression syntax)
+        {
+            var expression = BindExpression(syntax);
+            var conversion = Conversion.Classify(expression.type, type);
+            if (!conversion.exists)
+            {
+                diagnostics.ReportCannotConvert(syntax.span, expression.type, type);
+                return new BoundErrorExpression();
+            }
+
+            return new BoundConversionExpression(type, expression);
+        }
+
+        private TypeSymbol LookupType(string name)
+        {
+            return name switch
+            {
+                "Bool" => TypeSymbol.Bool,
+                "Int" => TypeSymbol.Int,
+                "String" => TypeSymbol.String,
+                _ => null
+            };
         }
     }
 }

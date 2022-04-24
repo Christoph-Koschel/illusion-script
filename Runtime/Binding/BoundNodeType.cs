@@ -9,6 +9,7 @@
         VariableExpression,
         AssignmentExpression,
         CallExpression,
+        ConversionExpression,
         ErrorExpression,
         
         // Statements

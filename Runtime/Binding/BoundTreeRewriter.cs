@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Reflection;
 using IllusionScript.Runtime.Binding.Nodes.Expressions;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
 
@@ -161,11 +162,24 @@ namespace IllusionScript.Runtime.Binding
                     return RewriteVariableExpression((BoundVariableExpression)node);
                 case BoundNodeType.CallExpression:
                     return RewriteCallExpression((BoundCallExpression)node);
+                case BoundNodeType.ConversionExpression:
+                    return RewriteConversionExpression((BoundConversionExpression)node);
                 case BoundNodeType.ErrorExpression:
                     return RewriteErrorExpression((BoundErrorExpression)node);
                 default:
                     throw new Exception($"Unexpected node: {node.boundType}");
             }
+        }
+
+        protected virtual BoundExpression RewriteConversionExpression(BoundConversionExpression node)
+        {
+            BoundExpression expression = RewriteExpression(node.expression);
+            if (expression == node.expression)
+            {
+                return node;
+            }
+
+            return new BoundConversionExpression(node.type, expression);
         }
 
         protected virtual BoundExpression RewriteCallExpression(BoundCallExpression node)

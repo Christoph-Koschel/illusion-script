@@ -7,6 +7,7 @@ using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Binding.Operators;
 using IllusionScript.Runtime.Interpreting.Memory;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
+using IllusionScript.Runtime.Parsing.Nodes;
 
 namespace IllusionScript.Runtime.Interpreting
 {
@@ -105,8 +106,31 @@ namespace IllusionScript.Runtime.Interpreting
                 BoundVariableExpression v => InterpretVariableExpression(v),
                 BoundAssignmentExpression a => InterpretAssignmentExpression(a),
                 BoundCallExpression c => InterpretCallExpression(c),
+                BoundConversionExpression co => InterpretConversionExpression(co),
                 _ => throw new Exception($"Unexpected node {node.type}")
             };
+        }
+
+        private object InterpretConversionExpression(BoundConversionExpression co)
+        {
+            object value = InterpretExpression(co.expression);
+
+            if (co.type == TypeSymbol.Bool)
+            {
+                return Convert.ToBoolean(value);
+            }
+            else if (co.type == TypeSymbol.Int)
+            {
+                return Convert.ToInt32(value);
+            }
+            else if (co.type == TypeSymbol.String)
+            {
+                return Convert.ToString(value);
+            }
+            else
+            {
+                throw new Exception($"Unexpected type {co.type}");
+            }
         }
 
         private object InterpretCallExpression(BoundCallExpression c)
@@ -120,7 +144,8 @@ namespace IllusionScript.Runtime.Interpreting
                 string value = (string)InterpretExpression(c.arguments[0]);
                 Console.WriteLine(value);
                 return null;
-            } else if (c.function == BuiltInFunctions.Rand)
+            }
+            else if (c.function == BuiltInFunctions.Rand)
             {
                 int max = (int)InterpretExpression(c.arguments[0]);
                 if (random == null)
