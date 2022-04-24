@@ -15,9 +15,12 @@ namespace IllusionScript.Runtime.Interpreting.Memory
         public static readonly FunctionSymbol Scan =
             new("scan", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.String);
 
-        public static IEnumerable<FunctionSymbol> GetAll() => 
+        public static readonly FunctionSymbol Rand = new FunctionSymbol("rand",
+            ImmutableArray.Create(new ParameterSymbol("max", TypeSymbol.Int)), TypeSymbol.Int);
+
+        public static IEnumerable<FunctionSymbol> GetAll() =>
             typeof(BuiltInFunctions).GetFields(BindingFlags.Public | BindingFlags.Static)
-            .Where(f => f.FieldType == typeof(FunctionSymbol))
-            .Select(f => (FunctionSymbol)f.GetValue(null));
+                .Where(f => f.FieldType == typeof(FunctionSymbol))
+                .Select(f => (FunctionSymbol)f.GetValue(null));
     }
 }

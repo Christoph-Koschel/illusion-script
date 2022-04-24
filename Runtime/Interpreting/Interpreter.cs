@@ -15,6 +15,7 @@ namespace IllusionScript.Runtime.Interpreting
         private readonly BoundBlockStatement root;
         private readonly Dictionary<VariableSymbol, object> variables;
         private object lastValue;
+        private Random random;
 
         public Interpreter(BoundBlockStatement root, Dictionary<VariableSymbol, object> variables)
         {
@@ -116,9 +117,18 @@ namespace IllusionScript.Runtime.Interpreting
             }
             else if (c.function == BuiltInFunctions.Print)
             {
-                object value = InterpretExpression(c.arguments[0]);
+                string value = (string)InterpretExpression(c.arguments[0]);
                 Console.WriteLine(value);
                 return null;
+            } else if (c.function == BuiltInFunctions.Rand)
+            {
+                int max = (int)InterpretExpression(c.arguments[0]);
+                if (random == null)
+                {
+                    random = new Random();
+                }
+
+                return random.Next(max);
             }
             else
             {
