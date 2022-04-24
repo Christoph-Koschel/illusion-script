@@ -90,5 +90,23 @@ namespace IllusionScript.Runtime.Diagnostics
             string message = $"ERROR: Variable '{name}' is read-ony and cannot be assigned to";
             Report(span, message);
         }
+
+        public void ReportUndefinedFunction(TextSpan span, string name)
+        {
+            string message = $"Function '{name}' doesnt exists";
+            Report(span, message);
+        }
+
+        public void ReportWrongArgumentCount(TextSpan span, string name,  int parametersLength, int argumentsLength)
+        {
+            string message = $"Function '{name}' requires {parametersLength} arguments but was given {argumentsLength}";
+            Report(span, message);
+        }
+
+        public void WrongArgumentType(TextSpan span, string name, TypeSymbol parameterType, TypeSymbol argumentType)
+        {
+            string message = $"Parameter '{name}' requires a value of type {parameterType} but was given a value of type {argumentType}";
+            Report(span, message);
+        }
     }
 }

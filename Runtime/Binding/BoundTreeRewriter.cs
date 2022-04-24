@@ -159,11 +159,46 @@ namespace IllusionScript.Runtime.Binding
                     return RewriteLiteralExpression((BoundLiteralExpression)node);
                 case BoundNodeType.VariableExpression:
                     return RewriteVariableExpression((BoundVariableExpression)node);
+                case BoundNodeType.CallExpression:
+                    return RewriteCallExpression((BoundCallExpression)node);
                 case BoundNodeType.ErrorExpression:
                     return RewriteErrorExpression((BoundErrorExpression)node);
                 default:
                     throw new Exception($"Unexpected node: {node.boundType}");
             }
+        }
+
+        protected virtual BoundExpression RewriteCallExpression(BoundCallExpression node)
+        {
+            ImmutableArray<BoundExpression>.Builder builder = null;
+
+            for (int i = 0; i < node.arguments.Length; i++)
+            {
+                BoundExpression statement = RewriteExpression(node.arguments[i]);
+                if (statement != node.arguments[i])
+                {
+                    if (builder == null)
+                    {
+                        builder = ImmutableArray.CreateBuilder<BoundExpression>(node.arguments.Length);
+                        for (int j = 0; j < i; j++)
+                        {
+                            builder.Add(node.arguments[j]);
+                        }
+                    }
+                }
+
+                if (builder != null)
+                {
+                    builder.Add(statement);
+                }
+            }
+
+            if (builder == null)
+            {
+                return node;
+            }
+
+            return new BoundCallExpression(node.function, builder.ToImmutable());
         }
 
         protected virtual BoundExpression RewriteErrorExpression(BoundErrorExpression node)

@@ -5,7 +5,10 @@ using IllusionScript.Runtime.Binding.Nodes;
 using IllusionScript.Runtime.Binding.Nodes.Expressions;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Binding.Operators;
+using IllusionScript.Runtime.Interpreting.Memory;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
+using IllusionScript.Runtime.Parsing.Nodes;
+using IllusionScript.Runtime.Parsing.Nodes.Expressions;
 
 namespace IllusionScript.Runtime.Interpreting
 {
@@ -102,8 +105,27 @@ namespace IllusionScript.Runtime.Interpreting
                 BoundBinaryExpression b => InterpretBinaryExpression(b),
                 BoundVariableExpression v => InterpretVariableExpression(v),
                 BoundAssignmentExpression a => InterpretAssignmentExpression(a),
+                BoundCallExpression c => InterpretCallExpression(c),
                 _ => throw new Exception($"Unexpected node {node.type}")
             };
+        }
+
+        private object InterpretCallExpression(BoundCallExpression c)
+        {
+            if (c.function == BuiltInFunctions.Scan)
+            {
+                return Console.ReadLine();
+            }
+            else if (c.function == BuiltInFunctions.Print)
+            {
+                object value = InterpretExpression(c.arguments[0]);
+                Console.WriteLine(value);
+                return null;
+            }
+            else
+            {
+                throw new Exception($"Unexpected function {c.function.name}");
+            }
         }
 
         private object InterpretAssignmentExpression(BoundAssignmentExpression a)

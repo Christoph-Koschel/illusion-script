@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using IllusionScript.Runtime.Binding.Nodes.Expressions;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Binding.Operators;
@@ -114,7 +115,7 @@ namespace IllusionScript.Runtime.Binding
         {
             BoundExpression result = BindExpression(syntax);
             if (
-                target != TypeSymbol.Error && 
+                target != TypeSymbol.Error &&
                 result.type != TypeSymbol.Error &&
                 result.type != target)
             {
@@ -144,9 +145,50 @@ namespace IllusionScript.Runtime.Binding
                     return BindNameExpression((NameExpression)syntax);
                 case SyntaxType.AssignmentExpression:
                     return BindAssignmentExpression((AssignmentExpression)syntax);
+                case SyntaxType.CallExpression:
+                    return BindCallExpression((CallExpression)syntax);
                 default:
                     throw new Exception($"Unexpected syntax {syntax.type}");
             }
+        }
+
+        private BoundExpression BindCallExpression(CallExpression syntax)
+        {
+            ImmutableArray<BoundExpression>.Builder arguments = ImmutableArray.CreateBuilder<BoundExpression>();
+            foreach (Expression argument in syntax.arguments)
+            {
+                BoundExpression boundArgument = BindExpression(argument);
+                arguments.Add(boundArgument);
+            }
+
+            IEnumerable<FunctionSymbol> functions = BuiltInFunctions.GetAll();
+            FunctionSymbol? function = functions.SingleOrDefault(f => f.name == syntax.identifier.text);
+            if (function == null)
+            {
+                diagnostics.ReportUndefinedFunction(syntax.identifier.span, syntax.identifier.text);
+                return new BoundErrorExpression();
+            }
+
+            if (syntax.arguments.Length != function.parameters.Length)
+            {
+                diagnostics.ReportWrongArgumentCount(syntax.span, syntax.identifier.text, function.parameters.Length,
+                    syntax.arguments.Length);
+                return new BoundErrorExpression();
+            }
+
+            for (int i = 0; i < syntax.arguments.Length; i++)
+            {
+                BoundExpression argument = arguments[i];
+                ParameterSymbol parameter = function.parameters[i];
+
+                if (argument.type != parameter.type)
+                {
+                    diagnostics.WrongArgumentType(syntax.span, parameter.name, parameter.type, argument.type);
+                    return new BoundErrorExpression();
+                }
+            }
+
+            return new BoundCallExpression(function, arguments.ToImmutable());
         }
 
         private BoundExpression BindLiteralExpression(LiteralExpression syntax)

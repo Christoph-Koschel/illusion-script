@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using IllusionScript.Runtime.Diagnostics;
+using IllusionScript.Runtime.Extension;
 using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing.Nodes;
 using IllusionScript.Runtime.Parsing.Nodes.Expressions;
@@ -257,8 +258,49 @@ namespace IllusionScript.Runtime.Parsing
                     return ParseStringLiteral();
                 case SyntaxType.IdentifierToken:
                 default:
-                    return ParseNameExpression();
+                    return ParseNameOrCallExpression();
             }
+        }
+
+        private Expression ParseNameOrCallExpression()
+        {
+            if (Peek(0).type == SyntaxType.IdentifierToken && Peek(1).type == SyntaxType.LParenToken)
+            {
+                return ParseCallExpression();
+            }
+            else
+            {
+                return ParseNameExpression();
+            }
+        }
+
+        private Expression ParseCallExpression()
+        {
+            Token identifier = Match(SyntaxType.IdentifierToken);
+            Token lParen = Match(SyntaxType.LParenToken);
+            SeparatedSyntaxList<Expression> arguments = ParseArguments();
+            Token rParen = Match(SyntaxType.RParenToken);
+            return new CallExpression(identifier, lParen, arguments, rParen);
+        }
+
+        private SeparatedSyntaxList<Expression> ParseArguments()
+        {
+            ImmutableArray<Node>.Builder nodesAndSeparators = ImmutableArray.CreateBuilder<Node>();
+
+            while (current.type != SyntaxType.RParenToken &&
+                   current.type != SyntaxType.EOFToken)
+            {
+                Expression expression = ParseExpression();
+                nodesAndSeparators.Add(expression);
+
+                if (current.type != SyntaxType.RParenToken)
+                {
+                    Token comma = Match(SyntaxType.CommaToken);
+                    nodesAndSeparators.Add(comma);
+                }
+            }
+            
+            return new SeparatedSyntaxList<Expression>(nodesAndSeparators.ToImmutable());
         }
 
         private Expression ParseNameExpression()
