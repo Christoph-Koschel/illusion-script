@@ -64,7 +64,7 @@ namespace IllusionScript.Runtime.Binding
             scope = scope.parent;
             return new BoundForStatement(variable, startExpression, endExpression, body);
         }
-        
+
         private BoundStatement BindDoWhileStatement(DoWhileStatement syntax)
         {
             BoundStatement body = BindStatement(syntax.body);
@@ -121,16 +121,7 @@ namespace IllusionScript.Runtime.Binding
 
         private BoundExpression BindExpression(Expression syntax, TypeSymbol target)
         {
-            BoundExpression result = BindExpression(syntax);
-            if (
-                target != TypeSymbol.Error &&
-                result.type != TypeSymbol.Error &&
-                result.type != target)
-            {
-                diagnostics.ReportCannotConvert(syntax.span, result.type, target);
-            }
-
-            return result;
+            return BindConversion(syntax, target);
         }
 
         #endregion
@@ -177,7 +168,7 @@ namespace IllusionScript.Runtime.Binding
         {
             if (syntax.arguments.Length == 1 && LookupType(syntax.identifier.text) is TypeSymbol type)
             {
-                return BindConversion(type, syntax.arguments[0]);
+                return BindConversion(syntax.arguments[0], type);
             }
 
             ImmutableArray<BoundExpression>.Builder arguments = ImmutableArray.CreateBuilder<BoundExpression>();
@@ -303,13 +294,8 @@ namespace IllusionScript.Runtime.Binding
                 diagnostics.ReportCannotAssign(syntax.identifier.span, name);
             }
 
-            if (boundExpression.type != variable.type)
-            {
-                diagnostics.ReportCannotConvert(syntax.expression.span, boundExpression.type, variable.type);
-                return boundExpression;
-            }
-
-            return new BoundAssignmentExpression(variable, boundExpression);
+            BoundExpression convertedExpression = BindConversion(syntax.expression.span, boundExpression, variable.type);
+            return new BoundAssignmentExpression(variable, convertedExpression);
         }
 
         #endregion
@@ -383,14 +369,29 @@ namespace IllusionScript.Runtime.Binding
             return variable;
         }
 
-        private BoundExpression BindConversion(TypeSymbol type, Expression syntax)
+        private BoundExpression BindConversion(Expression syntax, TypeSymbol type)
         {
             BoundExpression expression = BindExpression(syntax);
+            return BindConversion(syntax.span, expression, type);
+        }
+
+        private BoundExpression BindConversion(TextSpan span, BoundExpression expression, TypeSymbol type)
+        {
             Conversion conversion = Conversion.Classify(expression.type, type);
+
             if (!conversion.exists)
             {
-                diagnostics.ReportCannotConvert(syntax.span, expression.type, type);
+                if (expression.type != TypeSymbol.Error && type != TypeSymbol.Error)
+                {
+                    diagnostics.ReportCannotConvert(span, expression.type, type);
+                }
+
                 return new BoundErrorExpression();
+            }
+
+            if (conversion.isIdentity)
+            {
+                return expression;
             }
 
             return new BoundConversionExpression(type, expression);

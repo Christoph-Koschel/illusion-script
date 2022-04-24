@@ -27,6 +27,7 @@ namespace IllusionScript.Runtime.Interpreting.Memory
         private bool TryLookupSymbol<T>(string name, out T symbol)
             where T : Symbol
         {
+            symbol = null;
             if (symbols.TryGetValue(name, out var declaredSymbol))
             {
                 if (declaredSymbol is T matching)
@@ -34,11 +35,12 @@ namespace IllusionScript.Runtime.Interpreting.Memory
                     symbol = matching;
                     return true;
                 }
+
+                return false;
             }
 
             if (parent == null)
             {
-                symbol = null;
                 return false;
             }
 
