@@ -104,7 +104,7 @@ namespace IllusionScript.Runtime.Parsing
             return new ForStatement(keyword, lParen, identifier, equalsToken, startExpression, toKeyword, endExpression,
                 rParen, body);
         }
-        
+
         private Statement ParseDoWhileStatement()
         {
             Token doKeyword = Match(SyntaxType.DoKeyword);
@@ -157,9 +157,17 @@ namespace IllusionScript.Runtime.Parsing
                 current.type == SyntaxType.LetKeyword ? SyntaxType.LetKeyword : SyntaxType.ConstKeyword;
             Token keyword = Match(expected);
             Token identifier = Match(SyntaxType.IdentifierToken);
+            TypeClause typeClause = ParseTypeClause();
             Token equals = Match(SyntaxType.EqualsToken);
             Expression initializer = ParseExpression();
-            return new VariableDeclarationStatement(keyword, identifier, equals, initializer);
+            return new VariableDeclarationStatement(keyword, identifier, typeClause, equals, initializer);
+        }
+
+        private TypeClause ParseTypeClause()
+        {
+            Token colon = Match(SyntaxType.ColonToken);
+            Token identifier = Match(SyntaxType.IdentifierToken);
+            return new TypeClause(colon, identifier);
         }
 
         private Statement ParseBlockStatement()
@@ -311,7 +319,7 @@ namespace IllusionScript.Runtime.Parsing
                     nodesAndSeparators.Add(comma);
                 }
             }
-            
+
             return new SeparatedSyntaxList<Expression>(nodesAndSeparators.ToImmutable());
         }
 

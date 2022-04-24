@@ -28,7 +28,7 @@ namespace IllusionScript.Runtime.Interpreting.Memory
             where T : Symbol
         {
             symbol = null;
-            if (symbols.TryGetValue(name, out var declaredSymbol))
+            if (symbols.TryGetValue(name, out Symbol declaredSymbol))
             {
                 if (declaredSymbol is T matching)
                 {

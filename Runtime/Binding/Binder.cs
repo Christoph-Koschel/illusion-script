@@ -92,10 +92,24 @@ namespace IllusionScript.Runtime.Binding
         private BoundStatement BindVariableDeclarationStatement(VariableDeclarationStatement syntax)
         {
             bool isReadOnly = syntax.keyword.type == SyntaxType.ConstKeyword;
+            TypeSymbol type = BindTypeClause(syntax.typeClause);
             BoundExpression initializer = BindExpression(syntax.initializer);
-            VariableSymbol variable = BindVariable(syntax.identifier, isReadOnly, initializer.type);
+            TypeSymbol variableType = type ?? initializer.type;
+            VariableSymbol variable = BindVariable(syntax.identifier, isReadOnly, variableType);
+            var convertedInitializer = BindConversion(syntax.initializer.span, initializer, variableType);
 
-            return new BoundVariableDeclarationStatement(variable, initializer);
+            return new BoundVariableDeclarationStatement(variable, convertedInitializer);
+        }
+
+        private TypeSymbol BindTypeClause(TypeClause syntax)
+        {
+            TypeSymbol type = LookupType(syntax.identifier.text);
+            if (type == null)
+            {
+                diagnostics.ReportUndefinedType(syntax.identifier.span, syntax.identifier.text);
+            }
+
+            return type;
         }
 
         private BoundStatement BindBlockStatement(BlockStatement syntax)
@@ -168,7 +182,7 @@ namespace IllusionScript.Runtime.Binding
         {
             if (syntax.arguments.Length == 1 && LookupType(syntax.identifier.text) is TypeSymbol type)
             {
-                return BindConversion(syntax.arguments[0], type);
+                return BindConversion(syntax.arguments[0], type, true);
             }
 
             ImmutableArray<BoundExpression>.Builder arguments = ImmutableArray.CreateBuilder<BoundExpression>();
@@ -294,7 +308,8 @@ namespace IllusionScript.Runtime.Binding
                 diagnostics.ReportCannotAssign(syntax.identifier.span, name);
             }
 
-            BoundExpression convertedExpression = BindConversion(syntax.expression.span, boundExpression, variable.type);
+            BoundExpression convertedExpression =
+                BindConversion(syntax.expression.span, boundExpression, variable.type);
             return new BoundAssignmentExpression(variable, convertedExpression);
         }
 
@@ -369,13 +384,14 @@ namespace IllusionScript.Runtime.Binding
             return variable;
         }
 
-        private BoundExpression BindConversion(Expression syntax, TypeSymbol type)
+        private BoundExpression BindConversion(Expression syntax, TypeSymbol type, bool allowExplicit = false)
         {
             BoundExpression expression = BindExpression(syntax);
-            return BindConversion(syntax.span, expression, type);
+            return BindConversion(syntax.span, expression, type, allowExplicit);
         }
 
-        private BoundExpression BindConversion(TextSpan span, BoundExpression expression, TypeSymbol type)
+        private BoundExpression BindConversion(TextSpan span, BoundExpression expression, TypeSymbol type,
+            bool allowExplicit = false)
         {
             Conversion conversion = Conversion.Classify(expression.type, type);
 
@@ -387,6 +403,11 @@ namespace IllusionScript.Runtime.Binding
                 }
 
                 return new BoundErrorExpression();
+            }
+
+            if (!allowExplicit && conversion.isExplicit)
+            {
+                diagnostics.ReportCannotConvertConvertImplicitly(span, expression.type, type);
             }
 
             if (conversion.isIdentity)

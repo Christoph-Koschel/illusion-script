@@ -76,14 +76,14 @@ namespace IllusionScript.Runtime.Test.Interpreting
         [InlineData("false", false)]
         [InlineData("!true", false)]
         [InlineData("!false", true)]
-        [InlineData("{ let a = 10 a = 10 * a }", 100)]
-        [InlineData("{ let a = 0 if (a == 0) a = 10 }", 10)]
-        [InlineData("{ let a = 0 if (a == 4) a = 10 }", 0)]
-        [InlineData("{ let a = 0 if (a == 0) a = 10 else a = 5 }", 10)]
-        [InlineData("{ let a = 0 if (a == 4) a = 10 else a = 5 }", 5)]
-        [InlineData("{ let a = 0 while (a != 4) a = a + 1 }", 4)]
-        [InlineData("{ let a = 0 for (i = 1 to 10) { a = a + i } a }", 45)]
-        [InlineData("{ let a = 0 do  a = a + 1 while (a < 10) }", 10)]
+        [InlineData("{ let a: Int = 10 a = 10 * a }", 100)]
+        [InlineData("{ let a: Int = 0 if (a == 0) a = 10 }", 10)]
+        [InlineData("{ let a: Int = 0 if (a == 4) a = 10 }", 0)]
+        [InlineData("{ let a: Int = 0 if (a == 0) a = 10 else a = 5 }", 10)]
+        [InlineData("{ let a: Int = 0 if (a == 4) a = 10 else a = 5 }", 5)]
+        [InlineData("{ let a: Int = 0 while (a != 4) a = a + 1 }", 4)]
+        [InlineData("{ let a: Int = 0 for (i = 1 to 10) { a = a + i } a }", 45)]
+        [InlineData("{ let a: Int = 0 do  a = a + 1 while (a < 10) }", 10)]
         public void InterpreterComputesCorrectValues(string text, object expectedValue)
         {
             AssertValue(text, expectedValue);
@@ -105,12 +105,12 @@ namespace IllusionScript.Runtime.Test.Interpreting
         {
             string text = @"
                 {
-                    let x = 10
-                    let y = 100
+                    let x: Int = 10
+                    let y: Int = 100
                     {
-                        let x = 10
+                        let x: Int = 10
                     }
-                    let [x] = 5
+                    let [x]: Int = 5
                 }
             ";
 
@@ -150,7 +150,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         {
             string text = @"
                 {
-                    const x = 10
+                    const x: Int = 10
                     [x] = 0
                 }
             ";
@@ -168,7 +168,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         {
             string text = @"
                 {
-                    let x = 10
+                    let x: Int = 10
                     x = [true]
                 }
             ";
@@ -209,7 +209,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         {
             string text = @"
             {
-                let x = 0
+                let x: Int = 0
                 if ([10])
                     x = 10
             }
@@ -227,7 +227,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         {
             string text = @"
             {
-                let x = 0
+                let x: Int = 0
                 while ([10])
                     x = 10
             }
@@ -245,7 +245,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         {
             string text = @"
             {
-                let x = 0
+                let x: Int = 0
                 for (i = [false] to 10)
                     x = 10
             }
@@ -263,7 +263,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         {
             string text = @"
             {
-                let x = 0
+                let x: Int = 0
                 for (i = 10 to [false])
                     x = 10
             }
@@ -308,7 +308,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         {
             string text = @"
                 {
-                    let x = 0
+                    let x: Int = 0
                     do {
                         x = 10
                     } while ([10])
