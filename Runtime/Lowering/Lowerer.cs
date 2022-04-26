@@ -219,7 +219,7 @@ namespace IllusionScript.Runtime.Lowering
             BoundVariableDeclarationStatement variableDeclaration =
                 new BoundVariableDeclarationStatement(node.variable, node.startExpression);
             BoundVariableExpression variableExpression = new BoundVariableExpression(node.variable);
-            VariableSymbol endBoundSymbol = new VariableSymbol("__while__end__", true, TypeSymbol.Int);
+            VariableSymbol endBoundSymbol = new LocalVariableSymbol("__while__end__", true, TypeSymbol.Int);
             BoundVariableDeclarationStatement endDeclaration =
                 new BoundVariableDeclarationStatement(endBoundSymbol, node.endExpression);
             BoundBinaryExpression condition = new BoundBinaryExpression(

@@ -8,22 +8,34 @@ using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Interpreting.Memory;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 using IllusionScript.Runtime.Lexing;
+using IllusionScript.Runtime.Lowering;
 using IllusionScript.Runtime.Parsing;
 using IllusionScript.Runtime.Parsing.Nodes;
 using IllusionScript.Runtime.Parsing.Nodes.Expressions;
+using IllusionScript.Runtime.Parsing.Nodes.Members;
 using IllusionScript.Runtime.Parsing.Nodes.Statements;
 
 namespace IllusionScript.Runtime.Binding
 {
     internal sealed class Binder
     {
+        public readonly FunctionSymbol function;
         public readonly DiagnosticGroup diagnostics;
         private Scope scope;
 
-        public Binder(Scope parent)
+        public Binder(Scope parent, FunctionSymbol function)
         {
+            this.function = function;
             diagnostics = new DiagnosticGroup();
             scope = new Scope(parent);
+
+            if (function != null)
+            {
+                foreach (ParameterSymbol parameter in function.parameters)
+                {
+                    scope.TryDeclareVariable(parameter);
+                }
+            }
         }
 
         #region Statements
@@ -96,15 +108,15 @@ namespace IllusionScript.Runtime.Binding
             BoundExpression initializer = BindExpression(syntax.initializer);
             TypeSymbol variableType = type ?? initializer.type;
             VariableSymbol variable = BindVariable(syntax.identifier, isReadOnly, variableType);
-            var convertedInitializer = BindConversion(syntax.initializer.span, initializer, variableType);
+            BoundExpression convertedInitializer = BindConversion(syntax.initializer.span, initializer, variableType);
 
             return new BoundVariableDeclarationStatement(variable, convertedInitializer);
         }
 
-        private TypeSymbol BindTypeClause(TypeClause syntax)
+        private TypeSymbol BindTypeClause(TypeClause syntax, bool enableVoid = false)
         {
-            TypeSymbol type = LookupType(syntax.identifier.text);
-            if (type == null)
+            TypeSymbol type = LookupType(syntax.identifier.text, enableVoid);
+            if (type == null && !string.IsNullOrEmpty(syntax.identifier.text))
             {
                 diagnostics.ReportUndefinedType(syntax.identifier.span, syntax.identifier.text);
             }
@@ -212,7 +224,8 @@ namespace IllusionScript.Runtime.Binding
 
                 if (argument.type != parameter.type)
                 {
-                    diagnostics.WrongArgumentType(syntax.span, parameter.name, parameter.type, argument.type);
+                    diagnostics.WrongArgumentType(syntax.arguments[i].span, parameter.name, parameter.type,
+                        argument.type);
                     return new BoundErrorExpression();
                 }
             }
@@ -315,11 +328,88 @@ namespace IllusionScript.Runtime.Binding
 
         #endregion
 
+        private void BindFunctionDeclarationMember(FunctionDeclarationMember syntax)
+        {
+            ImmutableArray<ParameterSymbol>.Builder parameters = ImmutableArray.CreateBuilder<ParameterSymbol>();
+            HashSet<string> seenParameterName = new HashSet<string>();
+            foreach (Parameter parameter in syntax.parameters)
+            {
+                string parameterName = parameter.identifier.text;
+                TypeSymbol parameterType = BindTypeClause(parameter.typeClause);
+                if (!seenParameterName.Add(parameterName))
+                {
+                    diagnostics.ReportParameterAlreadyDeclared(parameter.span, parameterName);
+                }
+                else
+                {
+                    ParameterSymbol p = new ParameterSymbol(parameterName, parameterType);
+                    parameters.Add(p);
+                }
+            }
+
+            TypeSymbol type = BindTypeClause(syntax.typeClause, true) ?? TypeSymbol.Void;
+            if (type != TypeSymbol.Void)
+            {
+                diagnostics.XXX_ReportFunctionsAreUnsupported(syntax.span);
+            }
+
+            FunctionSymbol function =
+                new FunctionSymbol(syntax.identifier.text, parameters.ToImmutable(), type, syntax);
+            if (!scope.TryDeclareFunction(function))
+            {
+                diagnostics.ReportSymbolAlreadyDeclared(syntax.identifier.span, function.name);
+            }
+        }
+
+
+        public static BoundProgram BindProgram(GlobalScope globalScope)
+        {
+            Scope parentScope = CreateParentScopes(globalScope);
+            ImmutableDictionary<FunctionSymbol, BoundBlockStatement>.Builder functionBodies =
+                ImmutableDictionary.CreateBuilder<FunctionSymbol, BoundBlockStatement>();
+            DiagnosticGroup diagnostics = new DiagnosticGroup();
+
+            var scope = globalScope;
+            while (scope != null)
+            {
+                foreach (FunctionSymbol function in scope.functions)
+                {
+                    Binder binder = new Binder(parentScope, function);
+                    BoundStatement body = binder.BindStatement(function.declaration.body);
+                    BoundBlockStatement loweredBody = Lowerer.Lower(body);
+                    functionBodies.Add(function, loweredBody);
+
+                    diagnostics.AddRange(binder.diagnostics);
+                }
+
+                scope = scope.previous;
+            }
+
+
+            return new BoundProgram(globalScope, diagnostics, functionBodies.ToImmutable());
+        }
+
         public static GlobalScope BindGlobalScope(GlobalScope previous, CompilationUnit syntax)
         {
             Scope parentScope = CreateParentScopes(previous);
-            Binder binder = new Binder(parentScope);
-            BoundStatement expression = binder.BindStatement(syntax.statement);
+            Binder binder = new Binder(parentScope, null);
+
+            foreach (FunctionDeclarationMember function in syntax.members.OfType<FunctionDeclarationMember>())
+            {
+                binder.BindFunctionDeclarationMember(function);
+            }
+
+            ImmutableArray<BoundStatement>.Builder statementBuilder = ImmutableArray.CreateBuilder<BoundStatement>();
+
+            foreach (StatementMember statementMember in syntax.members.OfType<StatementMember>())
+            {
+                BoundStatement s = binder.BindStatement(statementMember.statement);
+                statementBuilder.Add(s);
+            }
+
+            BoundBlockStatement statement = new BoundBlockStatement(statementBuilder.ToImmutable());
+
+            ImmutableArray<FunctionSymbol> functions = binder.scope.GetDeclaredFunctions();
             ImmutableArray<VariableSymbol> variables = binder.scope.GetDeclaredVariables();
             ImmutableArray<Diagnostic> diagnostics = binder.diagnostics.ToImmutableArray();
 
@@ -328,7 +418,7 @@ namespace IllusionScript.Runtime.Binding
                 diagnostics = diagnostics.InsertRange(0, previous.diagnostics);
             }
 
-            return new GlobalScope(previous, diagnostics, variables, expression);
+            return new GlobalScope(previous, diagnostics, variables, functions, statement);
         }
 
         private static Scope CreateParentScopes(GlobalScope previous)
@@ -347,6 +437,12 @@ namespace IllusionScript.Runtime.Binding
             {
                 previous = stack.Pop();
                 Scope scope = new Scope(parent);
+                foreach (FunctionSymbol function in previous.functions)
+                {
+                    scope.TryDeclareFunction(function);
+                }
+
+
                 foreach (VariableSymbol variable in previous.variables)
                 {
                     scope.TryDeclareVariable(variable);
@@ -374,11 +470,13 @@ namespace IllusionScript.Runtime.Binding
         {
             string name = identifier.text ?? "?";
             bool declare = !identifier.isMissing;
-            VariableSymbol variable = new VariableSymbol(name, isReadOnly, type);
+            VariableSymbol variable = function == null
+                ? new GlobalVariableSymbol(name, isReadOnly, type)
+                : new LocalVariableSymbol(name, isReadOnly, type);
 
             if (declare && !scope.TryDeclareVariable(variable))
             {
-                diagnostics.ReportVariableAlreadyDeclared(identifier.span, name);
+                diagnostics.ReportSymbolAlreadyDeclared(identifier.span, name);
             }
 
             return variable;
@@ -418,8 +516,13 @@ namespace IllusionScript.Runtime.Binding
             return new BoundConversionExpression(type, expression);
         }
 
-        private TypeSymbol LookupType(string name)
+        private TypeSymbol LookupType(string name, bool enableVoid = false)
         {
+            if (enableVoid && name == "Void")
+            {
+                return TypeSymbol.Void;
+            }
+
             return name switch
             {
                 "Bool" => TypeSymbol.Bool,

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using IllusionScript.Runtime.Binding;
 using IllusionScript.Runtime.Binding.Nodes;
 using IllusionScript.Runtime.Binding.Nodes.Expressions;
@@ -7,39 +8,49 @@ using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Binding.Operators;
 using IllusionScript.Runtime.Interpreting.Memory;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
-using IllusionScript.Runtime.Parsing.Nodes;
 
 namespace IllusionScript.Runtime.Interpreting
 {
     internal sealed class Interpreter
     {
+        private readonly ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functionBodies;
         private readonly BoundBlockStatement root;
-        private readonly Dictionary<VariableSymbol, object> variables;
+        private readonly Dictionary<VariableSymbol, object> globals;
+        private readonly Stack<Dictionary<VariableSymbol, object>> locals;
         private object lastValue;
         private Random random;
 
-        public Interpreter(BoundBlockStatement root, Dictionary<VariableSymbol, object> variables)
+        public Interpreter(ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functionBodies,
+            BoundBlockStatement root, Dictionary<VariableSymbol, object> globals)
         {
+            this.functionBodies = functionBodies;
             this.root = root;
-            this.variables = variables;
+            this.globals = globals;
+            locals = new Stack<Dictionary<VariableSymbol, object>>();
         }
 
         public object Interpret()
         {
+            BoundBlockStatement body = root;
+            return InterpretStatement(body);
+        }
+
+        private object InterpretStatement(BoundBlockStatement body)
+        {
             Dictionary<BoundLabel, int> labelToIndex = new Dictionary<BoundLabel, int>();
 
-            for (int i = 0; i < root.statements.Length; i++)
+            for (int i = 0; i < body.statements.Length; i++)
             {
-                if (root.statements[i] is BoundLabelStatement l)
+                if (body.statements[i] is BoundLabelStatement l)
                 {
                     labelToIndex.Add(l.BoundLabel, i + 1);
                 }
             }
 
             int index = 0;
-            while (index < root.statements.Length)
+            while (index < body.statements.Length)
             {
-                BoundStatement statement = root.statements[index];
+                BoundStatement statement = body.statements[index];
 
                 switch (statement.boundType)
                 {
@@ -87,7 +98,7 @@ namespace IllusionScript.Runtime.Interpreting
         private void InterpretVariableDeclarationStatement(BoundVariableDeclarationStatement statement)
         {
             object value = InterpretExpression(statement.initializer);
-            variables[statement.variable] = value;
+            globals[statement.variable] = value;
             lastValue = value;
         }
 
@@ -157,20 +168,45 @@ namespace IllusionScript.Runtime.Interpreting
             }
             else
             {
-                throw new Exception($"Unexpected function {c.function.name}");
+                Dictionary<VariableSymbol, object> frame = new Dictionary<VariableSymbol, object>();
+                for (int i = 0; i < c.arguments.Length; i++)
+                {
+                    ParameterSymbol parameter = c.function.parameters[i];
+                    object value = InterpretExpression(c.arguments[i]);
+                    frame.Add(parameter, value);
+                }
+
+                locals.Push(frame);
+                BoundBlockStatement statement = functionBodies[c.function];
+                return InterpretStatement(statement);
             }
         }
 
         private object InterpretAssignmentExpression(BoundAssignmentExpression a)
         {
             object value = InterpretExpression(a.expression);
-            variables[a.variableSymbol] = value;
+            if (a.variableSymbol.symbolType is SymbolType.GlobalVariable)
+            {
+                globals[a.variableSymbol] = value;
+            }
+            else
+            {
+                Dictionary<VariableSymbol, object> frame = locals.Peek();
+                frame[a.variableSymbol] = value;
+            }
+
             return value;
         }
 
         private object InterpretVariableExpression(BoundVariableExpression v)
         {
-            return variables[v.variableSymbol];
+            if (v.variableSymbol.symbolType is SymbolType.GlobalVariable)
+            {
+                return globals[v.variableSymbol];
+            }
+
+            Dictionary<VariableSymbol, object> frame = locals.Peek();
+            return frame[v.variableSymbol];
         }
 
         private object InterpretBinaryExpression(BoundBinaryExpression b)

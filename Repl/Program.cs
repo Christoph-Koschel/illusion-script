@@ -5,19 +5,12 @@ namespace IllusionScript
     internal static class Program
     {
         internal static string[] args;
-        
+
         public static void Main(string[] args)
         {
             Program.args = args;
-            try
-            {
-                IlsRepl repl = new IlsRepl();
-                repl.Run();
-            }
-            catch (Exception err)
-            {
-                Console.WriteLine(err);
-            } 
+            IlsRepl repl = new IlsRepl();
+            repl.Run();
 
             // Disable console closing
             end: // <<-- TODO Remove

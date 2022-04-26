@@ -4,9 +4,11 @@ using System.Collections.Immutable;
 using System.IO;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Extension;
+using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing.Nodes;
 using IllusionScript.Runtime.Parsing.Nodes.Expressions;
+using IllusionScript.Runtime.Parsing.Nodes.Members;
 using IllusionScript.Runtime.Parsing.Nodes.Statements;
 
 namespace IllusionScript.Runtime.Parsing
@@ -44,13 +46,6 @@ namespace IllusionScript.Runtime.Parsing
 
         internal DiagnosticGroup Diagnostics => diagnostics;
 
-        public CompilationUnit ParseCompilationUnit()
-        {
-            Statement statement = ParseStatement();
-            Token end = Match(SyntaxType.EOFToken);
-            return new CompilationUnit(statement, end);
-        }
-
         private Token NextToken()
         {
             Token token = current;
@@ -73,6 +68,88 @@ namespace IllusionScript.Runtime.Parsing
 
             diagnostics.ReportUnexpectedToken(current.span, current.type, type);
             return new Token(type, current.position, null, null);
+        }
+
+        public CompilationUnit ParseCompilationUnit()
+        {
+            ImmutableArray<Member> members = ParseMembers();
+            Token end = Match(SyntaxType.EOFToken);
+            return new CompilationUnit(members, end);
+        }
+
+        private ImmutableArray<Member> ParseMembers()
+        {
+            ImmutableArray<Member>.Builder members = ImmutableArray.CreateBuilder<Member>();
+            
+            while (current.type != SyntaxType.EOFToken)
+            {
+                Token startToken = current;
+
+                Member member = ParseMember();
+                members.Add(member);
+
+                if (current == startToken)
+                {
+                    NextToken();
+                }
+            }
+
+            return members.ToImmutable();
+        }
+
+        private Member ParseMember()
+        {
+            if (current.type == SyntaxType.FunctionKeyword)
+            {
+                return ParseFunctionDeclaration();
+            }
+
+            return ParseStatementMember();
+        }
+
+        private Member ParseStatementMember()
+        {
+            Statement statement = ParseStatement();
+            return new StatementMember(statement);
+        }
+
+        private Member ParseFunctionDeclaration()
+        {
+            Token functionKeyword = Match(SyntaxType.FunctionKeyword);
+            Token identifier = Match(SyntaxType.IdentifierToken);
+            Token lParen = Match(SyntaxType.LParenToken);
+            SeparatedSyntaxList<Parameter> parameters = ParseParameters();
+            Token rParen = Match(SyntaxType.RParenToken);
+            TypeClause type = ParseTypeClause();
+            BlockStatement body = (BlockStatement)ParseBlockStatement();
+            return new FunctionDeclarationMember(functionKeyword, identifier, lParen, parameters, rParen, type, body);
+        }
+
+        private SeparatedSyntaxList<Parameter> ParseParameters()
+        {
+            ImmutableArray<Node>.Builder nodesAndSeparators = ImmutableArray.CreateBuilder<Node>();
+
+            while (current.type != SyntaxType.RParenToken &&
+                   current.type != SyntaxType.EOFToken)
+            {
+                Parameter expression = ParseParameter();
+                nodesAndSeparators.Add(expression);
+
+                if (current.type != SyntaxType.RParenToken)
+                {
+                    Token comma = Match(SyntaxType.CommaToken);
+                    nodesAndSeparators.Add(comma);
+                }
+            }
+
+            return new SeparatedSyntaxList<Parameter>(nodesAndSeparators.ToImmutable());
+        }
+
+        private Parameter ParseParameter()
+        {
+            Token identifier = Match(SyntaxType.IdentifierToken);
+            TypeClause type = ParseTypeClause();
+            return new Parameter(identifier, type);
         }
 
         private Statement ParseStatement()

@@ -59,6 +59,7 @@ namespace IllusionScript
             if (showProgram)
             {
                 compilation.EmitTree(Console.Out);
+                Console.Write("\n");
             }
 
             InterpreterResult result = compilation.Interpret(variables);
@@ -73,8 +74,6 @@ namespace IllusionScript
                 Console.ForegroundColor = ConsoleColor.Gray;
                 Console.WriteLine(result.value);
                 Console.ResetColor();
-
-                previous = compilation;
             }
             else
             {
