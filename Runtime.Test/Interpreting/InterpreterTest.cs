@@ -114,7 +114,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
             ";
 
             string diagnostics = @"
-                ERROR: Variable 'x' is already declared
+                ERROR: Symbol 'x' is already declared
             ";
 
             AssertDiagnostics(text, diagnostics);
@@ -293,7 +293,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         [Fact]
         public void InterpreterErrorForInsertedToken()
         {
-            string text = @"[]";
+            string text = @"1 + []";
 
             string diagnostics = @"
               ERROR: Unexpected token <EOFToken>, expected <IdentifierToken>

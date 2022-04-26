@@ -27,6 +27,7 @@ namespace IllusionScript.Runtime.Interpreting
             this.root = root;
             this.globals = globals;
             locals = new Stack<Dictionary<VariableSymbol, object>>();
+            locals.Push(new Dictionary<VariableSymbol, object>());
         }
 
         public object Interpret()
@@ -98,8 +99,9 @@ namespace IllusionScript.Runtime.Interpreting
         private void InterpretVariableDeclarationStatement(BoundVariableDeclarationStatement statement)
         {
             object value = InterpretExpression(statement.initializer);
-            globals[statement.variable] = value;
             lastValue = value;
+
+            Assign(statement.variable, value);
         }
 
         private void InterpretExpressionStatement(BoundExpressionStatement statement)
@@ -178,22 +180,16 @@ namespace IllusionScript.Runtime.Interpreting
 
                 locals.Push(frame);
                 BoundBlockStatement statement = functionBodies[c.function];
-                return InterpretStatement(statement);
+                object result = InterpretStatement(statement);
+                locals.Pop();
+                return result;
             }
         }
 
         private object InterpretAssignmentExpression(BoundAssignmentExpression a)
         {
             object value = InterpretExpression(a.expression);
-            if (a.variableSymbol.symbolType is SymbolType.GlobalVariable)
-            {
-                globals[a.variableSymbol] = value;
-            }
-            else
-            {
-                Dictionary<VariableSymbol, object> frame = locals.Peek();
-                frame[a.variableSymbol] = value;
-            }
+            Assign(a.variableSymbol, value);
 
             return value;
         }
@@ -316,6 +312,19 @@ namespace IllusionScript.Runtime.Interpreting
         private static object InterpretLiteralExpression(BoundLiteralExpression n)
         {
             return n.value;
+        }
+        
+        private void Assign(VariableSymbol symbol, object value)
+        {
+            if (symbol.symbolType is SymbolType.GlobalVariable)
+            {
+                globals[symbol] = value;
+            }
+            else
+            {
+                Dictionary<VariableSymbol, object> frame = locals.Peek();
+                frame[symbol] = value;
+            }
         }
     }
 }

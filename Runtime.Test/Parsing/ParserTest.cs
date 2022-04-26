@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using IllusionScript.Runtime.Parsing;
 using IllusionScript.Runtime.Parsing.Nodes;
 using IllusionScript.Runtime.Parsing.Nodes.Expressions;
+using IllusionScript.Runtime.Parsing.Nodes.Members;
 using IllusionScript.Runtime.Parsing.Nodes.Statements;
 using Runtime.Test;
 using Xunit;
@@ -26,14 +28,16 @@ namespace IllusionScript.Runtime.Test.Parsing
             string? op2Text = SyntaxFacts.GetText(op2);
             string text = $"1 {op1Text} 2 {op2Text} 3";
             Expression expression = ParseExpression(text);
-            
+
             testOutputHelper.WriteLine(SyntaxFacts.GetBinaryOperatorPrecedence(op1).ToString());
             testOutputHelper.WriteLine(SyntaxFacts.GetBinaryOperatorPrecedence(op2).ToString());
             testOutputHelper.WriteLine(text);
             testOutputHelper.WriteLine(expression.ToString());
 
-            if (SyntaxFacts.GetBinaryOperatorPrecedence(op1) == SyntaxFacts.GetBinaryOperatorPrecedence(SyntaxType.DoubleStarToken) ||
-                SyntaxFacts.GetBinaryOperatorPrecedence(op2) == SyntaxFacts.GetBinaryOperatorPrecedence(SyntaxType.DoubleStarToken))
+            if (SyntaxFacts.GetBinaryOperatorPrecedence(op1) ==
+                SyntaxFacts.GetBinaryOperatorPrecedence(SyntaxType.DoubleStarToken) ||
+                SyntaxFacts.GetBinaryOperatorPrecedence(op2) ==
+                SyntaxFacts.GetBinaryOperatorPrecedence(SyntaxType.DoubleStarToken))
             {
                 if (SyntaxFacts.GetBinaryOperatorPrecedence(op1) < SyntaxFacts.GetBinaryOperatorPrecedence(op2))
                 {
@@ -179,7 +183,8 @@ namespace IllusionScript.Runtime.Test.Parsing
         {
             SyntaxTree syntaxTree = SyntaxTree.Parse(text);
             CompilationUnit unit = syntaxTree.root;
-            Statement statement = unit.statement;
+            Member member = Assert.Single(unit.members);
+            Statement statement = Assert.IsType<StatementMember>(member).statement;
             return Assert.IsType<ExpressionStatement>(statement).expression;
         }
     }
