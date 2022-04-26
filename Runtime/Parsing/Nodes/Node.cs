@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using IllusionScript.Runtime.Diagnostics;
+using IllusionScript.Runtime.Extension;
 using IllusionScript.Runtime.Lexing;
 
 namespace IllusionScript.Runtime.Parsing.Nodes
@@ -45,6 +46,14 @@ namespace IllusionScript.Runtime.Parsing.Nodes
                         {
                             yield return child;
                         }
+                    }
+                }
+                else if (typeof(SeparatedSyntaxList).IsAssignableFrom(field.FieldType))
+                {
+                    SeparatedSyntaxList list = (SeparatedSyntaxList)field.GetValue(this);
+                    foreach (Node listItem in list.GetWithSeparators())
+                    {
+                        yield return listItem;
                     }
                 }
             }

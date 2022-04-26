@@ -60,8 +60,14 @@ namespace IllusionScript.Runtime
                 return new InterpreterResult(diagnostics, null);
             }
 
+            BoundProgram program = Binder.BindProgram(GlobalScope);
+            if (program.diagnostics.Any())
+            {
+                return new InterpreterResult(program.diagnostics, null);
+            }
+
             BoundBlockStatement statement = GetStatement();
-            Interpreter interpreter = new Interpreter(statement, variables);
+            Interpreter interpreter = new Interpreter(program.functionBodies, statement, variables);
             object value = interpreter.Interpret();
 
             return new InterpreterResult(Array.Empty<Diagnostic>(), value);

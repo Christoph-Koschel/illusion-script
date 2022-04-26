@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace IllusionScript.Runtime.Interpreting.Memory.Symbols
+﻿namespace IllusionScript.Runtime.Interpreting.Memory.Symbols
 {
-    public sealed class VariableSymbol : Symbol
+    public abstract class VariableSymbol : Symbol
     {
         public readonly bool isReadOnly;
         public readonly TypeSymbol type;
@@ -13,6 +11,6 @@ namespace IllusionScript.Runtime.Interpreting.Memory.Symbols
             this.type = type;
         }
 
-        public override SymbolType symbolType => SymbolType.Variable;
+        public override SymbolType symbolType => SymbolType.GlobalVariable;
     }
 }

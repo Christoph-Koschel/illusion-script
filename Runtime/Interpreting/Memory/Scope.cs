@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 
 namespace IllusionScript.Runtime.Interpreting.Memory
@@ -7,19 +8,35 @@ namespace IllusionScript.Runtime.Interpreting.Memory
     internal sealed class Scope
     {
         public readonly Scope parent;
-        private Dictionary<string, VariableSymbol> variableSymbols;
+        private Dictionary<string, Symbol> symbols;
 
         public Scope(Scope parent)
         {
             this.parent = parent;
-            variableSymbols = new Dictionary<string, VariableSymbol>();
+            symbols = new Dictionary<string, Symbol>();
         }
 
-        public bool TryLookup(string name, out VariableSymbol variable)
+        public bool TryLookupVariable(string name, out VariableSymbol variable) => TryLookupSymbol(name, out variable);
+
+        public bool TryDeclareVariable(VariableSymbol variable) => TryDeclareSymbol(variable);
+
+        public bool TryLookupFunction(string name, out FunctionSymbol function) => TryLookupSymbol(name, out function);
+
+        public bool TryDeclareFunction(FunctionSymbol function) => TryDeclareSymbol(function);
+
+        private bool TryLookupSymbol<T>(string name, out T symbol)
+            where T : Symbol
         {
-            if (variableSymbols.TryGetValue(name, out variable))
+            symbol = null;
+            if (symbols.TryGetValue(name, out Symbol declaredSymbol))
             {
-                return true;
+                if (declaredSymbol is T matching)
+                {
+                    symbol = matching;
+                    return true;
+                }
+
+                return false;
             }
 
             if (parent == null)
@@ -27,23 +44,29 @@ namespace IllusionScript.Runtime.Interpreting.Memory
                 return false;
             }
 
-            return parent.TryLookup(name, out variable);
+            return parent.TryLookupSymbol(name, out symbol);
         }
 
-        public bool TryDeclare(VariableSymbol variable)
+        private bool TryDeclareSymbol<T>(T symbol)
+            where T : Symbol
         {
-            if (variableSymbols.ContainsKey(variable.name))
+            if (symbols.ContainsKey(symbol.name))
             {
                 return false;
             }
 
-            variableSymbols.Add(variable.name, variable);
+            symbols.Add(symbol.name, symbol);
             return true;
         }
 
-        public ImmutableArray<VariableSymbol> GetDeclaredVariables()
+        public ImmutableArray<VariableSymbol> GetDeclaredVariables() => GetDeclaredSymbols<VariableSymbol>();
+
+        public ImmutableArray<FunctionSymbol> GetDeclaredFunctions() => GetDeclaredSymbols<FunctionSymbol>();
+
+        private ImmutableArray<T> GetDeclaredSymbols<T>()
+            where T : Symbol
         {
-            return variableSymbols.Values.ToImmutableArray();
+            return symbols.Values.OfType<T>().ToImmutableArray();
         }
     }
 }

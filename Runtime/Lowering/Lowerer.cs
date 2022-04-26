@@ -156,7 +156,8 @@ namespace IllusionScript.Runtime.Lowering
             BoundLabelStatement continueLabelStatement = new BoundLabelStatement(continueBoundLabel);
 
             BoundGotoStatement gotoCheck = new BoundGotoStatement(checkBoundLabel);
-            BoundConditionalGotoStatement goToTrue = new BoundConditionalGotoStatement(continueBoundLabel, node.condition);
+            BoundConditionalGotoStatement goToTrue =
+                new BoundConditionalGotoStatement(continueBoundLabel, node.condition);
 
             BoundBlockStatement result = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
                 gotoCheck,
@@ -168,6 +169,31 @@ namespace IllusionScript.Runtime.Lowering
             ));
 
             return RewriteStatement(result);
+        }
+
+        protected override BoundStatement RewriteDoWhileStatement(BoundDoWhileStatement node)
+        {
+            /*
+             * Before:
+             * do { <body> } while (<condition>)
+             *
+             * After:
+             * continue:
+             * <body>
+             * gotoTrue <condition> continue
+             */
+
+            BoundLabel continueLabel = GenerateLabel();
+            BoundLabelStatement continueLabelStatement = new BoundLabelStatement(continueLabel);
+            BoundConditionalGotoStatement gotoTrue = new BoundConditionalGotoStatement(continueLabel, node.condition);
+
+            BoundBlockStatement result = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
+                continueLabelStatement,
+                node.body,
+                gotoTrue
+            ));
+
+            return result;
         }
 
         protected override BoundStatement RewriteForStatement(BoundForStatement node)
@@ -193,8 +219,9 @@ namespace IllusionScript.Runtime.Lowering
             BoundVariableDeclarationStatement variableDeclaration =
                 new BoundVariableDeclarationStatement(node.variable, node.startExpression);
             BoundVariableExpression variableExpression = new BoundVariableExpression(node.variable);
-            VariableSymbol endBoundSymbol = new VariableSymbol("__while__end__", true, TypeSymbol.Int);
-            BoundVariableDeclarationStatement endDeclaration = new BoundVariableDeclarationStatement(endBoundSymbol, node.endExpression);
+            VariableSymbol endBoundSymbol = new LocalVariableSymbol("__while__end__", true, TypeSymbol.Int);
+            BoundVariableDeclarationStatement endDeclaration =
+                new BoundVariableDeclarationStatement(endBoundSymbol, node.endExpression);
             BoundBinaryExpression condition = new BoundBinaryExpression(
                 variableExpression,
                 BoundBinaryOperator.Bind(SyntaxType.LessToken, TypeSymbol.Int, TypeSymbol.Int),

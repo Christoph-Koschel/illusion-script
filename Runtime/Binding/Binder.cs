@@ -8,22 +8,34 @@ using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Interpreting.Memory;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 using IllusionScript.Runtime.Lexing;
+using IllusionScript.Runtime.Lowering;
 using IllusionScript.Runtime.Parsing;
 using IllusionScript.Runtime.Parsing.Nodes;
 using IllusionScript.Runtime.Parsing.Nodes.Expressions;
+using IllusionScript.Runtime.Parsing.Nodes.Members;
 using IllusionScript.Runtime.Parsing.Nodes.Statements;
 
 namespace IllusionScript.Runtime.Binding
 {
     internal sealed class Binder
     {
+        public readonly FunctionSymbol function;
         public readonly DiagnosticGroup diagnostics;
         private Scope scope;
 
-        public Binder(Scope parent)
+        public Binder(Scope parent, FunctionSymbol function)
         {
+            this.function = function;
             diagnostics = new DiagnosticGroup();
             scope = new Scope(parent);
+
+            if (function != null)
+            {
+                foreach (ParameterSymbol parameter in function.parameters)
+                {
+                    scope.TryDeclareVariable(parameter);
+                }
+            }
         }
 
         #region Statements
@@ -42,6 +54,8 @@ namespace IllusionScript.Runtime.Binding
                     return BindIfStatement((IfStatement)syntax);
                 case SyntaxType.WhileStatement:
                     return BindWhileStatement((WhileStatement)syntax);
+                case SyntaxType.DoWhileStatement:
+                    return BindDoWhileStatement((DoWhileStatement)syntax);
                 case SyntaxType.ForStatement:
                     return BindForStatement((ForStatement)syntax);
                 default:
@@ -61,6 +75,13 @@ namespace IllusionScript.Runtime.Binding
 
             scope = scope.parent;
             return new BoundForStatement(variable, startExpression, endExpression, body);
+        }
+
+        private BoundStatement BindDoWhileStatement(DoWhileStatement syntax)
+        {
+            BoundStatement body = BindStatement(syntax.body);
+            BoundExpression condition = BindExpression(syntax.condition, TypeSymbol.Bool);
+            return new BoundDoWhileStatement(body, condition);
         }
 
         private BoundStatement BindWhileStatement(WhileStatement syntax)
@@ -83,10 +104,24 @@ namespace IllusionScript.Runtime.Binding
         private BoundStatement BindVariableDeclarationStatement(VariableDeclarationStatement syntax)
         {
             bool isReadOnly = syntax.keyword.type == SyntaxType.ConstKeyword;
+            TypeSymbol type = BindTypeClause(syntax.typeClause);
             BoundExpression initializer = BindExpression(syntax.initializer);
-            VariableSymbol variable = BindVariable(syntax.identifier, isReadOnly, initializer.type);
+            TypeSymbol variableType = type ?? initializer.type;
+            VariableSymbol variable = BindVariable(syntax.identifier, isReadOnly, variableType);
+            BoundExpression convertedInitializer = BindConversion(syntax.initializer.span, initializer, variableType);
 
-            return new BoundVariableDeclarationStatement(variable, initializer);
+            return new BoundVariableDeclarationStatement(variable, convertedInitializer);
+        }
+
+        private TypeSymbol BindTypeClause(TypeClause syntax, bool enableVoid = false)
+        {
+            TypeSymbol type = LookupType(syntax.identifier.text, enableVoid);
+            if (type == null && !string.IsNullOrEmpty(syntax.identifier.text))
+            {
+                diagnostics.ReportUndefinedType(syntax.identifier.span, syntax.identifier.text);
+            }
+
+            return type;
         }
 
         private BoundStatement BindBlockStatement(BlockStatement syntax)
@@ -106,29 +141,33 @@ namespace IllusionScript.Runtime.Binding
 
         private BoundStatement BindExpressionStatement(ExpressionStatement syntax)
         {
-            BoundExpression expression = BindExpression(syntax.expression);
+            BoundExpression expression = BindExpression(syntax.expression, true);
             return new BoundExpressionStatement(expression);
         }
 
         private BoundExpression BindExpression(Expression syntax, TypeSymbol target)
         {
-            BoundExpression result = BindExpression(syntax);
-            if (
-                target != TypeSymbol.Error && 
-                result.type != TypeSymbol.Error &&
-                result.type != target)
-            {
-                diagnostics.ReportCannotConvert(syntax.span, result.type, target);
-            }
-
-            return result;
+            return BindConversion(syntax, target);
         }
 
         #endregion
 
         #region Expression
 
-        private BoundExpression BindExpression(Expression syntax)
+        private BoundExpression BindExpression(Expression syntax, bool canBeVoid = false)
+        {
+            BoundExpression result = BindExpressionInternal(syntax);
+            if (!canBeVoid && result.type == TypeSymbol.Void)
+            {
+                diagnostics.ReportExpressionMustHaveValue(syntax.span);
+                return new BoundErrorExpression();
+            }
+
+            return result;
+        }
+
+
+        private BoundExpression BindExpressionInternal(Expression syntax)
         {
             switch (syntax.type)
             {
@@ -144,9 +183,54 @@ namespace IllusionScript.Runtime.Binding
                     return BindNameExpression((NameExpression)syntax);
                 case SyntaxType.AssignmentExpression:
                     return BindAssignmentExpression((AssignmentExpression)syntax);
+                case SyntaxType.CallExpression:
+                    return BindCallExpression((CallExpression)syntax);
                 default:
                     throw new Exception($"Unexpected syntax {syntax.type}");
             }
+        }
+
+        private BoundExpression BindCallExpression(CallExpression syntax)
+        {
+            if (syntax.arguments.Length == 1 && LookupType(syntax.identifier.text) is TypeSymbol type)
+            {
+                return BindConversion(syntax.arguments[0], type, true);
+            }
+
+            ImmutableArray<BoundExpression>.Builder arguments = ImmutableArray.CreateBuilder<BoundExpression>();
+            foreach (Expression argument in syntax.arguments)
+            {
+                BoundExpression boundArgument = BindExpression(argument);
+                arguments.Add(boundArgument);
+            }
+
+            if (!scope.TryLookupFunction(syntax.identifier.text, out FunctionSymbol function))
+            {
+                diagnostics.ReportUndefinedFunction(syntax.identifier.span, syntax.identifier.text);
+                return new BoundErrorExpression();
+            }
+
+            if (syntax.arguments.Length != function.parameters.Length)
+            {
+                diagnostics.ReportWrongArgumentCount(syntax.span, syntax.identifier.text, function.parameters.Length,
+                    syntax.arguments.Length);
+                return new BoundErrorExpression();
+            }
+
+            for (int i = 0; i < syntax.arguments.Length; i++)
+            {
+                BoundExpression argument = arguments[i];
+                ParameterSymbol parameter = function.parameters[i];
+
+                if (argument.type != parameter.type)
+                {
+                    diagnostics.WrongArgumentType(syntax.arguments[i].span, parameter.name, parameter.type,
+                        argument.type);
+                    return new BoundErrorExpression();
+                }
+            }
+
+            return new BoundCallExpression(function, arguments.ToImmutable());
         }
 
         private BoundExpression BindLiteralExpression(LiteralExpression syntax)
@@ -212,7 +296,7 @@ namespace IllusionScript.Runtime.Binding
                 return new BoundErrorExpression();
             }
 
-            if (!scope.TryLookup(name, out VariableSymbol variable))
+            if (!scope.TryLookupVariable(name, out VariableSymbol variable))
             {
                 diagnostics.ReportUndefinedIdentifier(syntax.identifier.span, name);
                 return new BoundErrorExpression();
@@ -226,7 +310,7 @@ namespace IllusionScript.Runtime.Binding
             string name = syntax.identifier.text;
             BoundExpression boundExpression = BindExpression(syntax.expression);
 
-            if (!scope.TryLookup(name, out VariableSymbol variable))
+            if (!scope.TryLookupVariable(name, out VariableSymbol variable))
             {
                 diagnostics.ReportUndefinedIdentifier(syntax.identifier.span, name);
                 return boundExpression;
@@ -237,20 +321,95 @@ namespace IllusionScript.Runtime.Binding
                 diagnostics.ReportCannotAssign(syntax.identifier.span, name);
             }
 
-            if (boundExpression.type != variable.type)
+            BoundExpression convertedExpression =
+                BindConversion(syntax.expression.span, boundExpression, variable.type);
+            return new BoundAssignmentExpression(variable, convertedExpression);
+        }
+
+        #endregion
+
+        private void BindFunctionDeclarationMember(FunctionDeclarationMember syntax)
+        {
+            ImmutableArray<ParameterSymbol>.Builder parameters = ImmutableArray.CreateBuilder<ParameterSymbol>();
+            HashSet<string> seenParameterName = new HashSet<string>();
+            foreach (Parameter parameter in syntax.parameters)
             {
-                diagnostics.ReportCannotConvert(syntax.expression.span, boundExpression.type, variable.type);
-                return boundExpression;
+                string parameterName = parameter.identifier.text;
+                TypeSymbol parameterType = BindTypeClause(parameter.typeClause);
+                if (!seenParameterName.Add(parameterName))
+                {
+                    diagnostics.ReportParameterAlreadyDeclared(parameter.span, parameterName);
+                }
+                else
+                {
+                    ParameterSymbol p = new ParameterSymbol(parameterName, parameterType);
+                    parameters.Add(p);
+                }
             }
 
-            return new BoundAssignmentExpression(variable, boundExpression);
+            TypeSymbol type = BindTypeClause(syntax.typeClause, true) ?? TypeSymbol.Void;
+            if (type != TypeSymbol.Void)
+            {
+                diagnostics.XXX_ReportFunctionsAreUnsupported(syntax.span);
+            }
+
+            FunctionSymbol function =
+                new FunctionSymbol(syntax.identifier.text, parameters.ToImmutable(), type, syntax);
+            if (!scope.TryDeclareFunction(function))
+            {
+                diagnostics.ReportSymbolAlreadyDeclared(syntax.identifier.span, function.name);
+            }
+        }
+
+
+        public static BoundProgram BindProgram(GlobalScope globalScope)
+        {
+            Scope parentScope = CreateParentScopes(globalScope);
+            ImmutableDictionary<FunctionSymbol, BoundBlockStatement>.Builder functionBodies =
+                ImmutableDictionary.CreateBuilder<FunctionSymbol, BoundBlockStatement>();
+            DiagnosticGroup diagnostics = new DiagnosticGroup();
+
+            var scope = globalScope;
+            while (scope != null)
+            {
+                foreach (FunctionSymbol function in scope.functions)
+                {
+                    Binder binder = new Binder(parentScope, function);
+                    BoundStatement body = binder.BindStatement(function.declaration.body);
+                    BoundBlockStatement loweredBody = Lowerer.Lower(body);
+                    functionBodies.Add(function, loweredBody);
+
+                    diagnostics.AddRange(binder.diagnostics);
+                }
+
+                scope = scope.previous;
+            }
+
+
+            return new BoundProgram(globalScope, diagnostics, functionBodies.ToImmutable());
         }
 
         public static GlobalScope BindGlobalScope(GlobalScope previous, CompilationUnit syntax)
         {
             Scope parentScope = CreateParentScopes(previous);
-            Binder binder = new Binder(parentScope);
-            BoundStatement expression = binder.BindStatement(syntax.statement);
+            Binder binder = new Binder(parentScope, null);
+
+            foreach (FunctionDeclarationMember function in syntax.members.OfType<FunctionDeclarationMember>())
+            {
+                binder.BindFunctionDeclarationMember(function);
+            }
+
+            ImmutableArray<BoundStatement>.Builder statementBuilder = ImmutableArray.CreateBuilder<BoundStatement>();
+
+            foreach (StatementMember statementMember in syntax.members.OfType<StatementMember>())
+            {
+                BoundStatement s = binder.BindStatement(statementMember.statement);
+                statementBuilder.Add(s);
+            }
+
+            BoundBlockStatement statement = new BoundBlockStatement(statementBuilder.ToImmutable());
+
+            ImmutableArray<FunctionSymbol> functions = binder.scope.GetDeclaredFunctions();
             ImmutableArray<VariableSymbol> variables = binder.scope.GetDeclaredVariables();
             ImmutableArray<Diagnostic> diagnostics = binder.diagnostics.ToImmutableArray();
 
@@ -259,7 +418,7 @@ namespace IllusionScript.Runtime.Binding
                 diagnostics = diagnostics.InsertRange(0, previous.diagnostics);
             }
 
-            return new GlobalScope(previous, diagnostics, variables, expression);
+            return new GlobalScope(previous, diagnostics, variables, functions, statement);
         }
 
         private static Scope CreateParentScopes(GlobalScope previous)
@@ -271,15 +430,22 @@ namespace IllusionScript.Runtime.Binding
                 previous = previous.previous;
             }
 
-            Scope parent = null;
+            Scope parent = CreateRootScope();
+
 
             while (stack.Count > 0)
             {
                 previous = stack.Pop();
                 Scope scope = new Scope(parent);
+                foreach (FunctionSymbol function in previous.functions)
+                {
+                    scope.TryDeclareFunction(function);
+                }
+
+
                 foreach (VariableSymbol variable in previous.variables)
                 {
-                    scope.TryDeclare(variable);
+                    scope.TryDeclareVariable(variable);
                 }
 
                 parent = scope;
@@ -288,20 +454,82 @@ namespace IllusionScript.Runtime.Binding
             return parent;
         }
 
-        #endregion
+        private static Scope CreateRootScope()
+        {
+            Scope result = new Scope(null);
+            foreach (FunctionSymbol symbol in BuiltInFunctions.GetAll())
+            {
+                result.TryDeclareFunction(symbol);
+            }
+
+            return result;
+        }
+
 
         private VariableSymbol BindVariable(Token identifier, bool isReadOnly, TypeSymbol type)
         {
             string name = identifier.text ?? "?";
             bool declare = !identifier.isMissing;
-            VariableSymbol variable = new VariableSymbol(name, isReadOnly, type);
+            VariableSymbol variable = function == null
+                ? new GlobalVariableSymbol(name, isReadOnly, type)
+                : new LocalVariableSymbol(name, isReadOnly, type);
 
-            if (declare && !scope.TryDeclare(variable))
+            if (declare && !scope.TryDeclareVariable(variable))
             {
-                diagnostics.ReportVariableAlreadyDeclared(identifier.span, name);
+                diagnostics.ReportSymbolAlreadyDeclared(identifier.span, name);
             }
 
             return variable;
+        }
+
+        private BoundExpression BindConversion(Expression syntax, TypeSymbol type, bool allowExplicit = false)
+        {
+            BoundExpression expression = BindExpression(syntax);
+            return BindConversion(syntax.span, expression, type, allowExplicit);
+        }
+
+        private BoundExpression BindConversion(TextSpan span, BoundExpression expression, TypeSymbol type,
+            bool allowExplicit = false)
+        {
+            Conversion conversion = Conversion.Classify(expression.type, type);
+
+            if (!conversion.exists)
+            {
+                if (expression.type != TypeSymbol.Error && type != TypeSymbol.Error)
+                {
+                    diagnostics.ReportCannotConvert(span, expression.type, type);
+                }
+
+                return new BoundErrorExpression();
+            }
+
+            if (!allowExplicit && conversion.isExplicit)
+            {
+                diagnostics.ReportCannotConvertConvertImplicitly(span, expression.type, type);
+            }
+
+            if (conversion.isIdentity)
+            {
+                return expression;
+            }
+
+            return new BoundConversionExpression(type, expression);
+        }
+
+        private TypeSymbol LookupType(string name, bool enableVoid = false)
+        {
+            if (enableVoid && name == "Void")
+            {
+                return TypeSymbol.Void;
+            }
+
+            return name switch
+            {
+                "Bool" => TypeSymbol.Bool,
+                "Int" => TypeSymbol.Int,
+                "String" => TypeSymbol.String,
+                _ => null
+            };
         }
     }
 }

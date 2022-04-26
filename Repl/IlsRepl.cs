@@ -59,17 +59,21 @@ namespace IllusionScript
             if (showProgram)
             {
                 compilation.EmitTree(Console.Out);
+                Console.Write("\n");
             }
 
             InterpreterResult result = compilation.Interpret(variables);
 
             if (!result.diagnostics.Any())
             {
-                Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                if (result.value == null)
+                {
+                    return;
+                }
+                
+                Console.ForegroundColor = ConsoleColor.Gray;
                 Console.WriteLine(result.value);
                 Console.ResetColor();
-
-                previous = compilation;
             }
             else
             {
@@ -145,19 +149,23 @@ namespace IllusionScript
             {
                 if (token.type.ToString().EndsWith("Keyword"))
                 {
-                    Console.ForegroundColor = ConsoleColor.DarkBlue;
+                    Console.ForegroundColor = ConsoleColor.Blue;
                 }
                 else if (token.type == SyntaxType.IdentifierToken)
                 {
                     Console.ForegroundColor = ConsoleColor.Gray;
                 }
-                else if (token.type != SyntaxType.NumberToken)
+                else if (token.type == SyntaxType.StringToken)
                 {
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                }
+                else if (token.type == SyntaxType.NumberToken)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
                 }
                 else
                 {
-                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
                 }
 
                 Console.Write(token.text);

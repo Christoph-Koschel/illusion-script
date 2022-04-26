@@ -8,6 +8,8 @@
         BinaryExpression,
         VariableExpression,
         AssignmentExpression,
+        CallExpression,
+        ConversionExpression,
         ErrorExpression,
         
         // Statements
@@ -16,6 +18,7 @@
         VariableDeclarationStatement,
         IfStatement,
         WhileStatement,
+        DoWhileStatement,
         ForStatement,
         GotoStatement,
         LabelStatement,

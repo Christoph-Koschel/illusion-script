@@ -33,16 +33,16 @@
 
         AndEqualsToken,
         AndToken,
-        
+
         SplitToken,
         SplitEqualsToken,
-        
+
         HatToken,
         HatEqualsToken,
-        
+
         DoubleGreaterToken,
         DoubleLessToken,
-        
+
         // Logical Tokens
         LessToken,
         LessEqualsToken,
@@ -50,7 +50,7 @@
         GreaterEqualsToken,
         DoubleEqualsToken,
         BangEqualsToken,
-        
+
         // Unary Tokens
         BangToken,
         EqualsToken,
@@ -80,7 +80,7 @@
         ToKeyword,
         WhileKeyword,
         DoKeyword,
-        
+
         // Expressions
         BinaryExpression,
         LiteralExpression,
@@ -89,20 +89,23 @@
         AssignmentExpression,
         NameExpression,
         CallExpression,
-        
+
         // Structure
-        Parameter,
         TypeClause,
+        Parameter,
         CompilationUnit,
-        
+
         // Statements
         BlockStatement,
         ExpressionStatement,
-        FunctionDeclarationStatement,
+        FunctionDeclarationMember,
         VariableDeclarationStatement,
         IfStatement,
         ElseClause,
         WhileStatement,
-        ForStatement
+        DoWhileStatement,
+        ForStatement,
+        StatementMember,
+   
     }
 }

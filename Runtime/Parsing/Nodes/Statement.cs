@@ -1,4 +1,4 @@
-﻿namespace IllusionScript.Runtime.Parsing.Nodes.Statements
+﻿namespace IllusionScript.Runtime.Parsing.Nodes
 {
     public abstract class Statement : Node
     {

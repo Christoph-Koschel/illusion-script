@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using IllusionScript.Runtime.Diagnostics;
+using IllusionScript.Runtime.Extension;
+using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing.Nodes;
 using IllusionScript.Runtime.Parsing.Nodes.Expressions;
+using IllusionScript.Runtime.Parsing.Nodes.Members;
 using IllusionScript.Runtime.Parsing.Nodes.Statements;
 
 namespace IllusionScript.Runtime.Parsing
@@ -43,13 +46,6 @@ namespace IllusionScript.Runtime.Parsing
 
         internal DiagnosticGroup Diagnostics => diagnostics;
 
-        public CompilationUnit ParseCompilationUnit()
-        {
-            Statement statement = ParseStatement();
-            Token end = Match(SyntaxType.EOFToken);
-            return new CompilationUnit(statement, end);
-        }
-
         private Token NextToken()
         {
             Token token = current;
@@ -74,6 +70,88 @@ namespace IllusionScript.Runtime.Parsing
             return new Token(type, current.position, null, null);
         }
 
+        public CompilationUnit ParseCompilationUnit()
+        {
+            ImmutableArray<Member> members = ParseMembers();
+            Token end = Match(SyntaxType.EOFToken);
+            return new CompilationUnit(members, end);
+        }
+
+        private ImmutableArray<Member> ParseMembers()
+        {
+            ImmutableArray<Member>.Builder members = ImmutableArray.CreateBuilder<Member>();
+            
+            while (current.type != SyntaxType.EOFToken)
+            {
+                Token startToken = current;
+
+                Member member = ParseMember();
+                members.Add(member);
+
+                if (current == startToken)
+                {
+                    NextToken();
+                }
+            }
+
+            return members.ToImmutable();
+        }
+
+        private Member ParseMember()
+        {
+            if (current.type == SyntaxType.FunctionKeyword)
+            {
+                return ParseFunctionDeclaration();
+            }
+
+            return ParseStatementMember();
+        }
+
+        private Member ParseStatementMember()
+        {
+            Statement statement = ParseStatement();
+            return new StatementMember(statement);
+        }
+
+        private Member ParseFunctionDeclaration()
+        {
+            Token functionKeyword = Match(SyntaxType.FunctionKeyword);
+            Token identifier = Match(SyntaxType.IdentifierToken);
+            Token lParen = Match(SyntaxType.LParenToken);
+            SeparatedSyntaxList<Parameter> parameters = ParseParameters();
+            Token rParen = Match(SyntaxType.RParenToken);
+            TypeClause type = ParseTypeClause();
+            BlockStatement body = (BlockStatement)ParseBlockStatement();
+            return new FunctionDeclarationMember(functionKeyword, identifier, lParen, parameters, rParen, type, body);
+        }
+
+        private SeparatedSyntaxList<Parameter> ParseParameters()
+        {
+            ImmutableArray<Node>.Builder nodesAndSeparators = ImmutableArray.CreateBuilder<Node>();
+
+            while (current.type != SyntaxType.RParenToken &&
+                   current.type != SyntaxType.EOFToken)
+            {
+                Parameter expression = ParseParameter();
+                nodesAndSeparators.Add(expression);
+
+                if (current.type != SyntaxType.RParenToken)
+                {
+                    Token comma = Match(SyntaxType.CommaToken);
+                    nodesAndSeparators.Add(comma);
+                }
+            }
+
+            return new SeparatedSyntaxList<Parameter>(nodesAndSeparators.ToImmutable());
+        }
+
+        private Parameter ParseParameter()
+        {
+            Token identifier = Match(SyntaxType.IdentifierToken);
+            TypeClause type = ParseTypeClause();
+            return new Parameter(identifier, type);
+        }
+
         private Statement ParseStatement()
         {
             return current.type switch
@@ -82,6 +160,7 @@ namespace IllusionScript.Runtime.Parsing
                 SyntaxType.LetKeyword or SyntaxType.ConstKeyword => ParseVariableDeclaration(),
                 SyntaxType.IfKeyword => ParseIfStatement(),
                 SyntaxType.WhileKeyword => ParseWhileStatement(),
+                SyntaxType.DoKeyword => ParseDoWhileStatement(),
                 SyntaxType.ForKeyword => ParseForStatement(),
                 _ => ParseExpressionStatement()
             };
@@ -101,6 +180,17 @@ namespace IllusionScript.Runtime.Parsing
 
             return new ForStatement(keyword, lParen, identifier, equalsToken, startExpression, toKeyword, endExpression,
                 rParen, body);
+        }
+
+        private Statement ParseDoWhileStatement()
+        {
+            Token doKeyword = Match(SyntaxType.DoKeyword);
+            Statement body = ParseStatement();
+            Token whileKeyword = Match(SyntaxType.WhileKeyword);
+            Token lParen = Match(SyntaxType.LParenToken);
+            Expression condition = ParseExpression();
+            Token rParent = Match(SyntaxType.RParenToken);
+            return new DoWhileStatement(doKeyword, body, whileKeyword, lParen, condition, rParent);
         }
 
         private Statement ParseWhileStatement()
@@ -144,9 +234,17 @@ namespace IllusionScript.Runtime.Parsing
                 current.type == SyntaxType.LetKeyword ? SyntaxType.LetKeyword : SyntaxType.ConstKeyword;
             Token keyword = Match(expected);
             Token identifier = Match(SyntaxType.IdentifierToken);
+            TypeClause typeClause = ParseTypeClause();
             Token equals = Match(SyntaxType.EqualsToken);
             Expression initializer = ParseExpression();
-            return new VariableDeclarationStatement(keyword, identifier, equals, initializer);
+            return new VariableDeclarationStatement(keyword, identifier, typeClause, equals, initializer);
+        }
+
+        private TypeClause ParseTypeClause()
+        {
+            Token colon = Match(SyntaxType.ColonToken);
+            Token identifier = Match(SyntaxType.IdentifierToken);
+            return new TypeClause(colon, identifier);
         }
 
         private Statement ParseBlockStatement()
@@ -257,8 +355,49 @@ namespace IllusionScript.Runtime.Parsing
                     return ParseStringLiteral();
                 case SyntaxType.IdentifierToken:
                 default:
-                    return ParseNameExpression();
+                    return ParseNameOrCallExpression();
             }
+        }
+
+        private Expression ParseNameOrCallExpression()
+        {
+            if (Peek(0).type == SyntaxType.IdentifierToken && Peek(1).type == SyntaxType.LParenToken)
+            {
+                return ParseCallExpression();
+            }
+            else
+            {
+                return ParseNameExpression();
+            }
+        }
+
+        private Expression ParseCallExpression()
+        {
+            Token identifier = Match(SyntaxType.IdentifierToken);
+            Token lParen = Match(SyntaxType.LParenToken);
+            SeparatedSyntaxList<Expression> arguments = ParseArguments();
+            Token rParen = Match(SyntaxType.RParenToken);
+            return new CallExpression(identifier, lParen, arguments, rParen);
+        }
+
+        private SeparatedSyntaxList<Expression> ParseArguments()
+        {
+            ImmutableArray<Node>.Builder nodesAndSeparators = ImmutableArray.CreateBuilder<Node>();
+
+            while (current.type != SyntaxType.RParenToken &&
+                   current.type != SyntaxType.EOFToken)
+            {
+                Expression expression = ParseExpression();
+                nodesAndSeparators.Add(expression);
+
+                if (current.type != SyntaxType.RParenToken)
+                {
+                    Token comma = Match(SyntaxType.CommaToken);
+                    nodesAndSeparators.Add(comma);
+                }
+            }
+
+            return new SeparatedSyntaxList<Expression>(nodesAndSeparators.ToImmutable());
         }
 
         private Expression ParseNameExpression()

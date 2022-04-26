@@ -9,9 +9,4 @@
     <ItemGroup>
         <Folder Include="Compiling" />
     </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Extension\Extension.csproj" />
-    </ItemGroup>
-
 </Project>

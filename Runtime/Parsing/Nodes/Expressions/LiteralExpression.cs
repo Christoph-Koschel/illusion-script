@@ -2,7 +2,7 @@
 
 namespace IllusionScript.Runtime.Parsing.Nodes.Expressions
 {
-    public sealed class LiteralExpression : Expressions.Expression
+    public sealed class LiteralExpression : Expression
     {
         public override SyntaxType type => SyntaxType.LiteralExpression;
         public readonly Token literalToken;

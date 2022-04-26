@@ -79,15 +79,65 @@ namespace IllusionScript.Runtime.Diagnostics
             Report(span, message);
         }
 
-        public void ReportVariableAlreadyDeclared(TextSpan span, string name)
+        public void ReportSymbolAlreadyDeclared(TextSpan span, string name)
         {
-            string message = $"ERROR: Variable '{name}' is already declared";
+            string message = $"ERROR: Symbol '{name}' is already declared";
+            Report(span, message);
+        }
+        
+        public void ReportParameterAlreadyDeclared(TextSpan span, string name)
+        {
+            string message = $"ERROR: A Parameter with the '{name}' is already defined";
             Report(span, message);
         }
 
         public void ReportCannotAssign(TextSpan span, string name)
         {
             string message = $"ERROR: Variable '{name}' is read-ony and cannot be assigned to";
+            Report(span, message);
+        }
+
+        public void ReportUndefinedFunction(TextSpan span, string name)
+        {
+            string message = $"ERROR: Function '{name}' doesnt exists";
+            Report(span, message);
+        }
+
+        public void ReportUndefinedType(TextSpan span, string text)
+        {
+            string message = $"ERROR: Type '{text}' doesnt exists";
+            Report(span, message);
+        }
+
+        public void ReportWrongArgumentCount(TextSpan span, string name, int parametersLength, int argumentsLength)
+        {
+            string message = $"ERROR: Function '{name}' requires {parametersLength} arguments but was given {argumentsLength}";
+            Report(span, message);
+        }
+
+        public void WrongArgumentType(TextSpan span, string name, TypeSymbol parameterType, TypeSymbol argumentType)
+        {
+            string message =
+                $"ERROR: Parameter '{name}' requires a value of type '{parameterType}' but was given a value of type '{argumentType}'";
+            Report(span, message);
+        }
+
+        public void ReportExpressionMustHaveValue(TextSpan span)
+        {
+            string message = $"ERROR: Expression must have a value";
+            Report(span, message);
+        }
+
+        public void ReportCannotConvertConvertImplicitly(TextSpan span, TypeSymbol type1, TypeSymbol type2)
+        {
+            string message =
+                $"ERROR: Cannot convert type '{type1}' to '{type2}' (Are you missing a cast?)";
+            Report(span, message);
+        }
+
+        public void XXX_ReportFunctionsAreUnsupported(TextSpan span)
+        {
+            string message = "ERROR: Functions with return values are unsupported";
             Report(span, message);
         }
     }

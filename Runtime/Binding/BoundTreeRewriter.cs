@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Reflection;
 using IllusionScript.Runtime.Binding.Nodes.Expressions;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
 
@@ -21,6 +22,8 @@ namespace IllusionScript.Runtime.Binding
                     return RewriteIfStatement((BoundIfStatement)node);
                 case BoundNodeType.WhileStatement:
                     return RewriteWhileStatement((BoundWhileStatement)node);
+                case BoundNodeType.DoWhileStatement:
+                    return RewriteDoWhileStatement((BoundDoWhileStatement)node);
                 case BoundNodeType.ForStatement:
                     return RewriteForStatement((BoundForStatement)node);
                 case BoundNodeType.GotoStatement:
@@ -67,6 +70,19 @@ namespace IllusionScript.Runtime.Binding
             }
 
             return new BoundForStatement(node.variable, startExpression, endExpression, body);
+        }
+
+        protected virtual BoundStatement RewriteDoWhileStatement(BoundDoWhileStatement node)
+        {
+            BoundStatement body = RewriteStatement(node.body);
+            BoundExpression condition = RewriteExpression(node.condition);
+
+            if (body == node.body && condition == node.condition)
+            {
+                return node;
+            }
+
+            return new BoundDoWhileStatement(body, condition);
         }
 
         protected virtual BoundStatement RewriteWhileStatement(BoundWhileStatement node)
@@ -159,11 +175,59 @@ namespace IllusionScript.Runtime.Binding
                     return RewriteLiteralExpression((BoundLiteralExpression)node);
                 case BoundNodeType.VariableExpression:
                     return RewriteVariableExpression((BoundVariableExpression)node);
+                case BoundNodeType.CallExpression:
+                    return RewriteCallExpression((BoundCallExpression)node);
+                case BoundNodeType.ConversionExpression:
+                    return RewriteConversionExpression((BoundConversionExpression)node);
                 case BoundNodeType.ErrorExpression:
                     return RewriteErrorExpression((BoundErrorExpression)node);
                 default:
                     throw new Exception($"Unexpected node: {node.boundType}");
             }
+        }
+
+        protected virtual BoundExpression RewriteConversionExpression(BoundConversionExpression node)
+        {
+            BoundExpression expression = RewriteExpression(node.expression);
+            if (expression == node.expression)
+            {
+                return node;
+            }
+
+            return new BoundConversionExpression(node.type, expression);
+        }
+
+        protected virtual BoundExpression RewriteCallExpression(BoundCallExpression node)
+        {
+            ImmutableArray<BoundExpression>.Builder builder = null;
+
+            for (int i = 0; i < node.arguments.Length; i++)
+            {
+                BoundExpression statement = RewriteExpression(node.arguments[i]);
+                if (statement != node.arguments[i])
+                {
+                    if (builder == null)
+                    {
+                        builder = ImmutableArray.CreateBuilder<BoundExpression>(node.arguments.Length);
+                        for (int j = 0; j < i; j++)
+                        {
+                            builder.Add(node.arguments[j]);
+                        }
+                    }
+                }
+
+                if (builder != null)
+                {
+                    builder.Add(statement);
+                }
+            }
+
+            if (builder == null)
+            {
+                return node;
+            }
+
+            return new BoundCallExpression(node.function, builder.ToImmutable());
         }
 
         protected virtual BoundExpression RewriteErrorExpression(BoundErrorExpression node)

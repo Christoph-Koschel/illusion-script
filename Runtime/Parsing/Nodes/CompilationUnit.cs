@@ -1,16 +1,16 @@
-﻿using IllusionScript.Runtime.Lexing;
-using IllusionScript.Runtime.Parsing.Nodes.Statements;
+﻿using System.Collections.Immutable;
+using IllusionScript.Runtime.Lexing;
 
 namespace IllusionScript.Runtime.Parsing.Nodes
 {
     public class CompilationUnit : Node
     {
-        public readonly Statement statement;
+        public readonly ImmutableArray<Member> members;
         public readonly Token endOfFileToken;
 
-        public CompilationUnit(Statement statement, Token endOfFileToken)
+        public CompilationUnit(ImmutableArray<Member> members, Token endOfFileToken)
         {
-            this.statement = statement;
+            this.members = members;
             this.endOfFileToken = endOfFileToken;
         }
 
