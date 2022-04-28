@@ -128,14 +128,14 @@ namespace IllusionScript.Runtime.Binding
             bool needsParens = parent <= current;
             if (needsParens)
             {
-                writer.WritePunctuation("(");
+                writer.WritePunctuation(SyntaxType.LParenToken);
             }
 
             expression.WriteTo(writer);
 
             if (needsParens)
             {
-                writer.WritePunctuation(")");
+                writer.WritePunctuation(SyntaxType.RParenToken);
             }
         }
 
@@ -193,7 +193,7 @@ namespace IllusionScript.Runtime.Binding
         private static void WriteCallExpression(BoundCallExpression node, IndentedTextWriter writer)
         {
             writer.WriteIdentifier(node.function.name);
-            writer.WritePunctuation("(");
+            writer.WritePunctuation(SyntaxType.LParenToken);
 
             bool isFirst = true;
             foreach (BoundExpression argument in node.arguments)
@@ -210,15 +210,15 @@ namespace IllusionScript.Runtime.Binding
                 argument.WriteTo(writer);
             }
 
-            writer.WritePunctuation(")");
+            writer.WritePunctuation(SyntaxType.RParenToken);
         }
 
         private static void WriteConversionExpression(BoundConversionExpression node, IndentedTextWriter writer)
         {
             writer.WriteIdentifier(node.type.name);
-            writer.WritePunctuation("(");
+            writer.WritePunctuation(SyntaxType.LParenToken);
             node.expression.WriteTo(writer);
-            writer.WritePunctuation(")");
+            writer.WritePunctuation(SyntaxType.RParenToken);
         }
 
         private static void WriteErrorExpression(BoundErrorExpression node, IndentedTextWriter writer)
@@ -229,7 +229,7 @@ namespace IllusionScript.Runtime.Binding
         private static void WriteBlockStatement(BoundBlockStatement node, IndentedTextWriter writer
         )
         {
-            writer.WritePunctuation("{");
+            writer.WritePunctuation(SyntaxType.LBraceToken);
             writer.WriteLine();
             writer.Indent++;
 
@@ -239,7 +239,7 @@ namespace IllusionScript.Runtime.Binding
             }
 
             writer.Indent--;
-            writer.WritePunctuation("}");
+            writer.WritePunctuation(SyntaxType.RBraceToken);
             writer.WriteLine();
         }
 
@@ -263,9 +263,9 @@ namespace IllusionScript.Runtime.Binding
         private static void WriteIfStatement(BoundIfStatement node, IndentedTextWriter writer)
         {
             writer.WriteKeyword("if ");
-            writer.WritePunctuation("(");
+            writer.WritePunctuation(SyntaxType.LParenToken);
             node.condition.WriteTo(writer);
-            writer.WritePunctuation(")");
+            writer.WritePunctuation(SyntaxType.RParenToken);
             writer.WriteLine();
             writer.WriteNestedStatement(node.body);
 
@@ -280,9 +280,9 @@ namespace IllusionScript.Runtime.Binding
         private static void WriteWhileStatement(BoundWhileStatement node, IndentedTextWriter writer)
         {
             writer.WriteKeyword("while ");
-            writer.WritePunctuation("(");
+            writer.WritePunctuation(SyntaxType.LParenToken);
             node.condition.WriteTo(writer);
-            writer.WritePunctuation(")");
+            writer.WritePunctuation(SyntaxType.RParenToken);
             writer.WriteLine();
             writer.WriteNestedStatement(node.body);
         }
@@ -293,22 +293,22 @@ namespace IllusionScript.Runtime.Binding
             writer.WriteLine();
             writer.WriteNestedStatement(node.body);
             writer.WriteKeyword("while ");
-            writer.WritePunctuation("(");
+            writer.WritePunctuation(SyntaxType.LParenToken);
             node.condition.WriteTo(writer);
-            writer.WritePunctuation(")");
+            writer.WritePunctuation(SyntaxType.RParenToken);
             writer.WriteLine();
         }
 
         private static void WriteForStatement(BoundForStatement node, IndentedTextWriter writer)
         {
             writer.WriteKeyword("for ");
-            writer.WritePunctuation("(");
+            writer.WritePunctuation(SyntaxType.LParenToken);
             writer.WriteIdentifier(node.variable.name);
             writer.WritePunctuation(" = ");
             node.startExpression.WriteTo(writer);
             writer.WriteKeyword(" to ");
             node.endExpression.WriteTo(writer);
-            writer.WritePunctuation(")");
+            writer.WritePunctuation(SyntaxType.RParenToken);
             writer.WriteNestedStatement(node.body);
         }
 
@@ -327,7 +327,7 @@ namespace IllusionScript.Runtime.Binding
                 writer.Indent--;
             }
             writer.WritePunctuation(node.BoundLabel.name);
-            writer.WritePunctuation(":");
+            writer.WritePunctuation(SyntaxType.ColonToken);
             writer.WriteLine();
             
             if (unIndent)

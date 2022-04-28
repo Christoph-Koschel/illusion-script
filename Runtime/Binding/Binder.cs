@@ -263,11 +263,34 @@ namespace IllusionScript.Runtime.Binding
 
             if (syntax.arguments.Length != function.parameters.Length)
             {
-                diagnostics.ReportWrongArgumentCount(syntax.span, syntax.identifier.text, function.parameters.Length,
+                TextSpan span;
+                if (syntax.arguments.Length > function.parameters.Length)
+                {
+                    Node firstExceedingNode;
+                    if (function.parameters.Length > 0)
+                    {
+                        firstExceedingNode = syntax.arguments.GetSeparator(function.parameters.Length - 1);
+                    }
+                    else
+                    {
+                        firstExceedingNode = syntax.arguments[0];
+                    }
+
+                    var lastExceedingArgument = syntax.arguments[^1];
+                    span = TextSpan.FromBounds(firstExceedingNode.span.start, lastExceedingArgument.span.end);
+                }
+                else
+                {
+                    span = syntax.rParen.span;
+                }
+
+                diagnostics.ReportWrongArgumentCount(span, syntax.identifier.text,
+                    function.parameters.Length,
                     syntax.arguments.Length);
                 return new BoundErrorExpression();
             }
 
+            bool hasErrors = false;
             for (int i = 0; i < syntax.arguments.Length; i++)
             {
                 BoundExpression argument = arguments[i];
@@ -277,8 +300,13 @@ namespace IllusionScript.Runtime.Binding
                 {
                     diagnostics.WrongArgumentType(syntax.arguments[i].span, parameter.name, parameter.type,
                         argument.type);
-                    return new BoundErrorExpression();
+                    hasErrors = true;
                 }
+            }
+
+            if (hasErrors)
+            {
+                return new BoundErrorExpression();
             }
 
             return new BoundCallExpression(function, arguments.ToImmutable());

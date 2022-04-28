@@ -83,6 +83,8 @@ namespace IllusionScript.Runtime.Test.Interpreting
         [InlineData("{ let a: Int = 0 while (a != 4) a = a + 1 }", 4)]
         [InlineData("{ let a: Int = 0 for (i = 1 to 10) { a = a + i } a }", 45)]
         [InlineData("{ let a: Int = 0 do  a = a + 1 while (a < 10) }", 10)]
+        [InlineData("{ let i: Int = 0 while (i < 5) { i = i + 1 if (i == 5) continue } i }", 5)]
+        [InlineData("{ let i: Int = 0 do { i = i + 1 if (i == 5) continue } while (i < 5) i }", 5)]
         public void InterpreterComputesCorrectValues(string text, object expectedValue)
         {
             AssertValue(text, expectedValue);
@@ -202,7 +204,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
 
             AssertDiagnostics(text, diagnostics);
         }
-        
+
         [Fact]
         public void InterpreterIfConvert()
         {
@@ -220,7 +222,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
 
             AssertDiagnostics(text, diagnostics);
         }
-        
+
         [Fact]
         public void InterpreterWhileConvert()
         {
@@ -238,7 +240,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
 
             AssertDiagnostics(text, diagnostics);
         }
-        
+
         [Fact]
         public void InterpreterForConvertStart()
         {
@@ -256,7 +258,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
 
             AssertDiagnostics(text, diagnostics);
         }
-        
+
         [Fact]
         public void InterpreterForConvertEnd()
         {
@@ -274,7 +276,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
 
             AssertDiagnostics(text, diagnostics);
         }
-        
+
         [Fact]
         public void InterpreterNoInfiniteLoop()
         {
@@ -289,7 +291,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
             ";
             AssertDiagnostics(text, diagnostics);
         }
-        
+
         [Fact]
         public void InterpreterErrorForInsertedToken()
         {
@@ -301,7 +303,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
 
             AssertDiagnostics(text, diagnostics);
         }
-        
+
         [Fact]
         public void InterpretErrDoWhileStatement()
         {
@@ -321,6 +323,35 @@ namespace IllusionScript.Runtime.Test.Interpreting
             AssertDiagnostics(text, diagnostics);
         }
 
+        [Fact]
+        public void InterpretInvokeFunctionArgumentsMissing()
+        {
+            var text = @"
+                print([)]
+            ";
+
+            var diagnostics = @"
+                ERROR: Function 'print' requires 1 arguments but was given 0
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
+
+        [Fact]
+        public void InterpretInvokeFunctionArgumentsExceeding()
+        {
+            var text = @"
+                print(""Hello""[, "" "", "" world!""])
+            ";
+
+            var diagnostics = @"
+                ERROR: Function 'print' requires 1 arguments but was given 3
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
+
+
         private void AssertDiagnostics(string text, string diagnosticsText)
         {
             AnnotatedText annotatedText = AnnotatedText.Parse(text);
@@ -338,7 +369,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
             {
                 testOutputHelper.WriteLine(diagnostic.message);
             }
-            
+
             Assert.Equal(diagnostics.Length, result.diagnostics.Length);
 
             for (int i = 0; i < diagnostics.Length; i++)
