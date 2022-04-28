@@ -141,9 +141,22 @@ namespace IllusionScript.Runtime.Diagnostics
             Report(span, text);
         }
 
-        public void XXX_ReportFunctionsAreUnsupported(TextSpan span)
+        public void ReportInvalidReturn(TextSpan span)
         {
-            string message = "ERROR: Functions with return values are unsupported";
+            string message = "ERROR: The 'return' keyword can only be used inside of functions";
+            Report(span, message);
+        }
+
+        public void ReportInvalidReturnExpression(TextSpan span, string name)
+        {
+            string message =
+                $"ERROR: Since the function '{name}' does not return a value the 'return' keyword cannot be followed by an expression";
+            Report(span, message);
+        }
+
+        public void ReportMissingReturnExpression(TextSpan span, TypeSymbol returnType)
+        {
+            string message = $"ERROR: An expression of type '{returnType}' expected";
             Report(span, message);
         }
     }

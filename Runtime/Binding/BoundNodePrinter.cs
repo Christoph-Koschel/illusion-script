@@ -7,6 +7,7 @@ using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Extension;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 using IllusionScript.Runtime.Parsing;
+using IllusionScript.Runtime.Parsing.Nodes.Statements;
 
 namespace IllusionScript.Runtime.Binding
 {
@@ -82,9 +83,19 @@ namespace IllusionScript.Runtime.Binding
                 case BoundNodeType.ConditionalGotoStatement:
                     WriteConditionalGotoStatement((BoundConditionalGotoStatement)node, writer);
                     break;
+                case BoundNodeType.ReturnStatement:
+                    WriteReturnStatement((BoundReturnStatement)node, writer);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private static void WriteReturnStatement(BoundReturnStatement node, IndentedTextWriter writer)
+        {
+            writer.WriteKeyword("return ");
+            node.expression?.WriteTo(writer);
+            writer.WriteLine();
         }
 
         private static void WriteNestedStatement(this IndentedTextWriter writer, BoundStatement node)
@@ -326,10 +337,11 @@ namespace IllusionScript.Runtime.Binding
             {
                 writer.Indent--;
             }
+
             writer.WritePunctuation(node.BoundLabel.name);
             writer.WritePunctuation(SyntaxType.ColonToken);
             writer.WriteLine();
-            
+
             if (unIndent)
             {
                 writer.Indent++;

@@ -204,8 +204,13 @@ namespace IllusionScript.Runtime.Parsing
 
         private Statement ParseReturnStatement()
         {
-            var keyword = Match(SyntaxType.ReturnKeyword);
-            var expression = ParseExpression();
+            Token keyword = Match(SyntaxType.ReturnKeyword);
+            Expression expression = null;
+            if (current.type != SyntaxType.SemicolonToken)
+            {
+                expression = ParseExpression();
+            }
+
             return new ReturnStatement(keyword, expression);
         }
 

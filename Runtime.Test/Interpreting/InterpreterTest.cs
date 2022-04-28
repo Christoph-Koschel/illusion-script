@@ -327,11 +327,11 @@ namespace IllusionScript.Runtime.Test.Interpreting
         [Fact]
         public void InterpretInvokeFunctionArgumentsMissing()
         {
-            var text = @"
+            string text = @"
                 print([)];
             ";
 
-            var diagnostics = @"
+            string diagnostics = @"
                 ERROR: Function 'print' requires 1 arguments but was given 0
             ";
 
@@ -341,11 +341,11 @@ namespace IllusionScript.Runtime.Test.Interpreting
         [Fact]
         public void InterpretInvokeFunctionArgumentsExceeding()
         {
-            var text = @"
+            string text = @"
                 print(""Hello""[, "" "", "" world!""]);
             ";
 
-            var diagnostics = @"
+            string diagnostics = @"
                 ERROR: Function 'print' requires 1 arguments but was given 3
             ";
 

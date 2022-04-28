@@ -233,7 +233,7 @@ namespace IllusionScript.Runtime.Lowering
                 BoundBinaryOperator.Bind(SyntaxType.LessToken, TypeSymbol.Int, TypeSymbol.Int),
                 new BoundVariableExpression(endBoundSymbol)
             );
-            var continueLabelStatement = new BoundLabelStatement(node.continueLabel);
+            BoundLabelStatement continueLabelStatement = new BoundLabelStatement(node.continueLabel);
 
             BoundExpressionStatement increment = new BoundExpressionStatement(
                 new BoundAssignmentExpression(

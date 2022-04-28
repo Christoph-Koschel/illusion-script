@@ -43,7 +43,6 @@ namespace IllusionScript.Runtime.Interpreting
                     labelToIndex.Add(l.BoundLabel, i + 1);
                 }
             }
-            
 
             int index = 0;
             while (index < body.statements.Length)
@@ -85,6 +84,10 @@ namespace IllusionScript.Runtime.Interpreting
                     case BoundNodeType.LabelStatement:
                         index++;
                         break;
+                    case BoundNodeType.ReturnStatement:
+                        BoundReturnStatement rs = (BoundReturnStatement)statement;
+                        lastValue = rs.expression == null ? null : InterpretExpression(rs.expression);
+                        return lastValue;
                     default:
                         throw new Exception($"Unexpected node {statement.boundType}");
                 }

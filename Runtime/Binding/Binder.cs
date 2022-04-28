@@ -73,9 +73,44 @@ namespace IllusionScript.Runtime.Binding
                     return BindContinueStatement((ContinueStatement)syntax);
                 case SyntaxType.BreakStatement:
                     return BindBreakStatement((BreakStatement)syntax);
+                case SyntaxType.ReturnStatement:
+                    return BindReturnStatement((ReturnStatement)syntax);
                 default:
                     throw new Exception($"Unexpected syntax {syntax.type}");
             }
+        }
+
+        private BoundStatement BindReturnStatement(ReturnStatement syntax)
+        {
+            BoundExpression expression = syntax.expression == null ? null : BindExpression(syntax.expression);
+
+            if (function == null)
+            {
+                diagnostics.ReportInvalidReturn(syntax.returnKeyword.span);
+            }
+            else
+            {
+                if (function.returnType == TypeSymbol.Void)
+                {
+                    if (expression != null)
+                    {
+                        diagnostics.ReportInvalidReturnExpression(syntax.expression.span, function.name);
+                    }
+                }
+                else
+                {
+                    if (expression == null)
+                    {
+                        diagnostics.ReportMissingReturnExpression(syntax.returnKeyword.span, function.returnType);
+                    }
+                    else
+                    {
+                        expression = BindConversion(syntax.expression.span, expression, function.returnType);
+                    }
+                }
+            }
+
+            return new BoundReturnStatement(expression);
         }
 
         private BoundStatement BindBreakStatement(BreakStatement syntax)
@@ -276,7 +311,7 @@ namespace IllusionScript.Runtime.Binding
                         firstExceedingNode = syntax.arguments[0];
                     }
 
-                    var lastExceedingArgument = syntax.arguments[^1];
+                    Expression lastExceedingArgument = syntax.arguments[^1];
                     span = TextSpan.FromBounds(firstExceedingNode.span.start, lastExceedingArgument.span.end);
                 }
                 else
@@ -427,10 +462,6 @@ namespace IllusionScript.Runtime.Binding
             }
 
             TypeSymbol type = BindTypeClause(syntax.typeClause, true) ?? TypeSymbol.Void;
-            if (type != TypeSymbol.Void)
-            {
-                diagnostics.XXX_ReportFunctionsAreUnsupported(syntax.span);
-            }
 
             FunctionSymbol function =
                 new FunctionSymbol(syntax.identifier.text, parameters.ToImmutable(), type, syntax);
@@ -464,7 +495,7 @@ namespace IllusionScript.Runtime.Binding
                 scope = scope.previous;
             }
 
-            var statement = Lowerer.Lower(new BoundBlockStatement(globalScope.statements));
+            BoundBlockStatement statement = Lowerer.Lower(new BoundBlockStatement(globalScope.statements));
 
             return new BoundProgram(globalScope, diagnostics, functionBodies.ToImmutable(), statement);
         }
