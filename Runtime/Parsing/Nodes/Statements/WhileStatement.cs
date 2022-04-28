@@ -21,5 +21,6 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Statements
         }
 
         public override SyntaxType type => SyntaxType.WhileStatement;
+        public override SyntaxType endToken => SyntaxType.AnyToken;
     }
 }

@@ -14,5 +14,6 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Statements
         }
 
         public override SyntaxType type => SyntaxType.ElseClause;
+        public SyntaxType endToken => body.endToken;
     }
 }

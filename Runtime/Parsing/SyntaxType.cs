@@ -3,9 +3,9 @@
     public enum SyntaxType
     {
         // Special Tokens
+        AnyToken,
         BadToken,
         WhiteSpaceToken,
-        CommaToken,
         EOFToken,
 
         // Data Types
@@ -52,6 +52,7 @@
         BangEqualsToken,
 
         // Unary Tokens
+        TildeToken,
         BangToken,
         EqualsToken,
         DoubleAndToken,
@@ -63,7 +64,8 @@
         LBraceToken,
         RBraceToken,
         ColonToken,
-        TildeToken,
+        CommaToken,
+        SemicolonToken,
 
         // Keywords
         FalseKeyword,
@@ -107,7 +109,8 @@
         ForStatement,
         ContinueStatement,
         BreakStatement,
-        
+        ReturnStatement,
+
         // Members
         StatementMember,
     }

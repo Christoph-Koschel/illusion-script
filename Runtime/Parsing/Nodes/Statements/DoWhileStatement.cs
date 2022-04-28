@@ -1,6 +1,4 @@
-﻿using IllusionScript.Runtime.Binding.Nodes;
-using IllusionScript.Runtime.Lexing;
-using IllusionScript.Runtime.Parsing.Nodes.Expressions;
+﻿using IllusionScript.Runtime.Lexing;
 
 namespace IllusionScript.Runtime.Parsing.Nodes.Statements
 {
@@ -24,5 +22,7 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Statements
         }
 
         public override SyntaxType type => SyntaxType.DoWhileStatement;
+
+        public override SyntaxType endToken => SyntaxType.SemicolonToken;
     }
 }

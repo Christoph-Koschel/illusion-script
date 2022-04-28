@@ -12,5 +12,6 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Statements
         }
 
         public override SyntaxType type => SyntaxType.BreakStatement;
+        public override SyntaxType endToken => SyntaxType.SemicolonToken;
     }
 }

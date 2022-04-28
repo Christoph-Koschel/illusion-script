@@ -43,6 +43,7 @@ namespace IllusionScript.Runtime.Interpreting
                     labelToIndex.Add(l.BoundLabel, i + 1);
                 }
             }
+            
 
             int index = 0;
             while (index < body.statements.Length)

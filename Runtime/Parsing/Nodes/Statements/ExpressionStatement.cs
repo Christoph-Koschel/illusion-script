@@ -10,7 +10,8 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Statements
         {
             this.expression = expression;
         }
-        
+
         public override SyntaxType type => SyntaxType.ExpressionStatement;
+        public override SyntaxType endToken => SyntaxType.SemicolonToken;
     }
 }

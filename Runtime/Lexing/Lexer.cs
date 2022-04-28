@@ -56,6 +56,10 @@ namespace IllusionScript.Runtime.Lexing
                     type = SyntaxType.ColonToken;
                     position++;
                     break;
+                case ';':
+                    type = SyntaxType.SemicolonToken;
+                    position++;
+                    break;
                 case '~':
                     type = SyntaxType.TildeToken;
                     position++;

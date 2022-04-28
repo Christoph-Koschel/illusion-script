@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Dynamic;
 using IllusionScript.Runtime.Lexing;
 
 namespace IllusionScript.Runtime.Parsing.Nodes.Statements
@@ -17,5 +18,6 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Statements
         }
 
         public override SyntaxType type => SyntaxType.BlockStatement;
+        public override SyntaxType endToken => SyntaxType.AnyToken;
     }
 }

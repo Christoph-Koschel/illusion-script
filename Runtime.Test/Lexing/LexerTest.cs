@@ -38,7 +38,7 @@ namespace IllusionScript.Runtime.Test.Lexing
         {
             List<SyntaxType> tokenTypes = Enum.GetValues(typeof(SyntaxType))
                 .Cast<SyntaxType>()
-                .Where(k => k.ToString().EndsWith("Keyword") || k.ToString().EndsWith("Token")).ToList();
+                .Where(k => k.ToString().EndsWith("Keyword") || k.ToString().EndsWith("Token") && k.ToString() != "AnyToken").ToList();
 
 
             IEnumerable<SyntaxType> testedTokenTypes = GetTokens().Concat(GetSeparators()).Select(t => t.type);

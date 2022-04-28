@@ -19,72 +19,72 @@ namespace IllusionScript.Runtime.Test.Interpreting
         }
 
         [Theory]
-        [InlineData("1", 1)]
-        [InlineData("+1", 1)]
-        [InlineData("-1", -1)]
-        [InlineData("~1", -2)]
-        [InlineData("14 + 12", 26)]
-        [InlineData("12 - 3", 9)]
-        [InlineData("4 * 2", 8)]
-        [InlineData("9 / 3", 3)]
-        [InlineData("(10)", 10)]
-        [InlineData("12 == 3", false)]
-        [InlineData("3 == 3", true)]
-        [InlineData("12 != 3", true)]
-        [InlineData("3 != 3", false)]
-        [InlineData("3 < 4", true)]
-        [InlineData("5 < 4", false)]
-        [InlineData("50 << 2", 200)]
-        [InlineData("2 << 1", 4)]
-        [InlineData("4 <= 4", true)]
-        [InlineData("4 <= 5", true)]
-        [InlineData("5 <= 4", false)]
-        [InlineData("4 > 3", true)]
-        [InlineData("4 > 5", false)]
-        [InlineData("1 >> 45", 0)]
-        [InlineData("50 >> 2", 12)]
-        [InlineData("4 >= 4", true)]
-        [InlineData("5 >= 4", true)]
-        [InlineData("4 >= 5", false)]
-        [InlineData("1 | 2", 3)]
-        [InlineData("1 | 0", 1)]
-        [InlineData("1 & 3", 1)]
-        [InlineData("1 & 0", 0)]
-        [InlineData("1 ^ 0", 1)]
-        [InlineData("0 ^ 1", 1)]
-        [InlineData("1 ^ 3", 2)]
-        [InlineData("false == false", true)]
-        [InlineData("true == false", false)]
-        [InlineData("false != false", false)]
-        [InlineData("true != false", true)]
-        [InlineData("true && true", true)]
-        [InlineData("false || false", false)]
-        [InlineData("false | false", false)]
-        [InlineData("false | true", true)]
-        [InlineData("true | false", true)]
-        [InlineData("true | true", true)]
-        [InlineData("false & false", false)]
-        [InlineData("false & true", false)]
-        [InlineData("true & false", false)]
-        [InlineData("true & true", true)]
-        [InlineData("false ^ false", false)]
-        [InlineData("true ^ false", true)]
-        [InlineData("false ^ true", true)]
-        [InlineData("true ^ true", false)]
-        [InlineData("true", true)]
-        [InlineData("false", false)]
-        [InlineData("!true", false)]
-        [InlineData("!false", true)]
-        [InlineData("{ let a: Int = 10 a = 10 * a }", 100)]
-        [InlineData("{ let a: Int = 0 if (a == 0) a = 10 }", 10)]
-        [InlineData("{ let a: Int = 0 if (a == 4) a = 10 }", 0)]
-        [InlineData("{ let a: Int = 0 if (a == 0) a = 10 else a = 5 }", 10)]
-        [InlineData("{ let a: Int = 0 if (a == 4) a = 10 else a = 5 }", 5)]
-        [InlineData("{ let a: Int = 0 while (a != 4) a = a + 1 }", 4)]
-        [InlineData("{ let a: Int = 0 for (i = 1 to 10) { a = a + i } a }", 45)]
-        [InlineData("{ let a: Int = 0 do  a = a + 1 while (a < 10) }", 10)]
-        [InlineData("{ let i: Int = 0 while (i < 5) { i = i + 1 if (i == 5) continue } i }", 5)]
-        [InlineData("{ let i: Int = 0 do { i = i + 1 if (i == 5) continue } while (i < 5) i }", 5)]
+        [InlineData("1;", 1)]
+        [InlineData("+1;", 1)]
+        [InlineData("-1;", -1)]
+        [InlineData("~1;", -2)]
+        [InlineData("14 + 12;", 26)]
+        [InlineData("12 - 3;", 9)]
+        [InlineData("4 * 2;", 8)]
+        [InlineData("9 / 3;", 3)]
+        [InlineData("(10);", 10)]
+        [InlineData("12 == 3;", false)]
+        [InlineData("3 == 3;", true)]
+        [InlineData("12 != 3;", true)]
+        [InlineData("3 != 3;", false)]
+        [InlineData("3 < 4;", true)]
+        [InlineData("5 < 4;", false)]
+        [InlineData("50 << 2;", 200)]
+        [InlineData("2 << 1;", 4)]
+        [InlineData("4 <= 4;", true)]
+        [InlineData("4 <= 5;", true)]
+        [InlineData("5 <= 4;", false)]
+        [InlineData("4 > 3;", true)]
+        [InlineData("4 > 5;", false)]
+        [InlineData("1 >> 45;", 0)]
+        [InlineData("50 >> 2;", 12)]
+        [InlineData("4 >= 4;", true)]
+        [InlineData("5 >= 4;", true)]
+        [InlineData("4 >= 5;", false)]
+        [InlineData("1 | 2;", 3)]
+        [InlineData("1 | 0;", 1)]
+        [InlineData("1 & 3;", 1)]
+        [InlineData("1 & 0;", 0)]
+        [InlineData("1 ^ 0;", 1)]
+        [InlineData("0 ^ 1;", 1)]
+        [InlineData("1 ^ 3;", 2)]
+        [InlineData("false == false;", true)]
+        [InlineData("true == false;", false)]
+        [InlineData("false != false;", false)]
+        [InlineData("true != false;", true)]
+        [InlineData("true && true;", true)]
+        [InlineData("false || false;", false)]
+        [InlineData("false | false;", false)]
+        [InlineData("false | true;", true)]
+        [InlineData("true | false;", true)]
+        [InlineData("true | true;", true)]
+        [InlineData("false & false;", false)]
+        [InlineData("false & true;", false)]
+        [InlineData("true & false;", false)]
+        [InlineData("true & true;", true)]
+        [InlineData("false ^ false;", false)]
+        [InlineData("true ^ false;", true)]
+        [InlineData("false ^ true;", true)]
+        [InlineData("true ^ true;", false)]
+        [InlineData("true;", true)]
+        [InlineData("false;", false)]
+        [InlineData("!true;", false)]
+        [InlineData("!false;", true)]
+        [InlineData("{ let a: Int = 10; a = 10 * a; }", 100)]
+        [InlineData("{ let a: Int = 0; if (a == 0) a = 10; }", 10)]
+        [InlineData("{ let a: Int = 0; if (a == 4) a = 10; }", 0)]
+        [InlineData("{ let a: Int = 0; if (a == 0) a = 10; else a = 5; }", 10)]
+        [InlineData("{ let a: Int = 0; if (a == 4) a = 10; else a = 5; }", 5)]
+        [InlineData("{ let a: Int = 0; while (a != 4) a = a + 1; }", 4)]
+        [InlineData("{ let a: Int = 0; for (i = 1 to 10) { a = a + i; } a; }", 45)]
+        [InlineData("{ let a: Int = 0; do a = a + 1; while (a < 10); }", 10)]
+        [InlineData("{ let i: Int = 0; while (i < 5) { i = i + 1; if (i == 5) continue; } i; }", 5)]
+        [InlineData("{ let i: Int = 0; do { i = i + 1; if (i == 5) continue; } while (i < 5); i; }", 5)]
         public void InterpreterComputesCorrectValues(string text, object expectedValue)
         {
             AssertValue(text, expectedValue);
@@ -106,12 +106,12 @@ namespace IllusionScript.Runtime.Test.Interpreting
         {
             string text = @"
                 {
-                    let x: Int = 10
-                    let y: Int = 100
+                    let x: Int = 10;
+                    let y: Int = 100;
                     {
-                        let x: Int = 10
+                        let x: Int = 10;
                     }
-                    let [x]: Int = 5
+                    let [x]: Int = 5;
                 }
             ";
 
@@ -125,7 +125,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         [Fact]
         public void InterpreterVariableNameExpression()
         {
-            string text = @"[x] * 10";
+            string text = @"[x] * 10;";
 
             string diagnostics = @"
                 ERROR: Variable 'x' doesnt exist
@@ -137,7 +137,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         [Fact]
         public void InterpreterVariableAssignmentExpression()
         {
-            string text = @"[x] = 10";
+            string text = @"[x] = 10;";
 
             string diagnostics = @"
                 ERROR: Variable 'x' doesnt exist
@@ -151,8 +151,8 @@ namespace IllusionScript.Runtime.Test.Interpreting
         {
             string text = @"
                 {
-                    const x: Int = 10
-                    [x] = 0
+                    const x: Int = 10;
+                    [x] = 0;
                 }
             ";
 
@@ -169,8 +169,8 @@ namespace IllusionScript.Runtime.Test.Interpreting
         {
             string text = @"
                 {
-                    let x: Int = 10
-                    x = [true]
+                    let x: Int = 10;
+                    x = [true];
                 }
             ";
 
@@ -184,7 +184,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         [Fact]
         public void InterpreterUnaryUndefinedOperator()
         {
-            string text = @"[+]true";
+            string text = @"[+]true;";
 
             string diagnostics = @"
                 ERROR: Unary operator '+' is not defined for type Boolean
@@ -196,7 +196,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         [Fact]
         public void InterpreterBinaryUndefinedOperator()
         {
-            string text = @"10 [+] true";
+            string text = @"10 [+] true;";
 
             string diagnostics = @"
                 ERROR: Binary operator '+' is not defined for type Int and Boolean
@@ -210,9 +210,9 @@ namespace IllusionScript.Runtime.Test.Interpreting
         {
             string text = @"
             {
-                let x: Int = 0
+                let x: Int = 0;
                 if ([10])
-                    x = 10
+                    x = 10;
             }
             ";
 
@@ -228,9 +228,9 @@ namespace IllusionScript.Runtime.Test.Interpreting
         {
             string text = @"
             {
-                let x: Int = 0
+                let x: Int = 0;
                 while ([10])
-                    x = 10
+                    x = 10;
             }
             ";
 
@@ -246,9 +246,9 @@ namespace IllusionScript.Runtime.Test.Interpreting
         {
             string text = @"
             {
-                let x: Int = 0
+                let x: Int = 0;
                 for (i = [false] to 10)
-                    x = 10
+                    x = 10;
             }
             ";
 
@@ -264,9 +264,9 @@ namespace IllusionScript.Runtime.Test.Interpreting
         {
             string text = @"
             {
-                let x: Int = 0
+                let x: Int = 0;
                 for (i = 10 to [false])
-                    x = 10
+                    x = 10;
             }
             ";
 
@@ -282,23 +282,24 @@ namespace IllusionScript.Runtime.Test.Interpreting
         {
             string text = @"
             {
-            [)][]
+            [)][][]
             ";
 
             string diagnostics = @"
                 ERROR: Unexpected token <RParenToken>, expected <IdentifierToken>
+                ERROR: Unexpected token <RParenToken>, expected <SemicolonToken>
                 ERROR: Unexpected token <EOFToken>, expected <RBraceToken>
             ";
-            AssertDiagnostics(text, diagnostics);
+            AssertDiagnostics(text, diagnostics, false);
         }
 
         [Fact]
         public void InterpreterErrorForInsertedToken()
         {
-            string text = @"1 + []";
+            string text = @"1 + [;]";
 
             string diagnostics = @"
-              ERROR: Unexpected token <EOFToken>, expected <IdentifierToken>
+              ERROR: Unexpected token <SemicolonToken>, expected <IdentifierToken>
             ";
 
             AssertDiagnostics(text, diagnostics);
@@ -309,10 +310,10 @@ namespace IllusionScript.Runtime.Test.Interpreting
         {
             string text = @"
                 {
-                    let x: Int = 0
+                    let x: Int = 0;
                     do {
-                        x = 10
-                    } while ([10])
+                        x = 10;
+                    } while ([10]);
                 }
             ";
 
@@ -327,7 +328,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         public void InterpretInvokeFunctionArgumentsMissing()
         {
             var text = @"
-                print([)]
+                print([)];
             ";
 
             var diagnostics = @"
@@ -341,7 +342,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         public void InterpretInvokeFunctionArgumentsExceeding()
         {
             var text = @"
-                print(""Hello""[, "" "", "" world!""])
+                print(""Hello""[, "" "", "" world!""]);
             ";
 
             var diagnostics = @"
@@ -352,7 +353,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         }
 
 
-        private void AssertDiagnostics(string text, string diagnosticsText)
+        private void AssertDiagnostics(string text, string diagnosticsText, bool checkSpans = true)
         {
             AnnotatedText annotatedText = AnnotatedText.Parse(text);
             SyntaxTree syntaxTree = SyntaxTree.Parse(annotatedText.text);
@@ -368,6 +369,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
             foreach (Diagnostic diagnostic in result.diagnostics)
             {
                 testOutputHelper.WriteLine(diagnostic.message);
+                testOutputHelper.WriteLine(diagnostic.span.ToString());
             }
 
             Assert.Equal(diagnostics.Length, result.diagnostics.Length);
@@ -382,7 +384,10 @@ namespace IllusionScript.Runtime.Test.Interpreting
                 TextSpan expectedSpan = annotatedText.spans[i];
                 TextSpan actualSpan = result.diagnostics[i].span;
 
-                Assert.Equal(expectedSpan, actualSpan);
+                if (checkSpans)
+                {
+                    Assert.Equal(expectedSpan, actualSpan);
+                }
             }
         }
     }

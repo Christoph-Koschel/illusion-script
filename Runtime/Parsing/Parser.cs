@@ -110,6 +110,11 @@ namespace IllusionScript.Runtime.Parsing
         private Member ParseStatementMember()
         {
             Statement statement = ParseStatement();
+            if (statement is not BlockStatement)
+            {
+                // Match(statement.endToken);
+            }
+
             return new StatementMember(statement);
         }
 
@@ -154,18 +159,54 @@ namespace IllusionScript.Runtime.Parsing
 
         private Statement ParseStatement()
         {
-            return current.type switch
+            Statement statement;
+            switch (current.type)
             {
-                SyntaxType.LBraceToken => ParseBlockStatement(),
-                SyntaxType.LetKeyword or SyntaxType.ConstKeyword => ParseVariableDeclaration(),
-                SyntaxType.IfKeyword => ParseIfStatement(),
-                SyntaxType.WhileKeyword => ParseWhileStatement(),
-                SyntaxType.DoKeyword => ParseDoWhileStatement(),
-                SyntaxType.ForKeyword => ParseForStatement(),
-                SyntaxType.BreakKeyword => ParseBreakStatement(),
-                SyntaxType.ContinueKeyword => ParseContinueStatement(),
-                _ => ParseExpressionStatement()
-            };
+                case SyntaxType.LBraceToken:
+                    statement = ParseBlockStatement();
+                    break;
+                case SyntaxType.LetKeyword or SyntaxType.ConstKeyword:
+                    statement = ParseVariableDeclaration();
+                    break;
+                case SyntaxType.IfKeyword:
+                    statement = ParseIfStatement();
+                    break;
+                case SyntaxType.WhileKeyword:
+                    statement = ParseWhileStatement();
+                    break;
+                case SyntaxType.DoKeyword:
+                    statement = ParseDoWhileStatement();
+                    break;
+                case SyntaxType.ForKeyword:
+                    statement = ParseForStatement();
+                    break;
+                case SyntaxType.BreakKeyword:
+                    statement = ParseBreakStatement();
+                    break;
+                case SyntaxType.ContinueKeyword:
+                    statement = ParseContinueStatement();
+                    break;
+                case SyntaxType.ReturnKeyword:
+                    statement = ParseReturnStatement();
+                    break;
+                default:
+                    statement = ParseExpressionStatement();
+                    break;
+            }
+
+            if (statement.endToken != SyntaxType.AnyToken)
+            {
+                Match(statement.endToken);
+            }
+
+            return statement;
+        }
+
+        private Statement ParseReturnStatement()
+        {
+            var keyword = Match(SyntaxType.ReturnKeyword);
+            var expression = ParseExpression();
+            return new ReturnStatement(keyword, expression);
         }
 
         private Statement ParseContinueStatement()

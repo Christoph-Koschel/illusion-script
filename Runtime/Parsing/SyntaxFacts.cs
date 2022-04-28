@@ -189,6 +189,8 @@ namespace IllusionScript.Runtime.Parsing
                     return "}";
                 case SyntaxType.ColonToken:
                     return ":";
+                case SyntaxType.SemicolonToken:
+                    return ";";
                 case SyntaxType.CommaToken:
                     return ",";
                 case SyntaxType.BreakKeyword:

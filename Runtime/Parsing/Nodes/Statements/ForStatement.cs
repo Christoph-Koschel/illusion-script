@@ -30,5 +30,6 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Statements
         }
 
         public override SyntaxType type => SyntaxType.ForStatement;
+        public override SyntaxType endToken => SyntaxType.AnyToken;
     }
 }

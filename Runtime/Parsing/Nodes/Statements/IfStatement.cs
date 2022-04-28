@@ -12,7 +12,8 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Statements
         public readonly Statement body;
         public readonly ElseClause elseClause;
 
-        public IfStatement(Token keyword, Token lParen, Expression condition, Token rParen, Statement body, ElseClause elseClause)
+        public IfStatement(Token keyword, Token lParen, Expression condition, Token rParen, Statement body,
+            ElseClause elseClause)
         {
             this.keyword = keyword;
             this.lParen = lParen;
@@ -23,5 +24,6 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Statements
         }
 
         public override SyntaxType type => SyntaxType.IfStatement;
+        public override SyntaxType endToken => SyntaxType.AnyToken;
     }
 }
