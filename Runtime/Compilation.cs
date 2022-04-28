@@ -7,10 +7,10 @@ using System.Threading;
 using IllusionScript.Runtime.Binding;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Diagnostics;
+using IllusionScript.Runtime.Extension;
 using IllusionScript.Runtime.Interpreting;
 using IllusionScript.Runtime.Interpreting.Memory;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
-using IllusionScript.Runtime.Lowering;
 using IllusionScript.Runtime.Parsing;
 
 namespace IllusionScript.Runtime
@@ -75,9 +75,23 @@ namespace IllusionScript.Runtime
         public void EmitTree(TextWriter writer)
         {
             BoundProgram program = Binder.BindProgram(GlobalScope);
+            if (program.statement.statements.Any())
+            {
+                program.statement.WriteTo(writer);
+            }
+            else
+            {
+                foreach (KeyValuePair<FunctionSymbol, BoundBlockStatement> functionBody in program.functionBodies)
+                {
+                    if (!GlobalScope.functions.Contains(functionBody.Key))
+                    {
+                        continue;
+                    }
 
-
-            program.statement.WriteTo(writer);
+                    functionBody.Key.WriteTo(writer);
+                    functionBody.Value.WriteTo(writer);
+                }
+            }
         }
     }
 }
