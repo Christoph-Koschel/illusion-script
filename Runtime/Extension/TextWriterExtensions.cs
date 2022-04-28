@@ -1,8 +1,6 @@
 ﻿using System;
 using System.CodeDom.Compiler;
-using System.Diagnostics;
 using System.IO;
-using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing;
 
 namespace IllusionScript.Runtime.Extension
@@ -16,7 +14,7 @@ namespace IllusionScript.Runtime.Extension
 
             if (writer == Console.Error)
                 return !Console.IsErrorRedirected &&
-                       !Console.IsOutputRedirected; // Color codes are always output to Console.Out
+                       !Console.IsOutputRedirected;
 
             if (writer is IndentedTextWriter iw && iw.InnerWriter.IsConsole())
                 return true;
@@ -38,8 +36,7 @@ namespace IllusionScript.Runtime.Extension
 
         public static void WriteKeyword(this TextWriter writer, SyntaxType type)
         {
-            string? text = Lexer.GetText(type);
-            // Debug.Assert(Lexer.IsKeyword(type) && text != null);
+            string? text = SyntaxFacts.GetText(type);
 
             writer.WriteKeyword(text);
         }
@@ -53,21 +50,21 @@ namespace IllusionScript.Runtime.Extension
 
         public static void WriteIdentifier(this TextWriter writer, string text)
         {
-            writer.SetForeground(ConsoleColor.DarkYellow);
+            writer.SetForeground(ConsoleColor.Gray);
             writer.Write(text);
             writer.ResetColor();
         }
 
         public static void WriteNumber(this TextWriter writer, string text)
         {
-            writer.SetForeground(ConsoleColor.Cyan);
+            writer.SetForeground(ConsoleColor.DarkMagenta);
             writer.Write(text);
             writer.ResetColor();
         }
 
         public static void WriteString(this TextWriter writer, string text)
         {
-            writer.SetForeground(ConsoleColor.Magenta);
+            writer.SetForeground(ConsoleColor.Cyan);
             writer.Write(text);
             writer.ResetColor();
         }
@@ -79,9 +76,7 @@ namespace IllusionScript.Runtime.Extension
 
         public static void WritePunctuation(this TextWriter writer, SyntaxType kind)
         {
-            string? text = Lexer.GetText(kind);
-            Debug.Assert(text != null);
-
+            string? text = SyntaxFacts.GetText(kind);
             writer.WritePunctuation(text);
         }
 
@@ -91,7 +86,5 @@ namespace IllusionScript.Runtime.Extension
             writer.Write(text);
             writer.ResetColor();
         }
-
-        
     }
 }

@@ -67,9 +67,9 @@ namespace IllusionScript.Runtime.Interpreting
                     {
                         BoundConditionalGotoStatement cgs = (BoundConditionalGotoStatement)statement;
                         bool condition = (bool)InterpretExpression(cgs.condition);
-                        if (condition == cgs.JmpIfTrue)
+                        if (condition == cgs.jmpIfTrue)
                         {
-                            index = labelToIndex[cgs.BoundLabel];
+                            index = labelToIndex[cgs.boundLabel];
                         }
                         else
                         {
