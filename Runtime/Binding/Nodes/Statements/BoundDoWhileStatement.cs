@@ -2,12 +2,13 @@
 
 namespace IllusionScript.Runtime.Binding.Nodes.Statements
 {
-    internal sealed class BoundDoWhileStatement : BoundStatement
+    internal sealed class BoundDoWhileStatement : BoundLoopStatement
     {
         public readonly BoundStatement body;
         public readonly BoundExpression condition;
 
-        public BoundDoWhileStatement(BoundStatement body, BoundExpression condition)
+        public BoundDoWhileStatement(BoundStatement body, BoundExpression condition, BoundLabel breakLabel,
+            BoundLabel continueLabel) : base(breakLabel, continueLabel)
         {
             this.body = body;
             this.condition = condition;

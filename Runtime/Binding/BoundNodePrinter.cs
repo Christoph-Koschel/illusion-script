@@ -1,14 +1,12 @@
 ﻿using System;
-using System.CodeDom.Compiler;
-using System.ComponentModel.Design.Serialization;
 using System.IO;
+using System.CodeDom.Compiler;
 using IllusionScript.Runtime.Binding.Nodes;
 using IllusionScript.Runtime.Binding.Nodes.Expressions;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Extension;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 using IllusionScript.Runtime.Parsing;
-using IllusionScript.Runtime.Parsing.Nodes;
 
 namespace IllusionScript.Runtime.Binding
 {
@@ -127,7 +125,7 @@ namespace IllusionScript.Runtime.Binding
         private static void WriteNestedExpression(this IndentedTextWriter writer, int parent, int current,
             BoundExpression expression)
         {
-            var needsParens = parent <= current;
+            bool needsParens = parent <= current;
             if (needsParens)
             {
                 writer.WritePunctuation("(");
@@ -143,8 +141,8 @@ namespace IllusionScript.Runtime.Binding
 
         private static void WriteUnaryExpression(BoundUnaryExpression node, IndentedTextWriter writer)
         {
-            var precedence = SyntaxFacts.GetUnaryOperatorPrecedence(node.unaryOperator.type);
-            var op = SyntaxFacts.GetText(node.unaryOperator.type);
+            int precedence = SyntaxFacts.GetUnaryOperatorPrecedence(node.unaryOperator.type);
+            string? op = SyntaxFacts.GetText(node.unaryOperator.type);
             writer.WritePunctuation(op);
 
             writer.WriteNestedExpression(precedence, node.right);
@@ -172,8 +170,8 @@ namespace IllusionScript.Runtime.Binding
 
         private static void WriteBinaryExpression(BoundBinaryExpression node, IndentedTextWriter writer)
         {
-            var precedence = SyntaxFacts.GetBinaryOperatorPrecedence(node.binaryOperator.type);
-            var op = SyntaxFacts.GetText(node.binaryOperator.type);
+            int precedence = SyntaxFacts.GetBinaryOperatorPrecedence(node.binaryOperator.type);
+            string? op = SyntaxFacts.GetText(node.binaryOperator.type);
 
             writer.WriteNestedExpression(precedence, node.left);
             writer.WritePunctuation(op);
@@ -197,7 +195,7 @@ namespace IllusionScript.Runtime.Binding
             writer.WriteIdentifier(node.function.name);
             writer.WritePunctuation("(");
 
-            var isFirst = true;
+            bool isFirst = true;
             foreach (BoundExpression argument in node.arguments)
             {
                 if (isFirst)
@@ -323,8 +321,8 @@ namespace IllusionScript.Runtime.Binding
 
         private static void WriteLabelStatement(BoundLabelStatement node, IndentedTextWriter writer)
         {
-            var unindent = writer.Indent > 0;
-            if (unindent)
+            bool unIndent = writer.Indent > 0;
+            if (unIndent)
             {
                 writer.Indent--;
             }
@@ -332,7 +330,7 @@ namespace IllusionScript.Runtime.Binding
             writer.WritePunctuation(":");
             writer.WriteLine();
             
-            if (unindent)
+            if (unIndent)
             {
                 writer.Indent++;
             }

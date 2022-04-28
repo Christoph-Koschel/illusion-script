@@ -1,4 +1,5 @@
-﻿using IllusionScript.Runtime.Lexing;
+﻿using IllusionScript.Runtime.Binding.Nodes;
+using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing.Nodes.Expressions;
 
 namespace IllusionScript.Runtime.Parsing.Nodes.Statements

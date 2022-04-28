@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using IllusionScript.Runtime.Binding.Nodes;
 using IllusionScript.Runtime.Binding.Nodes.Expressions;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Binding.Operators;
@@ -21,6 +22,9 @@ namespace IllusionScript.Runtime.Binding
     {
         public readonly FunctionSymbol function;
         public readonly DiagnosticGroup diagnostics;
+        private readonly Stack<(BoundLabel breakLabel, BoundLabel continueLabel)> loopStack;
+        private int labelCounter;
+
         private Scope scope;
 
         public Binder(Scope parent, FunctionSymbol function)
@@ -28,6 +32,8 @@ namespace IllusionScript.Runtime.Binding
             this.function = function;
             diagnostics = new DiagnosticGroup();
             scope = new Scope(parent);
+            loopStack = new Stack<(BoundLabel breakLabel, BoundLabel continueLabel)>();
+            labelCounter = 0;
 
             if (function != null)
             {
@@ -39,6 +45,11 @@ namespace IllusionScript.Runtime.Binding
         }
 
         #region Statements
+
+        private BoundStatement BindErrorStatement()
+        {
+            return new BoundExpressionStatement(new BoundErrorExpression());
+        }
 
         private BoundStatement BindStatement(Statement syntax)
         {
@@ -58,9 +69,37 @@ namespace IllusionScript.Runtime.Binding
                     return BindDoWhileStatement((DoWhileStatement)syntax);
                 case SyntaxType.ForStatement:
                     return BindForStatement((ForStatement)syntax);
+                case SyntaxType.ContinueStatement:
+                    return BindContinueStatement((ContinueStatement)syntax);
+                case SyntaxType.BreakStatement:
+                    return BindBreakStatement((BreakStatement)syntax);
                 default:
                     throw new Exception($"Unexpected syntax {syntax.type}");
             }
+        }
+
+        private BoundStatement BindBreakStatement(BreakStatement syntax)
+        {
+            if (loopStack.Count == 0)
+            {
+                diagnostics.ReportInvalidBreakOrContinue(syntax.keyword.span, syntax.keyword.text);
+                return BindErrorStatement();
+            }
+
+            BoundLabel breakLabel = loopStack.Peek().breakLabel;
+            return new BoundGotoStatement(breakLabel);
+        }
+
+        private BoundStatement BindContinueStatement(ContinueStatement syntax)
+        {
+            if (loopStack.Count == 0)
+            {
+                diagnostics.ReportInvalidBreakOrContinue(syntax.keyword.span, syntax.keyword.text);
+                return BindErrorStatement();
+            }
+
+            BoundLabel continueLabel = loopStack.Peek().continueLabel;
+            return new BoundGotoStatement(continueLabel);
         }
 
         private BoundStatement BindForStatement(ForStatement syntax)
@@ -71,25 +110,37 @@ namespace IllusionScript.Runtime.Binding
             scope = new Scope(scope);
 
             VariableSymbol variable = BindVariable(syntax.identifier, true, TypeSymbol.Int);
-            BoundStatement body = BindStatement(syntax.body);
+            BoundStatement body = BindLoopBody(syntax.body, out BoundLabel breakLabel, out BoundLabel continueLabel);
 
             scope = scope.parent;
-            return new BoundForStatement(variable, startExpression, endExpression, body);
+            return new BoundForStatement(variable, startExpression, endExpression, body, breakLabel, continueLabel);
         }
 
         private BoundStatement BindDoWhileStatement(DoWhileStatement syntax)
         {
-            BoundStatement body = BindStatement(syntax.body);
+            BoundStatement body = BindLoopBody(syntax.body, out BoundLabel breakLabel, out BoundLabel continueLabel);
             BoundExpression condition = BindExpression(syntax.condition, TypeSymbol.Bool);
-            return new BoundDoWhileStatement(body, condition);
+            return new BoundDoWhileStatement(body, condition, breakLabel, continueLabel);
         }
 
         private BoundStatement BindWhileStatement(WhileStatement syntax)
         {
             BoundExpression condition = BindExpression(syntax.condition, TypeSymbol.Bool);
-            BoundStatement statement = BindStatement(syntax.body);
+            BoundStatement body = BindLoopBody(syntax.body, out BoundLabel breakLabel, out BoundLabel continueLabel);
 
-            return new BoundWhileStatement(condition, statement);
+            return new BoundWhileStatement(condition, body, breakLabel, continueLabel);
+        }
+
+        private BoundStatement BindLoopBody(Statement body, out BoundLabel breakLabel, out BoundLabel continueLabel)
+        {
+            breakLabel = new BoundLabel("b" + labelCounter);
+            continueLabel = new BoundLabel("c" + labelCounter);
+            labelCounter++;
+
+            loopStack.Push((breakLabel, continueLabel));
+            BoundStatement boundBody = BindStatement(body);
+            loopStack.Pop();
+            return boundBody;
         }
 
         private BoundStatement BindIfStatement(IfStatement syntax)
@@ -369,7 +420,7 @@ namespace IllusionScript.Runtime.Binding
                 ImmutableDictionary.CreateBuilder<FunctionSymbol, BoundBlockStatement>();
             DiagnosticGroup diagnostics = new DiagnosticGroup();
 
-            var scope = globalScope;
+            GlobalScope scope = globalScope;
             while (scope != null)
             {
                 foreach (FunctionSymbol function in scope.functions)

@@ -4,14 +4,16 @@ using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 
 namespace IllusionScript.Runtime.Binding.Nodes.Statements
 {
-    internal sealed class BoundForStatement : BoundStatement
+    internal sealed class BoundForStatement : BoundLoopStatement
     {
         public readonly VariableSymbol variable;
         public readonly BoundExpression startExpression;
         public readonly BoundExpression endExpression;
         public readonly BoundStatement body;
 
-        public BoundForStatement(VariableSymbol variable, BoundExpression startExpression, BoundExpression endExpression, BoundStatement body)
+        public BoundForStatement(VariableSymbol variable, BoundExpression startExpression,
+            BoundExpression endExpression, BoundStatement body, BoundLabel breakLabel, BoundLabel continueLabel) 
+            : base(breakLabel, continueLabel)
         {
             this.variable = variable;
             this.startExpression = startExpression;

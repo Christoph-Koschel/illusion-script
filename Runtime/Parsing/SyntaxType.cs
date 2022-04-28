@@ -105,7 +105,10 @@
         WhileStatement,
         DoWhileStatement,
         ForStatement,
+        ContinueStatement,
+        BreakStatement,
+        
+        // Members
         StatementMember,
-   
     }
 }

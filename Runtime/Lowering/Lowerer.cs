@@ -143,21 +143,19 @@ namespace IllusionScript.Runtime.Lowering
              * <body>
              * check:
              * gotoTrue <condition> continue 
-             * end:
+             * break:
              * 
              */
 
-            BoundLabel endBoundLabel = GenerateLabel();
             BoundLabel checkBoundLabel = GenerateLabel();
-            BoundLabel continueBoundLabel = GenerateLabel();
 
-            BoundLabelStatement endLabelStatement = new BoundLabelStatement(endBoundLabel);
+            BoundLabelStatement breakLabelStatement = new BoundLabelStatement(node.breakLabel);
             BoundLabelStatement checkLabelStatement = new BoundLabelStatement(checkBoundLabel);
-            BoundLabelStatement continueLabelStatement = new BoundLabelStatement(continueBoundLabel);
+            BoundLabelStatement continueLabelStatement = new BoundLabelStatement(node.continueLabel);
 
             BoundGotoStatement gotoCheck = new BoundGotoStatement(checkBoundLabel);
             BoundConditionalGotoStatement goToTrue =
-                new BoundConditionalGotoStatement(continueBoundLabel, node.condition);
+                new BoundConditionalGotoStatement(node.continueLabel, node.condition);
 
             BoundBlockStatement result = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
                 gotoCheck,
@@ -165,7 +163,7 @@ namespace IllusionScript.Runtime.Lowering
                 node.body,
                 checkLabelStatement,
                 goToTrue,
-                endLabelStatement
+                breakLabelStatement
             ));
 
             return RewriteStatement(result);
@@ -181,16 +179,19 @@ namespace IllusionScript.Runtime.Lowering
              * continue:
              * <body>
              * gotoTrue <condition> continue
+             * break:
              */
 
-            BoundLabel continueLabel = GenerateLabel();
-            BoundLabelStatement continueLabelStatement = new BoundLabelStatement(continueLabel);
-            BoundConditionalGotoStatement gotoTrue = new BoundConditionalGotoStatement(continueLabel, node.condition);
+            BoundLabelStatement continueLabelStatement = new BoundLabelStatement(node.continueLabel);
+            BoundLabelStatement breakLabelStatement = new BoundLabelStatement(node.breakLabel);
+            BoundConditionalGotoStatement gotoTrue =
+                new BoundConditionalGotoStatement(node.continueLabel, node.condition);
 
             BoundBlockStatement result = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
                 continueLabelStatement,
                 node.body,
-                gotoTrue
+                gotoTrue,
+                breakLabelStatement
             ));
 
             return result;
@@ -227,6 +228,7 @@ namespace IllusionScript.Runtime.Lowering
                 BoundBinaryOperator.Bind(SyntaxType.LessToken, TypeSymbol.Int, TypeSymbol.Int),
                 new BoundVariableExpression(endBoundSymbol)
             );
+            var continueLabelStatement = new BoundLabelStatement(node.continueLabel);
 
             BoundExpressionStatement increment = new BoundExpressionStatement(
                 new BoundAssignmentExpression(
@@ -240,8 +242,13 @@ namespace IllusionScript.Runtime.Lowering
             );
 
             BoundBlockStatement whileBlock =
-                new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(node.body, increment));
-            BoundWhileStatement whileStatement = new BoundWhileStatement(condition, whileBlock);
+                new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
+                    node.body,
+                    continueLabelStatement,
+                    increment
+                ));
+            BoundWhileStatement whileStatement =
+                new BoundWhileStatement(condition, whileBlock, node.breakLabel, GenerateLabel());
             BoundBlockStatement result =
                 new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
                     variableDeclaration,

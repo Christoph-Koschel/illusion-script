@@ -69,7 +69,8 @@ namespace IllusionScript.Runtime.Binding
                 return node;
             }
 
-            return new BoundForStatement(node.variable, startExpression, endExpression, body);
+            return new BoundForStatement(node.variable, startExpression, endExpression, body,
+                node.breakLabel, node.continueLabel);
         }
 
         protected virtual BoundStatement RewriteDoWhileStatement(BoundDoWhileStatement node)
@@ -82,7 +83,7 @@ namespace IllusionScript.Runtime.Binding
                 return node;
             }
 
-            return new BoundDoWhileStatement(body, condition);
+            return new BoundDoWhileStatement(body, condition, node.breakLabel, node.continueLabel);
         }
 
         protected virtual BoundStatement RewriteWhileStatement(BoundWhileStatement node)
@@ -95,7 +96,7 @@ namespace IllusionScript.Runtime.Binding
                 return node;
             }
 
-            return new BoundWhileStatement(condition, body);
+            return new BoundWhileStatement(condition, body, node.breakLabel, node.continueLabel);
         }
 
         protected virtual BoundStatement RewriteIfStatement(BoundIfStatement node)

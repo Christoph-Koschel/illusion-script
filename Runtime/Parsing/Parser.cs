@@ -80,7 +80,7 @@ namespace IllusionScript.Runtime.Parsing
         private ImmutableArray<Member> ParseMembers()
         {
             ImmutableArray<Member>.Builder members = ImmutableArray.CreateBuilder<Member>();
-            
+
             while (current.type != SyntaxType.EOFToken)
             {
                 Token startToken = current;
@@ -162,8 +162,22 @@ namespace IllusionScript.Runtime.Parsing
                 SyntaxType.WhileKeyword => ParseWhileStatement(),
                 SyntaxType.DoKeyword => ParseDoWhileStatement(),
                 SyntaxType.ForKeyword => ParseForStatement(),
+                SyntaxType.BreakKeyword => ParseBreakStatement(),
+                SyntaxType.ContinueKeyword => ParseContinueStatement(),
                 _ => ParseExpressionStatement()
             };
+        }
+
+        private Statement ParseContinueStatement()
+        {
+            Token token = Match(SyntaxType.ContinueKeyword);
+            return new ContinueStatement(token);
+        }
+
+        private Statement ParseBreakStatement()
+        {
+            Token token = Match(SyntaxType.BreakKeyword);
+            return new BreakStatement(token);
         }
 
         private Statement ParseForStatement()

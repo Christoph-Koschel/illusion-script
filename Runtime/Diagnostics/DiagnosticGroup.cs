@@ -84,7 +84,7 @@ namespace IllusionScript.Runtime.Diagnostics
             string message = $"ERROR: Symbol '{name}' is already declared";
             Report(span, message);
         }
-        
+
         public void ReportParameterAlreadyDeclared(TextSpan span, string name)
         {
             string message = $"ERROR: A Parameter with the '{name}' is already defined";
@@ -111,7 +111,8 @@ namespace IllusionScript.Runtime.Diagnostics
 
         public void ReportWrongArgumentCount(TextSpan span, string name, int parametersLength, int argumentsLength)
         {
-            string message = $"ERROR: Function '{name}' requires {parametersLength} arguments but was given {argumentsLength}";
+            string message =
+                $"ERROR: Function '{name}' requires {parametersLength} arguments but was given {argumentsLength}";
             Report(span, message);
         }
 
@@ -133,6 +134,12 @@ namespace IllusionScript.Runtime.Diagnostics
             string message =
                 $"ERROR: Cannot convert type '{type1}' to '{type2}' (Are you missing a cast?)";
             Report(span, message);
+        }
+
+        public void ReportInvalidBreakOrContinue(TextSpan span, string text)
+        {
+            string message = $"The keyword '{text}' is only valid inside loops";
+            Report(span, text);
         }
 
         public void XXX_ReportFunctionsAreUnsupported(TextSpan span)
