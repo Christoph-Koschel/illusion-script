@@ -436,8 +436,9 @@ namespace IllusionScript.Runtime.Binding
                 scope = scope.previous;
             }
 
+            var statement = Lowerer.Lower(new BoundBlockStatement(globalScope.statements));
 
-            return new BoundProgram(globalScope, diagnostics, functionBodies.ToImmutable());
+            return new BoundProgram(globalScope, diagnostics, functionBodies.ToImmutable(), statement);
         }
 
         public static GlobalScope BindGlobalScope(GlobalScope previous, CompilationUnit syntax)
@@ -458,7 +459,7 @@ namespace IllusionScript.Runtime.Binding
                 statementBuilder.Add(s);
             }
 
-            BoundBlockStatement statement = new BoundBlockStatement(statementBuilder.ToImmutable());
+            ImmutableArray<BoundStatement> statements = statementBuilder.ToImmutable();
 
             ImmutableArray<FunctionSymbol> functions = binder.scope.GetDeclaredFunctions();
             ImmutableArray<VariableSymbol> variables = binder.scope.GetDeclaredVariables();
@@ -469,7 +470,7 @@ namespace IllusionScript.Runtime.Binding
                 diagnostics = diagnostics.InsertRange(0, previous.diagnostics);
             }
 
-            return new GlobalScope(previous, diagnostics, variables, functions, statement);
+            return new GlobalScope(previous, diagnostics, variables, functions, statements);
         }
 
         private static Scope CreateParentScopes(GlobalScope previous)

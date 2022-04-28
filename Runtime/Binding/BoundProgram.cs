@@ -11,12 +11,14 @@ namespace IllusionScript.Runtime.Binding
         public readonly GlobalScope globalScope;
         public readonly DiagnosticGroup diagnostics;
         public readonly ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functionBodies;
+        public readonly BoundBlockStatement statement;
 
-        public BoundProgram(GlobalScope globalScope, DiagnosticGroup diagnostics, ImmutableDictionary<FunctionSymbol,BoundBlockStatement> functionBodies)
+        public BoundProgram(GlobalScope globalScope, DiagnosticGroup diagnostics, ImmutableDictionary<FunctionSymbol,BoundBlockStatement> functionBodies, BoundBlockStatement statement)
         {
             this.globalScope = globalScope;
             this.diagnostics = diagnostics;
             this.functionBodies = functionBodies;
+            this.statement = statement;
         }
     }
 }

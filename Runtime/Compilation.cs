@@ -66,8 +66,7 @@ namespace IllusionScript.Runtime
                 return new InterpreterResult(program.diagnostics, null);
             }
 
-            BoundBlockStatement statement = GetStatement();
-            Interpreter interpreter = new Interpreter(program.functionBodies, statement, variables);
+            Interpreter interpreter = new Interpreter(program, variables);
             object value = interpreter.Interpret();
 
             return new InterpreterResult(Array.Empty<Diagnostic>(), value);
@@ -75,14 +74,10 @@ namespace IllusionScript.Runtime
 
         public void EmitTree(TextWriter writer)
         {
-            BoundStatement expression = GetStatement();
-            expression.WriteTo(writer);
-        }
+            BoundProgram program = Binder.BindProgram(GlobalScope);
 
-        private BoundBlockStatement GetStatement()
-        {
-            BoundStatement result = GlobalScope.statement;
-            return Lowerer.Lower(result);
+
+            program.statement.WriteTo(writer);
         }
     }
 }

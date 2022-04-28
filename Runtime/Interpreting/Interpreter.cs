@@ -13,18 +13,15 @@ namespace IllusionScript.Runtime.Interpreting
 {
     internal sealed class Interpreter
     {
-        private readonly ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functionBodies;
-        private readonly BoundBlockStatement root;
+        private readonly BoundProgram program;
         private readonly Dictionary<VariableSymbol, object> globals;
         private readonly Stack<Dictionary<VariableSymbol, object>> locals;
         private object lastValue;
         private Random random;
 
-        public Interpreter(ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functionBodies,
-            BoundBlockStatement root, Dictionary<VariableSymbol, object> globals)
+        public Interpreter(BoundProgram program, Dictionary<VariableSymbol, object> globals)
         {
-            this.functionBodies = functionBodies;
-            this.root = root;
+            this.program = program;
             this.globals = globals;
             locals = new Stack<Dictionary<VariableSymbol, object>>();
             locals.Push(new Dictionary<VariableSymbol, object>());
@@ -32,8 +29,7 @@ namespace IllusionScript.Runtime.Interpreting
 
         public object Interpret()
         {
-            BoundBlockStatement body = root;
-            return InterpretStatement(body);
+            return InterpretStatement(program.statement);
         }
 
         private object InterpretStatement(BoundBlockStatement body)
@@ -179,7 +175,7 @@ namespace IllusionScript.Runtime.Interpreting
                 }
 
                 locals.Push(frame);
-                BoundBlockStatement statement = functionBodies[c.function];
+                BoundBlockStatement statement = program.functionBodies[c.function];
                 object result = InterpretStatement(statement);
                 locals.Pop();
                 return result;
@@ -313,7 +309,7 @@ namespace IllusionScript.Runtime.Interpreting
         {
             return n.value;
         }
-        
+
         private void Assign(VariableSymbol symbol, object value)
         {
             if (symbol.symbolType is SymbolType.GlobalVariable)
