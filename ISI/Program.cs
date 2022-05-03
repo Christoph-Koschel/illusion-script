@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace IllusionScript
+﻿namespace IllusionScript.ISI
 {
     internal static class Program
     {

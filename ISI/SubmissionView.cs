@@ -2,7 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
-namespace IllusionScript
+namespace IllusionScript.ISI
 {
     internal abstract partial class Repl
     {

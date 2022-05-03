@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using IllusionScript.Runtime;
 using IllusionScript.Runtime.Diagnostics;
+using IllusionScript.Runtime.Extension;
 using IllusionScript.Runtime.Interpreting;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing;
 
-namespace IllusionScript
+namespace IllusionScript.ISI
 {
     internal sealed class IlsRepl : Repl
     {
@@ -40,17 +41,17 @@ namespace IllusionScript
 
         protected override void Invoke(string input)
         {
-            SyntaxTree syntaxThree = SyntaxTree.Parse(input);
+            SyntaxTree syntaxTree = SyntaxTree.Parse(input);
 
             Compilation compilation = previous == null
-                ? new Compilation(syntaxThree)
-                : previous.ContinueWith(syntaxThree);
+                ? new Compilation(syntaxTree)
+                : previous.ContinueWith(syntaxTree);
 
             previous = compilation;
 
             if (showTree)
             {
-                syntaxThree.root.WriteTo(Console.Out);
+                syntaxTree.root.WriteTo(Console.Out);
                 Console.Write("\n");
 
                 Console.ResetColor();
@@ -70,43 +71,15 @@ namespace IllusionScript
                 {
                     return;
                 }
-                
+
                 Console.ForegroundColor = ConsoleColor.Gray;
                 Console.WriteLine(result.value);
                 Console.ResetColor();
             }
             else
             {
-                SourceText text = syntaxThree.text;
-
-                foreach (Diagnostic diagnostic in result.diagnostics)
-                {
-                    int lineIndex = text.GetLineIndex(diagnostic.span.start);
-                    // TextLine line = text.lines[lineIndex];
-                    // int lineNumber = lineIndex + 1;
-                    // int character = diagnostic.span.start - line.start + 1;
-                    //
-                    // Console.ForegroundColor = ConsoleColor.DarkRed;
-                    // Console.Write($"({lineNumber}, {character}): ");
-                    Console.WriteLine(diagnostic);
-                    Console.ResetColor();
-
-                    // TextSpan prefixSpan = TextSpan.FromBounds(line.start, diagnostic.span.start);
-                    // TextSpan suffixSpan = TextSpan.FromBounds(diagnostic.span.end, line.end);
-                    //
-                    // string prefix = syntaxThree.text.ToString(prefixSpan);
-                    // string error = syntaxThree.text.ToString(diagnostic.span);
-                    // string suffix = syntaxThree.text.ToString(suffixSpan);
-                    //
-                    // Console.Write(prefix);
-                    //
-                    // Console.ForegroundColor = ConsoleColor.DarkRed;
-                    // Console.Write(error);
-                    // Console.ResetColor();
-                    //
-                    // Console.Write(suffix);
-                    Console.Write("\n\n");
-                }
+                SourceText text = syntaxTree.text;
+                Console.Out.WriteDiagnostics(result.diagnostics, syntaxTree);
             }
         }
 

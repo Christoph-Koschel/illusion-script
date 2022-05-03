@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace IllusionScript
+namespace IllusionScript.ISI
 {
     internal abstract partial class Repl
     {
@@ -45,7 +45,7 @@ namespace IllusionScript
         {
             done = false;
             ObservableCollection<string> document = new ObservableCollection<string>() { "" };
-            SubmissionView view = new SubmissionView(Renderer, document);
+            Repl.SubmissionView view = new Repl.SubmissionView(Renderer, document);
             while (!done)
             {
                 ConsoleKeyInfo key = Console.ReadKey(true);
@@ -60,7 +60,7 @@ namespace IllusionScript
             return string.Join("\n", document);
         }
         
-        private void HandleKey(ConsoleKeyInfo key, ObservableCollection<string> document, SubmissionView view)
+        private void HandleKey(ConsoleKeyInfo key, ObservableCollection<string> document, Repl.SubmissionView view)
         {
             if (key.Modifiers == ConsoleModifiers.Shift)
             {
@@ -117,7 +117,7 @@ namespace IllusionScript
             }
         }
 
-        private void HandleShiftEnter(ObservableCollection<string> document, SubmissionView view)
+        private void HandleShiftEnter(ObservableCollection<string> document, Repl.SubmissionView view)
         {
             int start = view.CurrentCharacter;
             string before = document[view.CurrentLineIndex].Substring(0, start);
@@ -129,12 +129,12 @@ namespace IllusionScript
             view.CurrentLineIndex++;
         }
 
-        private void HandleEnter(ObservableCollection<string> document, SubmissionView view)
+        private void HandleEnter(ObservableCollection<string> document, Repl.SubmissionView view)
         {
             done = true;
         }
 
-        private void HandleLeftArrow(ObservableCollection<string> document, SubmissionView view)
+        private void HandleLeftArrow(ObservableCollection<string> document, Repl.SubmissionView view)
         {
             if (view.CurrentCharacter > 0)
             {
@@ -142,7 +142,7 @@ namespace IllusionScript
             }
         }
 
-        private void HandleRightArrow(ObservableCollection<string> document, SubmissionView view)
+        private void HandleRightArrow(ObservableCollection<string> document, Repl.SubmissionView view)
         {
             string line = document[view.CurrentLineIndex];
             if (view.CurrentCharacter < line.Length)
@@ -151,7 +151,7 @@ namespace IllusionScript
             }
         }
 
-        private void HandleUpArrow(ObservableCollection<string> document, SubmissionView view)
+        private void HandleUpArrow(ObservableCollection<string> document, Repl.SubmissionView view)
         {
             if (view.CurrentLineIndex > 0)
             {
@@ -163,7 +163,7 @@ namespace IllusionScript
             }
         }
 
-        private void HandleDownArrow(ObservableCollection<string> document, SubmissionView view)
+        private void HandleDownArrow(ObservableCollection<string> document, Repl.SubmissionView view)
         {
             if (view.CurrentLineIndex < document.Count - 1)
             {
@@ -175,7 +175,7 @@ namespace IllusionScript
             }
         }
 
-        private void HandleTabulator(ObservableCollection<string> document, SubmissionView view, bool back = false)
+        private void HandleTabulator(ObservableCollection<string> document, Repl.SubmissionView view, bool back = false)
         {
             if (back)
             {
@@ -193,7 +193,7 @@ namespace IllusionScript
             }
         }
 
-        private void HandleTyping(ObservableCollection<string> document, SubmissionView view, char c)
+        private void HandleTyping(ObservableCollection<string> document, Repl.SubmissionView view, char c)
         {
             int lineIndex = view.CurrentLineIndex;
             int start = view.CurrentCharacter;
@@ -202,7 +202,7 @@ namespace IllusionScript
             view.CurrentCharacter++;
         }
 
-        private void HandleDelete(ObservableCollection<string> document, SubmissionView view)
+        private void HandleDelete(ObservableCollection<string> document, Repl.SubmissionView view)
         {
             int lineIndex = view.CurrentLineIndex;
             string line = document[lineIndex];
@@ -218,7 +218,7 @@ namespace IllusionScript
             document[lineIndex] = before + after;
         }
 
-        private void HandleBackspace(ObservableCollection<string> document, SubmissionView view)
+        private void HandleBackspace(ObservableCollection<string> document, Repl.SubmissionView view)
         {
             int start = view.CurrentCharacter;
             if (start == 0)
@@ -248,7 +248,7 @@ namespace IllusionScript
             }
         }
 
-        private void HandlePageDown(ObservableCollection<string> document, SubmissionView view)
+        private void HandlePageDown(ObservableCollection<string> document, Repl.SubmissionView view)
         {
             submissionHistoryIndex--;
             if (submissionHistoryIndex < 0)
@@ -259,7 +259,7 @@ namespace IllusionScript
             UpdateDocumentFromHistory(document, view);
         }
 
-        private void HandlePageUp(ObservableCollection<string> document, SubmissionView view)
+        private void HandlePageUp(ObservableCollection<string> document, Repl.SubmissionView view)
         {
             submissionHistoryIndex++;
             if (submissionHistoryIndex > submissionHistory.Count - 1)
@@ -270,7 +270,7 @@ namespace IllusionScript
             UpdateDocumentFromHistory(document, view);
         }
 
-        private void UpdateDocumentFromHistory(ObservableCollection<string> document, SubmissionView view)
+        private void UpdateDocumentFromHistory(ObservableCollection<string> document, Repl.SubmissionView view)
         {
             if (submissionHistory.Count == 0)
             {

@@ -3,8 +3,8 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net5.0</TargetFramework>
-        <AssemblyName>IllusionScript</AssemblyName>
-        <RootNamespace>IllusionScript.ISI</RootNamespace>
+        <AssemblyName>ils</AssemblyName>
+        <RootNamespace>IllusionScript.ISC</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
