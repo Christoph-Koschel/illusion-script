@@ -1,10 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repl", "Repl\Repl.csproj", "{3A8FE740-8DFB-4C96-BB5C-CB11ECDB9712}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISI", "ISI\ISI.csproj", "{3A8FE740-8DFB-4C96-BB5C-CB11ECDB9712}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime", "Runtime\Runtime.csproj", "{7F14CFD5-C6E3-412D-A27F-1E67AEC82DF9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime.Test", "Runtime.Test\Runtime.Test.csproj", "{4BCA3491-ED93-49FA-BCE2-6383C523CE28}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISC", "ISC\ISC.csproj", "{53ECB60D-EF30-48AA-A34E-02EB0180CDAE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +26,9 @@ Global
 		{4BCA3491-ED93-49FA-BCE2-6383C523CE28}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4BCA3491-ED93-49FA-BCE2-6383C523CE28}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4BCA3491-ED93-49FA-BCE2-6383C523CE28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53ECB60D-EF30-48AA-A34E-02EB0180CDAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53ECB60D-EF30-48AA-A34E-02EB0180CDAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53ECB60D-EF30-48AA-A34E-02EB0180CDAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53ECB60D-EF30-48AA-A34E-02EB0180CDAE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

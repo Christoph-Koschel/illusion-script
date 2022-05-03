@@ -466,7 +466,7 @@ namespace IllusionScript.Runtime.Binding
 
             FunctionSymbol function =
                 new FunctionSymbol(syntax.identifier.text, parameters.ToImmutable(), type, syntax);
-            if (!scope.TryDeclareFunction(function))
+            if (function.declaration.identifier.text != null && !scope.TryDeclareFunction(function))
             {
                 diagnostics.ReportSymbolAlreadyDeclared(syntax.identifier.span, function.name);
             }

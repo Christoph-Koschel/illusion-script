@@ -74,9 +74,9 @@ namespace IllusionScript.Runtime.CFA
 
             foreach (BasicBlockBranch branch in graph.end.incoming)
             {
-                BoundStatement lastStatement = branch.from.statements.Last();
+                BoundStatement lastStatement = branch.from.statements.LastOrDefault();
 
-                if (lastStatement.boundType != BoundNodeType.ReturnStatement)
+                if (lastStatement == null || lastStatement.boundType != BoundNodeType.ReturnStatement)
                 {
                     return false;
                 }

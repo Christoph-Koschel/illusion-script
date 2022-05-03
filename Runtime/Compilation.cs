@@ -70,11 +70,20 @@ namespace IllusionScript.Runtime
                 ? program.functionBodies.Last().Value
                 : program.statement;
 
-            ControlFlowGraph cfg = ControlFlowGraph.Create(cfgStatement);
-            using (StreamWriter streamWriter = new StreamWriter(cfgPath))
+            try
             {
+                ControlFlowGraph cfg = ControlFlowGraph.Create(cfgStatement);
+                using StreamWriter streamWriter = new StreamWriter(cfgPath);
                 cfg.WriteTo(streamWriter);
             }
+            catch (Exception err)
+            {
+                if (err is not UnauthorizedAccessException)
+                {
+                    throw err;
+                }
+            }
+
 
             if (program.diagnostics.Any())
             {
