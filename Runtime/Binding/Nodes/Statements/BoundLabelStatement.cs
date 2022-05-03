@@ -1,6 +1,4 @@
-﻿using IllusionScript.Runtime.Interpreting.Memory.Symbols;
-
-namespace IllusionScript.Runtime.Binding.Nodes.Statements
+﻿namespace IllusionScript.Runtime.Binding.Nodes.Statements
 {
     internal sealed class BoundLabelStatement : BoundStatement
     {

@@ -12,6 +12,7 @@ using IllusionScript.Runtime.Interpreting;
 using IllusionScript.Runtime.Interpreting.Memory;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 using IllusionScript.Runtime.Parsing;
+using ControlFlowGraph = IllusionScript.Runtime.CFA.ControlFlowGraph;
 
 namespace IllusionScript.Runtime
 {
@@ -61,6 +62,20 @@ namespace IllusionScript.Runtime
             }
 
             BoundProgram program = Binder.BindProgram(GlobalScope);
+
+            string appPath = Environment.GetCommandLineArgs()[0];
+            string? appDirectory = Path.GetDirectoryName(appPath);
+            string cfgPath = Path.Combine(appDirectory, "cfg.dot");
+            BoundBlockStatement cfgStatement = !program.statement.statements.Any() && program.functionBodies.Any()
+                ? program.functionBodies.Last().Value
+                : program.statement;
+
+            ControlFlowGraph cfg = ControlFlowGraph.Create(cfgStatement);
+            using (StreamWriter streamWriter = new StreamWriter(cfgPath))
+            {
+                cfg.WriteTo(streamWriter);
+            }
+
             if (program.diagnostics.Any())
             {
                 return new InterpreterResult(program.diagnostics, null);

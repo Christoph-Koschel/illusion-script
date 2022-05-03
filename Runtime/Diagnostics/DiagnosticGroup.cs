@@ -159,5 +159,11 @@ namespace IllusionScript.Runtime.Diagnostics
             string message = $"ERROR: An expression of type '{returnType}' expected";
             Report(span, message);
         }
+
+        public void ReportAllPathsMustReturn(TextSpan span)
+        {
+            string message = $"Not all code paths return a value.";
+            Report(span, message);
+        }
     }
 }

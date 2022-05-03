@@ -5,6 +5,7 @@ using IllusionScript.Runtime.Binding.Nodes;
 using IllusionScript.Runtime.Binding.Nodes.Expressions;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Binding.Operators;
+using IllusionScript.Runtime.CFA;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Interpreting.Memory;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
@@ -487,6 +488,12 @@ namespace IllusionScript.Runtime.Binding
                     Binder binder = new Binder(parentScope, function);
                     BoundStatement body = binder.BindStatement(function.declaration.body);
                     BoundBlockStatement loweredBody = Lowerer.Lower(body);
+
+                    if (function.returnType != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
+                    {
+                        binder.diagnostics.ReportAllPathsMustReturn(function.declaration.identifier.span);
+                    }
+                    
                     functionBodies.Add(function, loweredBody);
 
                     diagnostics.AddRange(binder.diagnostics);

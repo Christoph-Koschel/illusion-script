@@ -1,5 +1,4 @@
 ﻿using IllusionScript.Runtime.Binding.Nodes.Expressions;
-using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 
 namespace IllusionScript.Runtime.Binding.Nodes.Statements
 {
