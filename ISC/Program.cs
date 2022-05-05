@@ -12,12 +12,12 @@ namespace IllusionScript.ISC
 {
     internal static class Program
     {
-        private static void Main(string[] args)
+        private static int Main(string[] args)
         {
             if (args.Length == 0)
             {
                 Console.WriteLine("usage: ils <source-paths>");
-                return;
+                return 1;
             }
 
             IEnumerable<string> paths = GetFilePaths(args);
@@ -38,7 +38,7 @@ namespace IllusionScript.ISC
 
             if (hasErrors)
             {
-                return;
+                return 1;
             }
 
             Compilation compilation = new Compilation(syntaxTrees.ToArray());
@@ -48,16 +48,18 @@ namespace IllusionScript.ISC
             {
                 if (result.value == null)
                 {
-                    return;
+                    return 0;
                 }
 
                 Console.ForegroundColor = ConsoleColor.Gray;
                 Console.WriteLine(result.value);
                 Console.ResetColor();
+                return 0;
             }
             else
             {
                 Console.Out.WriteDiagnostics(result.diagnostics);
+                return 1;
             }
         }
 

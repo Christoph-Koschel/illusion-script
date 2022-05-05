@@ -98,9 +98,9 @@ namespace IllusionScript.Runtime.Extension
                 SourceText text = diagnostic.location.text;
                 string filename = diagnostic.location.text.filename;
                 int startLine = diagnostic.location.startLine + 1;
-                int startCharacter = diagnostic.location.startCharacter;
+                int startCharacter = diagnostic.location.startCharacter + 1;
                 int endLine = diagnostic.location.endLine + 1;
-                int endCharacter = diagnostic.location.endCharacter;
+                int endCharacter = diagnostic.location.endCharacter+ 1;
                 TextSpan span = diagnostic.location.span;
                 int lineIndex = text.GetLineIndex(span.start);
                 TextLine line = text.lines[lineIndex];
