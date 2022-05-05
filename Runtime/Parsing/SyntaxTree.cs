@@ -28,7 +28,7 @@ namespace IllusionScript.Runtime.Parsing
         {
             this.text = text;
 
-            handler(this, out var root, out var diagnostics);
+            handler(this, out CompilationUnit root, out ImmutableArray<Diagnostic> diagnostics);
 
             this.diagnostics = diagnostics;
             this.root = root;
@@ -62,7 +62,7 @@ namespace IllusionScript.Runtime.Parsing
 
         public static ImmutableArray<Token> ParseTokens(SourceText text, out ImmutableArray<Diagnostic> diagnostics)
         {
-            var tokens = new List<Token>();
+            List<Token> tokens = new List<Token>();
             void ParseTokens(SyntaxTree syntaxTree, out CompilationUnit root,
                 out ImmutableArray<Diagnostic> diagnostics)
             {

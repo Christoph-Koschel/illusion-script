@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using IllusionScript.Runtime;
-using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Extension;
 using IllusionScript.Runtime.Interpreting;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
@@ -17,20 +16,32 @@ namespace IllusionScript.ISC
         {
             if (args.Length == 0)
             {
-                Console.Error.WriteLine("usage: ils <source-paths>");
+                Console.WriteLine("usage: ils <source-paths>");
                 return;
             }
 
-            if (args.Length > 1)
+            IEnumerable<string> paths = GetFilePaths(args);
+            List<SyntaxTree> syntaxTrees = new List<SyntaxTree>();
+            var hasErrors = false;
+            foreach (string path in paths)
             {
-                Console.WriteLine("error: only one path supported right now");
+                if (!File.Exists(path))
+                {
+                    Console.WriteLine($"ERROR: File '{path}' doesn't exists");
+                    hasErrors = true;
+                    continue;
+                }
+
+                SyntaxTree syntaxTree = SyntaxTree.Load(path);
+                syntaxTrees.Add(syntaxTree);
+            }
+
+            if (hasErrors)
+            {
                 return;
             }
 
-            var path = args.Single();
-            SyntaxTree syntaxTree = SyntaxTree.Load(path);
-
-            Compilation compilation = new Compilation(syntaxTree);
+            Compilation compilation = new Compilation(syntaxTrees.ToArray());
             InterpreterResult result = compilation.Interpret(new Dictionary<VariableSymbol, object>());
 
             if (!result.diagnostics.Any())
@@ -46,9 +57,27 @@ namespace IllusionScript.ISC
             }
             else
             {
-                SourceText text = syntaxTree.text;
-                Console.Out.WriteDiagnostics(result.diagnostics, syntaxTree);
+                Console.Out.WriteDiagnostics(result.diagnostics);
             }
+        }
+
+        private static IEnumerable<string> GetFilePaths(IEnumerable<string> paths)
+        {
+            var result = new SortedSet<string>();
+
+            foreach (string path in paths)
+            {
+                if (Directory.Exists(path))
+                {
+                    result.UnionWith(Directory.EnumerateFiles(path, "*.ils", SearchOption.AllDirectories));
+                }
+                else
+                {
+                    result.Add(path);
+                }
+            }
+
+            return result;
         }
     }
 }

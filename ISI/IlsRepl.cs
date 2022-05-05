@@ -79,7 +79,7 @@ namespace IllusionScript.ISI
             }
             else
             {
-                Console.Out.WriteDiagnostics(result.diagnostics, syntaxTree);
+                Console.Out.WriteDiagnostics(result.diagnostics);
             }
         }
 

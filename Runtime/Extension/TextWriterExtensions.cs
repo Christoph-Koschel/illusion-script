@@ -91,19 +91,19 @@ namespace IllusionScript.Runtime.Extension
             writer.ResetColor();
         }
 
-        public static void WriteDiagnostics(this TextWriter writer, IEnumerable<Diagnostic> diagnostics,
-            SyntaxTree tree)
+        public static void WriteDiagnostics(this TextWriter writer, IEnumerable<Diagnostic> diagnostics)
         {
             foreach (Diagnostic diagnostic in diagnostics)
             {
+                SourceText text = diagnostic.location.text;
                 string filename = diagnostic.location.text.filename;
-                var startLine = diagnostic.location.startLine + 1;
-                var startCharacter = diagnostic.location.startCharacter;
-                var endLine = diagnostic.location.endLine + 1;
-                var endCharacter = diagnostic.location.endCharacter;
+                int startLine = diagnostic.location.startLine + 1;
+                int startCharacter = diagnostic.location.startCharacter;
+                int endLine = diagnostic.location.endLine + 1;
+                int endCharacter = diagnostic.location.endCharacter;
                 TextSpan span = diagnostic.location.span;
-                int lineIndex = tree.text.GetLineIndex(span.start);
-                TextLine line = tree.text.lines[lineIndex];
+                int lineIndex = text.GetLineIndex(span.start);
+                TextLine line = text.lines[lineIndex];
 
                 if (IsConsole(writer))
                 {
@@ -116,9 +116,9 @@ namespace IllusionScript.Runtime.Extension
                 TextSpan prefixSpan = TextSpan.FromBounds(line.start, diagnostic.location.span.start);
                 TextSpan suffixSpan = TextSpan.FromBounds(diagnostic.location.span.end, line.end);
 
-                string prefix = tree.text.ToString(prefixSpan);
-                string error = tree.text.ToString(diagnostic.location.span);
-                string suffix = tree.text.ToString(suffixSpan);
+                string prefix = text.ToString(prefixSpan);
+                string error = text.ToString(diagnostic.location.span);
+                string suffix = text.ToString(suffixSpan);
 
                 writer.Write(prefix);
 

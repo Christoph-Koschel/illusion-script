@@ -10,7 +10,7 @@ namespace IllusionScript.Runtime.Diagnostics
 
         public int GetLineIndex(int position)
         {
-            for (var index = 0; index < lines.Length; index++)
+            for (int index = 0; index < lines.Length; index++)
             {
                 TextLine line = lines[index];
                 if (position >= line.start && position <= line.end)

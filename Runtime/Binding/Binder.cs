@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using IllusionScript.Runtime.Binding.Nodes;
 using IllusionScript.Runtime.Binding.Nodes.Expressions;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
@@ -509,19 +510,23 @@ namespace IllusionScript.Runtime.Binding
             return new BoundProgram(globalScope, diagnostics, functionBodies.ToImmutable(), statement);
         }
 
-        public static GlobalScope BindGlobalScope(GlobalScope previous, CompilationUnit syntax)
+        public static GlobalScope BindGlobalScope(GlobalScope previous, ImmutableArray<SyntaxTree> syntaxTrees)
         {
             Scope parentScope = CreateParentScopes(previous);
             Binder binder = new Binder(parentScope, null);
 
-            foreach (FunctionDeclarationMember function in syntax.members.OfType<FunctionDeclarationMember>())
+            IEnumerable<FunctionDeclarationMember> functionDeclarations =
+                syntaxTrees.SelectMany(st => st.root.members).OfType<FunctionDeclarationMember>();
+
+            foreach (FunctionDeclarationMember function in functionDeclarations)
             {
                 binder.BindFunctionDeclarationMember(function);
             }
-
+            IEnumerable<StatementMember> globalStatements =
+                syntaxTrees.SelectMany(st => st.root.members).OfType<StatementMember>();
             ImmutableArray<BoundStatement>.Builder statementBuilder = ImmutableArray.CreateBuilder<BoundStatement>();
 
-            foreach (StatementMember statementMember in syntax.members.OfType<StatementMember>())
+            foreach (StatementMember statementMember in globalStatements)
             {
                 BoundStatement s = binder.BindStatement(statementMember.statement);
                 statementBuilder.Add(s);
