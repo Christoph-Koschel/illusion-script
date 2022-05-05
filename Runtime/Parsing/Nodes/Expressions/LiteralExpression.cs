@@ -8,14 +8,14 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Expressions
         public readonly Token literalToken;
         public readonly object value;
 
-        public LiteralExpression(Token literalToken, object value)
+        public LiteralExpression(SyntaxTree syntaxTree, Token literalToken, object value)  : base(syntaxTree)
         {
             this.literalToken = literalToken;
             this.value = value;
         }
 
-        public LiteralExpression(Token literalToken) 
-            : this(literalToken, literalToken.value)
+        public LiteralExpression(SyntaxTree syntaxTree, Token literalToken) 
+            : this(syntaxTree, literalToken, literalToken.value)
         {
         }
     }

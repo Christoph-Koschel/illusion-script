@@ -2,5 +2,8 @@
 {
     public abstract class Expression : Node
     {
+        protected Expression(SyntaxTree syntaxTree) : base(syntaxTree)
+        {
+        }
     }
 }

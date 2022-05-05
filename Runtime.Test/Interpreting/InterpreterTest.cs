@@ -369,7 +369,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
             foreach (Diagnostic diagnostic in result.diagnostics)
             {
                 testOutputHelper.WriteLine(diagnostic.message);
-                testOutputHelper.WriteLine(diagnostic.span.ToString());
+                testOutputHelper.WriteLine(diagnostic.location.span.ToString());
             }
 
             Assert.Equal(diagnostics.Length, result.diagnostics.Length);
@@ -382,7 +382,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
                 Assert.Equal(expectedMessage, actualMessage);
 
                 TextSpan expectedSpan = annotatedText.spans[i];
-                TextSpan actualSpan = result.diagnostics[i].span;
+                TextSpan actualSpan = result.diagnostics[i].location.span;
 
                 if (checkSpans)
                 {

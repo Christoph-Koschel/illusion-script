@@ -14,7 +14,12 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Members
         public readonly TypeClause typeClause;
         public readonly BlockStatement body;
 
-        public FunctionDeclarationMember(Token functionKeyword, Token identifier, Token lParen, SeparatedSyntaxList<Parameter> parameters, Token rParen, TypeClause typeClause, BlockStatement body)
+        public FunctionDeclarationMember(
+            SyntaxTree syntaxTree, Token functionKeyword,
+            Token identifier, Token lParen,
+            SeparatedSyntaxList<Parameter> parameters, Token rParen,
+            TypeClause typeClause, BlockStatement body
+        ) : base(syntaxTree)
         {
             this.functionKeyword = functionKeyword;
             this.identifier = identifier;

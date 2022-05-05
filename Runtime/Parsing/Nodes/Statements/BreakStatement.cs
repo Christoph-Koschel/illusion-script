@@ -6,7 +6,7 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Statements
     {
         public readonly Token keyword;
 
-        public BreakStatement(Token keyword)
+        public BreakStatement(SyntaxTree syntaxTree, Token keyword) : base(syntaxTree)
         {
             this.keyword = keyword;
         }

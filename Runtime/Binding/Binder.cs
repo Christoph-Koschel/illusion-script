@@ -87,7 +87,7 @@ namespace IllusionScript.Runtime.Binding
 
             if (function == null)
             {
-                diagnostics.ReportInvalidReturn(syntax.returnKeyword.span);
+                diagnostics.ReportInvalidReturn(syntax.returnKeyword.location);
             }
             else
             {
@@ -95,18 +95,18 @@ namespace IllusionScript.Runtime.Binding
                 {
                     if (expression != null)
                     {
-                        diagnostics.ReportInvalidReturnExpression(syntax.expression.span, function.name);
+                        diagnostics.ReportInvalidReturnExpression(syntax.expression.location, function.name);
                     }
                 }
                 else
                 {
                     if (expression == null)
                     {
-                        diagnostics.ReportMissingReturnExpression(syntax.returnKeyword.span, function.returnType);
+                        diagnostics.ReportMissingReturnExpression(syntax.returnKeyword.location, function.returnType);
                     }
                     else
                     {
-                        expression = BindConversion(syntax.expression.span, expression, function.returnType);
+                        expression = BindConversion(syntax.expression.location, expression, function.returnType);
                     }
                 }
             }
@@ -118,7 +118,7 @@ namespace IllusionScript.Runtime.Binding
         {
             if (loopStack.Count == 0)
             {
-                diagnostics.ReportInvalidBreakOrContinue(syntax.keyword.span, syntax.keyword.text);
+                diagnostics.ReportInvalidBreakOrContinue(syntax.keyword.location, syntax.keyword.text);
                 return BindErrorStatement();
             }
 
@@ -130,7 +130,7 @@ namespace IllusionScript.Runtime.Binding
         {
             if (loopStack.Count == 0)
             {
-                diagnostics.ReportInvalidBreakOrContinue(syntax.keyword.span, syntax.keyword.text);
+                diagnostics.ReportInvalidBreakOrContinue(syntax.keyword.location, syntax.keyword.text);
                 return BindErrorStatement();
             }
 
@@ -195,7 +195,8 @@ namespace IllusionScript.Runtime.Binding
             BoundExpression initializer = BindExpression(syntax.initializer);
             TypeSymbol variableType = type ?? initializer.type;
             VariableSymbol variable = BindVariable(syntax.identifier, isReadOnly, variableType);
-            BoundExpression convertedInitializer = BindConversion(syntax.initializer.span, initializer, variableType);
+            BoundExpression convertedInitializer =
+                BindConversion(syntax.initializer.location, initializer, variableType);
 
             return new BoundVariableDeclarationStatement(variable, convertedInitializer);
         }
@@ -205,7 +206,7 @@ namespace IllusionScript.Runtime.Binding
             TypeSymbol type = LookupType(syntax.identifier.text, enableVoid);
             if (type == null && !string.IsNullOrEmpty(syntax.identifier.text))
             {
-                diagnostics.ReportUndefinedType(syntax.identifier.span, syntax.identifier.text);
+                diagnostics.ReportUndefinedType(syntax.identifier.location, syntax.identifier.text);
             }
 
             return type;
@@ -246,7 +247,7 @@ namespace IllusionScript.Runtime.Binding
             BoundExpression result = BindExpressionInternal(syntax);
             if (!canBeVoid && result.type == TypeSymbol.Void)
             {
-                diagnostics.ReportExpressionMustHaveValue(syntax.span);
+                diagnostics.ReportExpressionMustHaveValue(syntax.location);
                 return new BoundErrorExpression();
             }
 
@@ -293,7 +294,7 @@ namespace IllusionScript.Runtime.Binding
 
             if (!scope.TryLookupFunction(syntax.identifier.text, out FunctionSymbol function))
             {
-                diagnostics.ReportUndefinedFunction(syntax.identifier.span, syntax.identifier.text);
+                diagnostics.ReportUndefinedFunction(syntax.identifier.location, syntax.identifier.text);
                 return new BoundErrorExpression();
             }
 
@@ -320,7 +321,8 @@ namespace IllusionScript.Runtime.Binding
                     span = syntax.rParen.span;
                 }
 
-                diagnostics.ReportWrongArgumentCount(span, syntax.identifier.text,
+                TextLocation location = new TextLocation(syntax.location.text, span);
+                diagnostics.ReportWrongArgumentCount(location, syntax.identifier.text,
                     function.parameters.Length,
                     syntax.arguments.Length);
                 return new BoundErrorExpression();
@@ -334,7 +336,7 @@ namespace IllusionScript.Runtime.Binding
 
                 if (argument.type != parameter.type)
                 {
-                    diagnostics.WrongArgumentType(syntax.arguments[i].span, parameter.name, parameter.type,
+                    diagnostics.WrongArgumentType(syntax.arguments[i].location, parameter.name, parameter.type,
                         argument.type);
                     hasErrors = true;
                 }
@@ -366,7 +368,7 @@ namespace IllusionScript.Runtime.Binding
             BoundUnaryOperator unaryOperator = BoundUnaryOperator.Bind(syntax.operatorToken.type, right.type);
             if (unaryOperator == null)
             {
-                diagnostics.ReportUndefinedUnaryOperator(syntax.operatorToken.span, syntax.operatorToken.text,
+                diagnostics.ReportUndefinedUnaryOperator(syntax.operatorToken.location, syntax.operatorToken.text,
                     right.type);
                 return new BoundErrorExpression();
             }
@@ -390,7 +392,7 @@ namespace IllusionScript.Runtime.Binding
 
             if (binaryOperator == null)
             {
-                diagnostics.ReportUndefinedBinaryOperator(syntax.operatorToken.span, syntax.operatorToken.text,
+                diagnostics.ReportUndefinedBinaryOperator(syntax.operatorToken.location, syntax.operatorToken.text,
                     left.type, right.type);
                 return new BoundErrorExpression();
             }
@@ -413,7 +415,7 @@ namespace IllusionScript.Runtime.Binding
 
             if (!scope.TryLookupVariable(name, out VariableSymbol variable))
             {
-                diagnostics.ReportUndefinedIdentifier(syntax.identifier.span, name);
+                diagnostics.ReportUndefinedIdentifier(syntax.identifier.location, name);
                 return new BoundErrorExpression();
             }
 
@@ -427,17 +429,17 @@ namespace IllusionScript.Runtime.Binding
 
             if (!scope.TryLookupVariable(name, out VariableSymbol variable))
             {
-                diagnostics.ReportUndefinedIdentifier(syntax.identifier.span, name);
+                diagnostics.ReportUndefinedIdentifier(syntax.identifier.location, name);
                 return boundExpression;
             }
 
             if (variable.isReadOnly)
             {
-                diagnostics.ReportCannotAssign(syntax.identifier.span, name);
+                diagnostics.ReportCannotAssign(syntax.identifier.location, name);
             }
 
             BoundExpression convertedExpression =
-                BindConversion(syntax.expression.span, boundExpression, variable.type);
+                BindConversion(syntax.expression.location, boundExpression, variable.type);
             return new BoundAssignmentExpression(variable, convertedExpression);
         }
 
@@ -453,7 +455,7 @@ namespace IllusionScript.Runtime.Binding
                 TypeSymbol parameterType = BindTypeClause(parameter.typeClause);
                 if (!seenParameterName.Add(parameterName))
                 {
-                    diagnostics.ReportParameterAlreadyDeclared(parameter.span, parameterName);
+                    diagnostics.ReportParameterAlreadyDeclared(parameter.location, parameterName);
                 }
                 else
                 {
@@ -468,7 +470,7 @@ namespace IllusionScript.Runtime.Binding
                 new FunctionSymbol(syntax.identifier.text, parameters.ToImmutable(), type, syntax);
             if (function.declaration.identifier.text != null && !scope.TryDeclareFunction(function))
             {
-                diagnostics.ReportSymbolAlreadyDeclared(syntax.identifier.span, function.name);
+                diagnostics.ReportSymbolAlreadyDeclared(syntax.identifier.location, function.name);
             }
         }
 
@@ -491,9 +493,9 @@ namespace IllusionScript.Runtime.Binding
 
                     if (function.returnType != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
                     {
-                        binder.diagnostics.ReportAllPathsMustReturn(function.declaration.identifier.span);
+                        binder.diagnostics.ReportAllPathsMustReturn(function.declaration.identifier.location);
                     }
-                    
+
                     functionBodies.Add(function, loweredBody);
 
                     diagnostics.AddRange(binder.diagnostics);
@@ -594,7 +596,7 @@ namespace IllusionScript.Runtime.Binding
 
             if (declare && !scope.TryDeclareVariable(variable))
             {
-                diagnostics.ReportSymbolAlreadyDeclared(identifier.span, name);
+                diagnostics.ReportSymbolAlreadyDeclared(identifier.location, name);
             }
 
             return variable;
@@ -603,10 +605,10 @@ namespace IllusionScript.Runtime.Binding
         private BoundExpression BindConversion(Expression syntax, TypeSymbol type, bool allowExplicit = false)
         {
             BoundExpression expression = BindExpression(syntax);
-            return BindConversion(syntax.span, expression, type, allowExplicit);
+            return BindConversion(syntax.location, expression, type, allowExplicit);
         }
 
-        private BoundExpression BindConversion(TextSpan span, BoundExpression expression, TypeSymbol type,
+        private BoundExpression BindConversion(TextLocation location, BoundExpression expression, TypeSymbol type,
             bool allowExplicit = false)
         {
             Conversion conversion = Conversion.Classify(expression.type, type);
@@ -615,7 +617,7 @@ namespace IllusionScript.Runtime.Binding
             {
                 if (expression.type != TypeSymbol.Error && type != TypeSymbol.Error)
                 {
-                    diagnostics.ReportCannotConvert(span, expression.type, type);
+                    diagnostics.ReportCannotConvert(location, expression.type, type);
                 }
 
                 return new BoundErrorExpression();
@@ -623,7 +625,7 @@ namespace IllusionScript.Runtime.Binding
 
             if (!allowExplicit && conversion.isExplicit)
             {
-                diagnostics.ReportCannotConvertConvertImplicitly(span, expression.type, type);
+                diagnostics.ReportCannotConvertConvertImplicitly(location, expression.type, type);
             }
 
             if (conversion.isIdentity)

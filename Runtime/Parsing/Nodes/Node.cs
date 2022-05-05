@@ -11,7 +11,14 @@ namespace IllusionScript.Runtime.Parsing.Nodes
 {
     public abstract class Node
     {
+        public readonly SyntaxTree syntaxTree;
         public abstract SyntaxType type { get; }
+        public TextLocation location => new TextLocation(syntaxTree.text, span);
+
+        protected Node(SyntaxTree syntaxTree)
+        {
+            this.syntaxTree = syntaxTree;
+        }
 
         public virtual TextSpan span
         {

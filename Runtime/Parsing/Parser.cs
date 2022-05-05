@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Extension;
-using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing.Nodes;
 using IllusionScript.Runtime.Parsing.Nodes.Expressions;
@@ -15,19 +12,18 @@ namespace IllusionScript.Runtime.Parsing
 {
     public sealed class Parser : SyntaxFacts
     {
-        private readonly SourceText text;
+        private readonly SyntaxTree syntaxTree;
         private readonly Token[] tokens;
         private readonly DiagnosticGroup diagnostics;
         private int position;
         private Token current => Peek(0);
 
-        internal Parser(SourceText text)
+        internal Parser(SyntaxTree syntaxTree)
         {
-            this.text = text;
             diagnostics = new DiagnosticGroup();
             position = 0;
 
-            Lexer lexer = new Lexer(text);
+            Lexer lexer = new Lexer(syntaxTree);
             List<Token> tokens = new List<Token>();
             Token token;
             do
@@ -40,6 +36,7 @@ namespace IllusionScript.Runtime.Parsing
                 }
             } while (token.type != SyntaxType.EOFToken);
 
+            this.syntaxTree = syntaxTree;
             this.tokens = tokens.ToArray();
             diagnostics.AddRange(lexer.Diagnostics());
         }
@@ -66,15 +63,15 @@ namespace IllusionScript.Runtime.Parsing
                 return NextToken();
             }
 
-            diagnostics.ReportUnexpectedToken(current.span, current.type, type);
-            return new Token(type, current.position, null, null);
+            diagnostics.ReportUnexpectedToken(current.location, current.type, type);
+            return new Token(syntaxTree, type, current.position, null, null);
         }
 
         public CompilationUnit ParseCompilationUnit()
         {
             ImmutableArray<Member> members = ParseMembers();
             Token end = Match(SyntaxType.EOFToken);
-            return new CompilationUnit(members, end);
+            return new CompilationUnit(syntaxTree, members, end);
         }
 
         private ImmutableArray<Member> ParseMembers()
@@ -110,12 +107,7 @@ namespace IllusionScript.Runtime.Parsing
         private Member ParseStatementMember()
         {
             Statement statement = ParseStatement();
-            if (statement is not BlockStatement)
-            {
-                // Match(statement.endToken);
-            }
-
-            return new StatementMember(statement);
+            return new StatementMember(syntaxTree, statement);
         }
 
         private Member ParseFunctionDeclaration()
@@ -127,7 +119,8 @@ namespace IllusionScript.Runtime.Parsing
             Token rParen = Match(SyntaxType.RParenToken);
             TypeClause type = ParseTypeClause();
             BlockStatement body = (BlockStatement)ParseBlockStatement();
-            return new FunctionDeclarationMember(functionKeyword, identifier, lParen, parameters, rParen, type, body);
+            return new FunctionDeclarationMember(syntaxTree, functionKeyword, identifier, lParen, parameters, rParen,
+                type, body);
         }
 
         private SeparatedSyntaxList<Parameter> ParseParameters()
@@ -154,7 +147,7 @@ namespace IllusionScript.Runtime.Parsing
         {
             Token identifier = Match(SyntaxType.IdentifierToken);
             TypeClause type = ParseTypeClause();
-            return new Parameter(identifier, type);
+            return new Parameter(syntaxTree, identifier, type);
         }
 
         private Statement ParseStatement()
@@ -211,19 +204,19 @@ namespace IllusionScript.Runtime.Parsing
                 expression = ParseExpression();
             }
 
-            return new ReturnStatement(keyword, expression);
+            return new ReturnStatement(syntaxTree, keyword, expression);
         }
 
         private Statement ParseContinueStatement()
         {
             Token token = Match(SyntaxType.ContinueKeyword);
-            return new ContinueStatement(token);
+            return new ContinueStatement(syntaxTree, token);
         }
 
         private Statement ParseBreakStatement()
         {
             Token token = Match(SyntaxType.BreakKeyword);
-            return new BreakStatement(token);
+            return new BreakStatement(syntaxTree, token);
         }
 
         private Statement ParseForStatement()
@@ -238,7 +231,8 @@ namespace IllusionScript.Runtime.Parsing
             Token rParen = Match(SyntaxType.RParenToken);
             Statement body = ParseStatement();
 
-            return new ForStatement(keyword, lParen, identifier, equalsToken, startExpression, toKeyword, endExpression,
+            return new ForStatement(syntaxTree, keyword, lParen, identifier, equalsToken, startExpression, toKeyword,
+                endExpression,
                 rParen, body);
         }
 
@@ -250,7 +244,7 @@ namespace IllusionScript.Runtime.Parsing
             Token lParen = Match(SyntaxType.LParenToken);
             Expression condition = ParseExpression();
             Token rParent = Match(SyntaxType.RParenToken);
-            return new DoWhileStatement(doKeyword, body, whileKeyword, lParen, condition, rParent);
+            return new DoWhileStatement(syntaxTree, doKeyword, body, whileKeyword, lParen, condition, rParent);
         }
 
         private Statement ParseWhileStatement()
@@ -261,7 +255,7 @@ namespace IllusionScript.Runtime.Parsing
             Token rParen = Match(SyntaxType.RParenToken);
             Statement body = ParseStatement();
 
-            return new WhileStatement(keyword, lParen, condition, rParen, body);
+            return new WhileStatement(syntaxTree, keyword, lParen, condition, rParen, body);
         }
 
         private Statement ParseIfStatement()
@@ -273,7 +267,7 @@ namespace IllusionScript.Runtime.Parsing
             Statement statement = ParseStatement();
             ElseClause elseClause = ParseElseClause();
 
-            return new IfStatement(keyword, lParen, condition, rParen, statement, elseClause);
+            return new IfStatement(syntaxTree, keyword, lParen, condition, rParen, statement, elseClause);
         }
 
         private ElseClause ParseElseClause()
@@ -285,7 +279,7 @@ namespace IllusionScript.Runtime.Parsing
 
             Token keyword = NextToken();
             Statement statement = ParseStatement();
-            return new ElseClause(keyword, statement);
+            return new ElseClause(syntaxTree, keyword, statement);
         }
 
         private Statement ParseVariableDeclaration()
@@ -297,14 +291,14 @@ namespace IllusionScript.Runtime.Parsing
             TypeClause typeClause = ParseTypeClause();
             Token equals = Match(SyntaxType.EqualsToken);
             Expression initializer = ParseExpression();
-            return new VariableDeclarationStatement(keyword, identifier, typeClause, equals, initializer);
+            return new VariableDeclarationStatement(syntaxTree, keyword, identifier, typeClause, equals, initializer);
         }
 
         private TypeClause ParseTypeClause()
         {
             Token colon = Match(SyntaxType.ColonToken);
             Token identifier = Match(SyntaxType.IdentifierToken);
-            return new TypeClause(colon, identifier);
+            return new TypeClause(syntaxTree, colon, identifier);
         }
 
         private Statement ParseBlockStatement()
@@ -327,13 +321,13 @@ namespace IllusionScript.Runtime.Parsing
 
             Token rBrace = Match(SyntaxType.RBraceToken);
 
-            return new BlockStatement(lBrace, statements.ToImmutable(), rBrace);
+            return new BlockStatement(syntaxTree, lBrace, statements.ToImmutable(), rBrace);
         }
 
         private Statement ParseExpressionStatement()
         {
             Expression expression = ParseExpression();
-            return new ExpressionStatement(expression);
+            return new ExpressionStatement(syntaxTree, expression);
         }
 
         private Expression ParseExpression()
@@ -360,7 +354,7 @@ namespace IllusionScript.Runtime.Parsing
                         Token identifierToken = NextToken();
                         Token operatorToken = NextToken();
                         Expression right = ParseAssignmentExpression();
-                        return new AssignmentExpression(identifierToken, operatorToken, right);
+                        return new AssignmentExpression(syntaxTree, identifierToken, operatorToken, right);
                 }
             }
 
@@ -376,7 +370,7 @@ namespace IllusionScript.Runtime.Parsing
             {
                 Token operatorToken = NextToken();
                 Expression right = ParseBinaryExpression(unaryIndex);
-                left = new UnaryExpression(operatorToken, right);
+                left = new UnaryExpression(syntaxTree, operatorToken, right);
             }
             else
             {
@@ -393,7 +387,7 @@ namespace IllusionScript.Runtime.Parsing
 
                 Token operatorToken = NextToken();
                 Expression right = ParseBinaryExpression(index);
-                left = new BinaryExpression(left, operatorToken, right);
+                left = new BinaryExpression(syntaxTree, left, operatorToken, right);
             }
 
             return left;
@@ -437,7 +431,7 @@ namespace IllusionScript.Runtime.Parsing
             Token lParen = Match(SyntaxType.LParenToken);
             SeparatedSyntaxList<Expression> arguments = ParseArguments();
             Token rParen = Match(SyntaxType.RParenToken);
-            return new CallExpression(identifier, lParen, arguments, rParen);
+            return new CallExpression(syntaxTree, identifier, lParen, arguments, rParen);
         }
 
         private SeparatedSyntaxList<Expression> ParseArguments()
@@ -463,26 +457,26 @@ namespace IllusionScript.Runtime.Parsing
         private Expression ParseNameExpression()
         {
             Token identifier = Match(SyntaxType.IdentifierToken);
-            return new NameExpression(identifier);
+            return new NameExpression(syntaxTree, identifier);
         }
 
         private Expression ParseNumberLiteral()
         {
             Token numberToken = Match(SyntaxType.NumberToken);
-            return new LiteralExpression(numberToken, numberToken.value);
+            return new LiteralExpression(syntaxTree, numberToken, numberToken.value);
         }
 
         private Expression ParseStringLiteral()
         {
             Token stringToken = Match(SyntaxType.StringToken);
-            return new LiteralExpression(stringToken, stringToken.value);
+            return new LiteralExpression(syntaxTree, stringToken, stringToken.value);
         }
 
         private Expression ParseBooleanLiteral()
         {
             bool isTrue = current.type == SyntaxType.TrueKeyword;
             Token token = isTrue ? Match(SyntaxType.TrueKeyword) : Match(SyntaxType.FalseKeyword);
-            return new LiteralExpression(token, isTrue);
+            return new LiteralExpression(syntaxTree, token, isTrue);
         }
 
         private Expression ParseParenExpression()
@@ -490,7 +484,7 @@ namespace IllusionScript.Runtime.Parsing
             Token left = Match(SyntaxType.LParenToken);
             Expression expression = ParseExpression();
             Token right = Match(SyntaxType.RParenToken);
-            return new ParenExpression(left, expression, right);
+            return new ParenExpression(syntaxTree, left, expression, right);
         }
     }
 }

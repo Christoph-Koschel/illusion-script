@@ -6,7 +6,7 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Statements
     {
         public readonly Expression expression;
 
-        public ExpressionStatement(Expression expression)
+        public ExpressionStatement(SyntaxTree syntaxTree, Expression expression) : base(syntaxTree)
         {
             this.expression = expression;
         }

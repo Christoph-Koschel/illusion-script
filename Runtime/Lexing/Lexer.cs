@@ -7,6 +7,7 @@ namespace IllusionScript.Runtime.Lexing
 {
     public class Lexer : SyntaxFacts
     {
+        private readonly SyntaxTree syntaxTree;
         private readonly SourceText text;
         private readonly DiagnosticGroup diagnostics;
 
@@ -19,12 +20,12 @@ namespace IllusionScript.Runtime.Lexing
         private char current => Peek(0);
         private char next => Peek(1);
 
-        internal Lexer(SourceText text)
+        internal Lexer(SyntaxTree syntaxTree)
         {
+            this.syntaxTree = syntaxTree;
             diagnostics = new DiagnosticGroup();
-            this.text = text;
+            text = syntaxTree.text;
         }
-
 
         internal DiagnosticGroup Diagnostics() => diagnostics;
 
@@ -271,13 +272,15 @@ namespace IllusionScript.Runtime.Lexing
                     }
                     else
                     {
-                        diagnostics.ReportBadCharacter(position, current);
+                        TextSpan span = new TextSpan(position, 1);
+                        TextLocation location = new TextLocation(this.text, span);
+                        diagnostics.ReportBadCharacter(location, current);
                         position++;
                     }
 
                     break;
             }
-            
+
             string text = GetText(type);
             if (text == null)
             {
@@ -285,7 +288,7 @@ namespace IllusionScript.Runtime.Lexing
                 text = this.text.ToString(start, length);
             }
 
-            return new Token(type, start, text, value);
+            return new Token(syntaxTree, type, start, text, value);
         }
 
         private void GenerateString()
@@ -302,7 +305,8 @@ namespace IllusionScript.Runtime.Lexing
                     case '\r':
                     case '\n':
                         TextSpan span = new TextSpan(start, 1);
-                        diagnostics.ReportUnterminatedString(span);
+                        TextLocation location = new TextLocation(this.text, span);
+                        diagnostics.ReportUnterminatedString(location);
                         done = true;
                         break;
                     case '\\':
@@ -358,7 +362,9 @@ namespace IllusionScript.Runtime.Lexing
             string text = this.text.ToString(start, length);
             if (!int.TryParse(text, out int value))
             {
-                diagnostics.ReportInvalidNumber(new TextSpan(start, length), text, typeof(int));
+                TextSpan span = new TextSpan(start, length);
+                TextLocation location = new TextLocation(this.text, span);
+                diagnostics.ReportInvalidNumber(location, text, typeof(int));
             }
 
             this.value = value;

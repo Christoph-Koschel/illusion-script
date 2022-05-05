@@ -28,9 +28,15 @@ namespace IllusionScript.Runtime.Test.Lexing
             Token token = Assert.Single(tokens);
             Assert.Equal(SyntaxType.StringToken, token.type);
             Assert.Equal(text, token.text);
+
+            foreach (Diagnostic diagnostic1 in diagnostics)
+            {
+                testOutputHelper.WriteLine(diagnostic1.ToString());                
+            }
+            
             Diagnostic diagnostic = Assert.Single(diagnostics);
             Assert.Equal("ERROR: Unterminated string literal", diagnostic.message);
-            Assert.Equal(new TextSpan(0, 1), diagnostic.span);
+            Assert.Equal(new TextSpan(0, 1), diagnostic.location.span);
         }
 
         [Fact]
@@ -59,7 +65,7 @@ namespace IllusionScript.Runtime.Test.Lexing
         [MemberData(nameof(GetTokensData))]
         public void LexerLexTokens(SyntaxType type, string text)
         {
-            IEnumerable<Token> tokens = SyntaxTree.ParseTokens(text);
+            IEnumerable<Token> tokens = SyntaxTree.ParseTokens(text, out ImmutableArray<Diagnostic> diagnostics);
 
             Token token = Assert.Single(tokens);
             Assert.Equal(type, token.type);
@@ -72,7 +78,7 @@ namespace IllusionScript.Runtime.Test.Lexing
             SyntaxType type2, string text2)
         {
             string text = text1 + text2;
-            Token[] tokens = SyntaxTree.ParseTokens(text).ToArray();
+            Token[] tokens = SyntaxTree.ParseTokens(text, out ImmutableArray<Diagnostic> diagnostics).ToArray();
 
             foreach (Token token in tokens)
             {
@@ -92,7 +98,7 @@ namespace IllusionScript.Runtime.Test.Lexing
             string separatorText, SyntaxType type2, string text2)
         {
             string text = text1 + separatorText + text2;
-            Token[] tokens = SyntaxTree.ParseTokens(text).ToArray();
+            Token[] tokens = SyntaxTree.ParseTokens(text, out ImmutableArray<Diagnostic> diagnostics).ToArray();
             Assert.Equal(3, tokens.Length);
             Assert.Equal(tokens[0].type, type1);
             Assert.Equal(tokens[0].text, text1);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using IllusionScript.Runtime;
 using IllusionScript.Runtime.Diagnostics;
@@ -116,7 +117,7 @@ namespace IllusionScript.ISI
                 return;
             }
 
-            IEnumerable<Token> tokens = SyntaxTree.ParseTokens(line);
+            IEnumerable<Token> tokens = SyntaxTree.ParseTokens(line, out ImmutableArray<Diagnostic> diagnostics);
 
             foreach (Token token in tokens)
             {

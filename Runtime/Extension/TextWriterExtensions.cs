@@ -96,7 +96,8 @@ namespace IllusionScript.Runtime.Extension
         {
             foreach (Diagnostic diagnostic in diagnostics)
             {
-                int lineIndex = tree.text.GetLineIndex(diagnostic.span.start);
+                var span = diagnostic.location.span;
+                int lineIndex = tree.text.GetLineIndex(span.start);
                 // TextLine line = text.lines[lineIndex];
                 // int lineNumber = lineIndex + 1;
                 // int character = diagnostic.span.start - line.start + 1;

@@ -11,7 +11,8 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Statements
         public readonly Expression condition;
         public readonly Token rParent;
 
-        public DoWhileStatement(Token doKeyword, Statement body, Token whileKeyword, Token lParen, Expression condition, Token rParent)
+        public DoWhileStatement(SyntaxTree syntaxTree, Token doKeyword, Statement body, Token whileKeyword,
+            Token lParen, Expression condition, Token rParent) : base(syntaxTree)
         {
             this.doKeyword = doKeyword;
             this.body = body;

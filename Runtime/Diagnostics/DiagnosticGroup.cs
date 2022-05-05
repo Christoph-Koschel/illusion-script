@@ -15,9 +15,9 @@ namespace IllusionScript.Runtime.Diagnostics
             diagnostics = new List<Diagnostic>();
         }
 
-        private void Report(TextSpan span, string message)
+        private void Report(TextLocation location, string message)
         {
-            Diagnostic diagnostic = new Diagnostic(span, message);
+            Diagnostic diagnostic = new Diagnostic(location, message);
             diagnostics.Add(diagnostic);
         }
 
@@ -29,141 +29,140 @@ namespace IllusionScript.Runtime.Diagnostics
         public IEnumerator<Diagnostic> GetEnumerator() => diagnostics.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public void ReportInvalidNumber(TextSpan span, string text, Type type)
+        public void ReportInvalidNumber(TextLocation location, string text, Type type)
         {
             string message = $"ERROR: The number {text} isn't valid {type}";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportBadCharacter(int position, char current)
+        public void ReportBadCharacter(TextLocation location, char current)
         {
             string message = $"ERROR: Bad character input: '{current}'";
-            TextSpan span = new TextSpan(position, 1);
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportUnterminatedString(TextSpan span)
+        public void ReportUnterminatedString(TextLocation location)
         {
             string message = "ERROR: Unterminated string literal";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportUnexpectedToken(TextSpan span, SyntaxType currentType, SyntaxType type)
+        public void ReportUnexpectedToken(TextLocation location, SyntaxType currentType, SyntaxType type)
         {
             string message = $"ERROR: Unexpected token <{currentType}>, expected <{type}>";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportUndefinedUnaryOperator(TextSpan span, string text, TypeSymbol right)
+        public void ReportUndefinedUnaryOperator(TextLocation location, string text, TypeSymbol right)
         {
             string message = $"ERROR: Unary operator '{text}' is not defined for type {right}";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportUndefinedBinaryOperator(TextSpan span, string text, TypeSymbol left, TypeSymbol right)
+        public void ReportUndefinedBinaryOperator(TextLocation location, string text, TypeSymbol left, TypeSymbol right)
         {
             string message = $"ERROR: Binary operator '{text}' is not defined for type {left} and {right}";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportUndefinedIdentifier(TextSpan span, string name)
+        public void ReportUndefinedIdentifier(TextLocation location, string name)
         {
             string message = $"ERROR: Variable '{name}' doesnt exist";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportCannotConvert(TextSpan span, TypeSymbol type1, TypeSymbol type2)
+        public void ReportCannotConvert(TextLocation location, TypeSymbol type1, TypeSymbol type2)
         {
             string message = $"ERROR: Cannot convert type '{type1}' to '{type2}'";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportSymbolAlreadyDeclared(TextSpan span, string name)
+        public void ReportSymbolAlreadyDeclared(TextLocation location, string name)
         {
             string message = $"ERROR: Symbol '{name}' is already declared";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportParameterAlreadyDeclared(TextSpan span, string name)
+        public void ReportParameterAlreadyDeclared(TextLocation location, string name)
         {
             string message = $"ERROR: A Parameter with the '{name}' is already defined";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportCannotAssign(TextSpan span, string name)
+        public void ReportCannotAssign(TextLocation location, string name)
         {
             string message = $"ERROR: Variable '{name}' is read-ony and cannot be assigned to";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportUndefinedFunction(TextSpan span, string name)
+        public void ReportUndefinedFunction(TextLocation location, string name)
         {
             string message = $"ERROR: Function '{name}' doesnt exists";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportUndefinedType(TextSpan span, string text)
+        public void ReportUndefinedType(TextLocation location, string text)
         {
             string message = $"ERROR: Type '{text}' doesnt exists";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportWrongArgumentCount(TextSpan span, string name, int parametersLength, int argumentsLength)
+        public void ReportWrongArgumentCount(TextLocation location, string name, int parametersLength, int argumentsLength)
         {
             string message =
                 $"ERROR: Function '{name}' requires {parametersLength} arguments but was given {argumentsLength}";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void WrongArgumentType(TextSpan span, string name, TypeSymbol parameterType, TypeSymbol argumentType)
+        public void WrongArgumentType(TextLocation location, string name, TypeSymbol parameterType, TypeSymbol argumentType)
         {
             string message =
                 $"ERROR: Parameter '{name}' requires a value of type '{parameterType}' but was given a value of type '{argumentType}'";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportExpressionMustHaveValue(TextSpan span)
+        public void ReportExpressionMustHaveValue(TextLocation location)
         {
             string message = $"ERROR: Expression must have a value";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportCannotConvertConvertImplicitly(TextSpan span, TypeSymbol type1, TypeSymbol type2)
+        public void ReportCannotConvertConvertImplicitly(TextLocation location, TypeSymbol type1, TypeSymbol type2)
         {
             string message =
                 $"ERROR: Cannot convert type '{type1}' to '{type2}' (Are you missing a cast?)";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportInvalidBreakOrContinue(TextSpan span, string text)
+        public void ReportInvalidBreakOrContinue(TextLocation location, string text)
         {
             string message = $"The keyword '{text}' is only valid inside loops";
-            Report(span, text);
+            Report(location, text);
         }
 
-        public void ReportInvalidReturn(TextSpan span)
+        public void ReportInvalidReturn(TextLocation location)
         {
             string message = "ERROR: The 'return' keyword can only be used inside of functions";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportInvalidReturnExpression(TextSpan span, string name)
+        public void ReportInvalidReturnExpression(TextLocation location, string name)
         {
             string message =
                 $"ERROR: Since the function '{name}' does not return a value the 'return' keyword cannot be followed by an expression";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportMissingReturnExpression(TextSpan span, TypeSymbol returnType)
+        public void ReportMissingReturnExpression(TextLocation location, TypeSymbol returnType)
         {
             string message = $"ERROR: An expression of type '{returnType}' expected";
-            Report(span, message);
+            Report(location, message);
         }
 
-        public void ReportAllPathsMustReturn(TextSpan span)
+        public void ReportAllPathsMustReturn(TextLocation location)
         {
             string message = $"Not all code paths return a value.";
-            Report(span, message);
+            Report(location, message);
         }
     }
 }

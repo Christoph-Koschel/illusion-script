@@ -7,7 +7,7 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Expressions
         public override SyntaxType type => SyntaxType.NameExpression;
         public readonly Token identifier;
 
-        public NameExpression(Token identifier)
+        public NameExpression(SyntaxTree syntaxTree, Token identifier)  : base(syntaxTree)
         {
             this.identifier = identifier;
         }

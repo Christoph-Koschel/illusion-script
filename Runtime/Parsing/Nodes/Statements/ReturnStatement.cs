@@ -7,7 +7,7 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Statements
         public readonly Token returnKeyword;
         public readonly Expression expression;
 
-        public ReturnStatement(Token returnKeyword, Expression expression)
+        public ReturnStatement(SyntaxTree syntaxTree, Token returnKeyword, Expression expression) : base(syntaxTree)
         {
             this.returnKeyword = returnKeyword;
             this.expression = expression;

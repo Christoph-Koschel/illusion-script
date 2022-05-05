@@ -2,21 +2,22 @@
 
 namespace IllusionScript.Runtime.Diagnostics
 {
-    public sealed partial class SourceText
+    public sealed class SourceText
     {
         private readonly string text;
+        private readonly string filename;
         public readonly ImmutableArray<TextLine> lines;
 
         public int GetLineIndex(int position)
         {
             int lower = 0;
             int upper = lines.Length - 1;
-        
+
             while (lower <= upper)
             {
                 int index = lower + (upper - lower) / 2;
                 int start = lines[index].start;
-        
+
                 if (position == start)
                 {
                     return index;
@@ -30,13 +31,14 @@ namespace IllusionScript.Runtime.Diagnostics
                     lower = index + 1;
                 }
             }
-        
+
             return lower - 1;
         }
 
-        private SourceText(string text)
+        private SourceText(string text, string filename)
         {
             this.text = text;
+            this.filename = filename;
             lines = ParseLines(this, text);
         }
 
@@ -103,9 +105,9 @@ namespace IllusionScript.Runtime.Diagnostics
 
         public int Length => text.Length;
 
-        public static SourceText From(string text)
+        public static SourceText From(string text, string filename = "")
         {
-            return new SourceText(text);
+            return new SourceText(text, filename);
         }
     }
 }

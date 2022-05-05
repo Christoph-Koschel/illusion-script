@@ -10,7 +10,8 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Statements
         public readonly ImmutableArray<Statement> statements;
         public readonly Token rBrace;
 
-        public BlockStatement(Token lBrace, ImmutableArray<Statement> statements, Token rBrace)
+        public BlockStatement(SyntaxTree syntaxTree, Token lBrace, ImmutableArray<Statement> statements, Token rBrace) :
+            base(syntaxTree)
         {
             this.lBrace = lBrace;
             this.statements = statements;

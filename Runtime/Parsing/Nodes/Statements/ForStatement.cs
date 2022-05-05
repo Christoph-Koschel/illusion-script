@@ -15,8 +15,9 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Statements
         public readonly Token rParen;
         public readonly Statement body;
 
-        public ForStatement(Token keyword, Token lParen, Token identifier, Token equalsToken,
-            Expression startExpression, Token toKeyword, Expression endExpression, Token rParen, Statement body)
+        public ForStatement(SyntaxTree syntaxTree, Token keyword, Token lParen, Token identifier, Token equalsToken,
+            Expression startExpression, Token toKeyword, Expression endExpression, Token rParen, Statement body) : base(
+            syntaxTree)
         {
             this.keyword = keyword;
             this.lParen = lParen;
