@@ -7,7 +7,6 @@ using System.Threading;
 using IllusionScript.Runtime.Binding;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Diagnostics;
-using IllusionScript.Runtime.Extension;
 using IllusionScript.Runtime.Interpreting;
 using IllusionScript.Runtime.Interpreting.Memory;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
@@ -19,18 +18,18 @@ namespace IllusionScript.Runtime
     public sealed class Compilation
     {
         public readonly Compilation previous;
-        public readonly SyntaxTree syntaxTree;
+        public readonly SyntaxTree[] syntaxTrees;
         private GlobalScope globalScope;
 
-        public Compilation(SyntaxTree syntaxThree)
-            : this(null, syntaxThree)
+        public Compilation(params SyntaxTree[] syntaxThrees)
+            : this(null, syntaxThrees)
         {
         }
 
-        private Compilation(Compilation previous, SyntaxTree syntaxTree)
+        private Compilation(Compilation previous, params SyntaxTree[] syntaxTrees)
         {
             this.previous = previous;
-            this.syntaxTree = syntaxTree;
+            this.syntaxTrees = syntaxTrees;
         }
 
         internal GlobalScope GlobalScope
@@ -39,7 +38,7 @@ namespace IllusionScript.Runtime
             {
                 if (globalScope == null)
                 {
-                    GlobalScope scope = Binder.BindGlobalScope(previous?.globalScope, syntaxTree.root);
+                    GlobalScope scope = Binder.BindGlobalScope(previous?.globalScope, syntaxTrees.ToImmutableArray());
                     Interlocked.CompareExchange(ref globalScope, scope, null);
                 }
 
@@ -54,8 +53,9 @@ namespace IllusionScript.Runtime
 
         public InterpreterResult Interpret(Dictionary<VariableSymbol, object> variables)
         {
-            ImmutableArray<Diagnostic> diagnostics =
-                syntaxTree.diagnostics.Concat(GlobalScope.diagnostics).ToImmutableArray();
+            IEnumerable<Diagnostic> parseDiagnostics = syntaxTrees.SelectMany(st => st.diagnostics);
+            ImmutableArray<Diagnostic> diagnostics = parseDiagnostics.Concat(GlobalScope.diagnostics).ToImmutableArray();
+            
             if (diagnostics.Any())
             {
                 return new InterpreterResult(diagnostics, null);

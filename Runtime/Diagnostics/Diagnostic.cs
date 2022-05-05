@@ -2,12 +2,12 @@
 {
     public sealed class Diagnostic
     {
-        public readonly TextSpan span;
+        public readonly TextLocation location;
         public readonly string message;
 
-        public Diagnostic(TextSpan span, string message)
+        public Diagnostic(TextLocation location, string message)
         {
-            this.span = span;
+            this.location = location;
             this.message = message;
         }
 

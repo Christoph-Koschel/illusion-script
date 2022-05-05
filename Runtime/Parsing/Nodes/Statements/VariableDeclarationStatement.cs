@@ -11,7 +11,8 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Statements
         public readonly Token equalsToken;
         public readonly Expression initializer;
 
-        public VariableDeclarationStatement(Token keyword, Token identifier, TypeClause typeClause, Token equalsToken, Expression initializer)
+        public VariableDeclarationStatement(SyntaxTree syntaxTree, Token keyword, Token identifier,
+            TypeClause typeClause, Token equalsToken, Expression initializer) : base(syntaxTree)
         {
             this.keyword = keyword;
             this.identifier = identifier;
@@ -19,9 +20,9 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Statements
             this.equalsToken = equalsToken;
             this.initializer = initializer;
         }
-        
+
         public override SyntaxType type => SyntaxType.VariableDeclarationStatement;
 
-        public override SyntaxType endToken  => SyntaxType.SemicolonToken;
+        public override SyntaxType endToken => SyntaxType.SemicolonToken;
     }
 }

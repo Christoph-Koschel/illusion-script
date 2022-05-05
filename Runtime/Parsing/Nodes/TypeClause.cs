@@ -7,7 +7,7 @@ namespace IllusionScript.Runtime.Parsing.Nodes
         public readonly Token colon;
         public readonly Token identifier;
 
-        public TypeClause(Token colon, Token identifier)
+        public TypeClause(SyntaxTree syntaxTree, Token colon, Token identifier)  : base(syntaxTree)
         {
             this.colon = colon;
             this.identifier = identifier;

@@ -10,7 +10,7 @@ namespace IllusionScript.Runtime.Parsing.Nodes.Expressions
         public readonly SeparatedSyntaxList<Expression> arguments;
         public readonly Token rParen;
 
-        public CallExpression(Token identifier, Token lParen, SeparatedSyntaxList<Expression> arguments, Token rParen)
+        public CallExpression(SyntaxTree syntaxTree, Token identifier, Token lParen, SeparatedSyntaxList<Expression> arguments, Token rParen)  : base(syntaxTree)
         {
             this.identifier = identifier;
             this.lParen = lParen;

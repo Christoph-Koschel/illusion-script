@@ -7,7 +7,7 @@ namespace IllusionScript.Runtime.Parsing.Nodes
         public readonly Token identifier;
         public readonly TypeClause typeClause;
 
-        public Parameter(Token identifier, TypeClause typeClause)
+        public Parameter(SyntaxTree syntaxTree, Token identifier, TypeClause typeClause)  : base(syntaxTree)
         {
             this.identifier = identifier;
             this.typeClause = typeClause;

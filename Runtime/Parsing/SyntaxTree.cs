@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing.Nodes;
@@ -9,53 +10,50 @@ namespace IllusionScript.Runtime.Parsing
 {
     public class SyntaxTree
     {
+        private delegate void ParseHandler(SyntaxTree syntaxTree, out CompilationUnit root,
+            out ImmutableArray<Diagnostic> diagnostics);
+
         public readonly SourceText text;
         public readonly CompilationUnit root;
         public readonly ImmutableArray<Diagnostic> diagnostics;
 
-        private SyntaxTree(SourceText text)
+        public static SyntaxTree Load(string filename)
         {
-            Parser parser = new Parser(text);
-            CompilationUnit root = parser.ParseCompilationUnit();
-            
-            diagnostics = parser.Diagnostics.ToImmutableArray();
+            string text = File.ReadAllText(filename);
+            SourceText sourceText = SourceText.From(text, filename);
+            return Parse(sourceText);
+        }
+
+        private SyntaxTree(SourceText text, ParseHandler handler)
+        {
             this.text = text;
+
+            handler(this, out CompilationUnit root, out ImmutableArray<Diagnostic> diagnostics);
+
+            this.diagnostics = diagnostics;
             this.root = root;
+        }
+
+        private static void Parse(SyntaxTree syntaxTree, out CompilationUnit root,
+            out ImmutableArray<Diagnostic> diagnostics)
+        {
+            Parser parser = new Parser(syntaxTree);
+            root = parser.ParseCompilationUnit();
+            diagnostics = parser.Diagnostics.ToImmutableArray();
         }
 
         public static SyntaxTree Parse(SourceText text)
         {
-            return new SyntaxTree(text);
+            return new SyntaxTree(text, Parse);
         }
 
-        public static SyntaxTree Parse(string text)
+        public static SyntaxTree Parse(string text, string filename = "")
         {
-            SourceText sourceText = SourceText.From(text);
+            SourceText sourceText = SourceText.From(text, filename);
             return Parse(sourceText);
         }
 
-        public static IEnumerable<Token> ParseTokens(string text)
-        {
-            SourceText sourceText = SourceText.From(text);
-            return ParseTokens(sourceText);
-        }
-
-        public static IEnumerable<Token> ParseTokens(SourceText text)
-        {
-            Lexer lexer = new Lexer(text);
-            while (true)
-            {
-                Token token = lexer.Lex();
-                if (token.type == SyntaxType.EOFToken)
-                {
-                    break;
-                }
-
-                yield return token;
-            }
-        }
-        
-        public static ImmutableArray<Token> ParseTokens(string text,out ImmutableArray<Diagnostic> diagnostics)
+        public static ImmutableArray<Token> ParseTokens(string text, out ImmutableArray<Diagnostic> diagnostics)
         {
             SourceText sourceText = SourceText.From(text);
             return ParseTokens(sourceText, out diagnostics);
@@ -64,24 +62,30 @@ namespace IllusionScript.Runtime.Parsing
 
         public static ImmutableArray<Token> ParseTokens(SourceText text, out ImmutableArray<Diagnostic> diagnostics)
         {
-            IEnumerable<Token> LexTokens(Lexer lexer)
+            List<Token> tokens = new List<Token>();
+            void ParseTokens(SyntaxTree syntaxTree, out CompilationUnit root,
+                out ImmutableArray<Diagnostic> diagnostics)
             {
+                root = null;
+                Lexer l = new Lexer(syntaxTree);
                 while (true)
                 {
-                    Token token = lexer.Lex();
+                    Token token = l.Lex();
                     if (token.type == SyntaxType.EOFToken)
                     {
+                        root = new CompilationUnit(syntaxTree, ImmutableArray<Member>.Empty, token);
                         break;
                     }
 
-                    yield return token;
+                    tokens.Add(token);
                 }
+
+                diagnostics = l.Diagnostics().ToImmutableArray();
             }
 
-            Lexer l = new Lexer(text);
-            ImmutableArray<Token> result = LexTokens(l).ToImmutableArray();
-            diagnostics = l.Diagnostics().ToImmutableArray();
-            return result;
+            SyntaxTree syntaxTree = new SyntaxTree(text, ParseTokens);
+            diagnostics = syntaxTree.diagnostics;
+            return tokens.ToImmutableArray();
         }
     }
 }

@@ -4,7 +4,7 @@
     {
         public readonly Statement statement;
 
-        public StatementMember(Statement statement)
+        public StatementMember(SyntaxTree syntaxTree, Statement statement) : base(syntaxTree)
         {
             this.statement = statement;
         }

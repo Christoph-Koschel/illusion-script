@@ -8,7 +8,8 @@ namespace IllusionScript.Runtime.Parsing.Nodes
         public readonly ImmutableArray<Member> members;
         public readonly Token endOfFileToken;
 
-        public CompilationUnit(ImmutableArray<Member> members, Token endOfFileToken)
+        public CompilationUnit(SyntaxTree syntaxTree, ImmutableArray<Member> members, Token endOfFileToken) :
+            base(syntaxTree)
         {
             this.members = members;
             this.endOfFileToken = endOfFileToken;

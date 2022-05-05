@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using IllusionScript.Runtime;
 using IllusionScript.Runtime.Diagnostics;
@@ -41,7 +42,7 @@ namespace IllusionScript.ISI
 
         protected override void Invoke(string input)
         {
-            SyntaxTree syntaxTree = SyntaxTree.Parse(input);
+            SyntaxTree syntaxTree = SyntaxTree.Parse(input, "<stdin>");
 
             Compilation compilation = previous == null
                 ? new Compilation(syntaxTree)
@@ -78,8 +79,7 @@ namespace IllusionScript.ISI
             }
             else
             {
-                SourceText text = syntaxTree.text;
-                Console.Out.WriteDiagnostics(result.diagnostics, syntaxTree);
+                Console.Out.WriteDiagnostics(result.diagnostics);
             }
         }
 
@@ -116,7 +116,7 @@ namespace IllusionScript.ISI
                 return;
             }
 
-            IEnumerable<Token> tokens = SyntaxTree.ParseTokens(line);
+            IEnumerable<Token> tokens = SyntaxTree.ParseTokens(line, out ImmutableArray<Diagnostic> diagnostics);
 
             foreach (Token token in tokens)
             {

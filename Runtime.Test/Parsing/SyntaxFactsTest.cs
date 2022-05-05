@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
+using IllusionScript.Runtime.Diagnostics;
 using IllusionScript.Runtime.Lexing;
 using IllusionScript.Runtime.Parsing;
 using Xunit;
@@ -19,7 +21,7 @@ namespace IllusionScript.Runtime.Test.Parsing
                 return;
             }
 
-            Token[] tokens = SyntaxTree.ParseTokens(text).ToArray();
+            Token[] tokens = SyntaxTree.ParseTokens(text, out ImmutableArray<Diagnostic> diagnostics).ToArray();
             Token token = Assert.Single(tokens);
             Assert.Equal(type, token.type);
             Assert.Equal(text, token.text);
