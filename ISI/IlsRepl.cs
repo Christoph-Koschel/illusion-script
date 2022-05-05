@@ -42,7 +42,7 @@ namespace IllusionScript.ISI
 
         protected override void Invoke(string input)
         {
-            SyntaxTree syntaxTree = SyntaxTree.Parse(input);
+            SyntaxTree syntaxTree = SyntaxTree.Parse(input, "<stdin>");
 
             Compilation compilation = previous == null
                 ? new Compilation(syntaxTree)
@@ -79,7 +79,6 @@ namespace IllusionScript.ISI
             }
             else
             {
-                SourceText text = syntaxTree.text;
                 Console.Out.WriteDiagnostics(result.diagnostics, syntaxTree);
             }
         }

@@ -47,9 +47,9 @@ namespace IllusionScript.Runtime.Parsing
             return new SyntaxTree(text, Parse);
         }
 
-        public static SyntaxTree Parse(string text)
+        public static SyntaxTree Parse(string text, string filename = "")
         {
-            SourceText sourceText = SourceText.From(text);
+            SourceText sourceText = SourceText.From(text, filename);
             return Parse(sourceText);
         }
 

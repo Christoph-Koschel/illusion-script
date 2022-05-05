@@ -96,32 +96,42 @@ namespace IllusionScript.Runtime.Extension
         {
             foreach (Diagnostic diagnostic in diagnostics)
             {
-                var span = diagnostic.location.span;
+                string filename = diagnostic.location.text.filename;
+                var startLine = diagnostic.location.startLine + 1;
+                var startCharacter = diagnostic.location.startCharacter;
+                var endLine = diagnostic.location.endLine + 1;
+                var endCharacter = diagnostic.location.endCharacter;
+                TextSpan span = diagnostic.location.span;
                 int lineIndex = tree.text.GetLineIndex(span.start);
-                // TextLine line = text.lines[lineIndex];
-                // int lineNumber = lineIndex + 1;
-                // int character = diagnostic.span.start - line.start + 1;
-                //
-                // Console.ForegroundColor = ConsoleColor.DarkRed;
-                // Console.Write($"({lineNumber}, {character}): ");
-                Console.WriteLine(diagnostic);
-                Console.ResetColor();
+                TextLine line = tree.text.lines[lineIndex];
 
-                // TextSpan prefixSpan = TextSpan.FromBounds(line.start, diagnostic.span.start);
-                // TextSpan suffixSpan = TextSpan.FromBounds(diagnostic.span.end, line.end);
-                //
-                // string prefix = syntaxThree.text.ToString(prefixSpan);
-                // string error = syntaxThree.text.ToString(diagnostic.span);
-                // string suffix = syntaxThree.text.ToString(suffixSpan);
-                //
-                // Console.Write(prefix);
-                //
-                // Console.ForegroundColor = ConsoleColor.DarkRed;
-                // Console.Write(error);
-                // Console.ResetColor();
-                //
-                // Console.Write(suffix);
-                Console.Write("\n\n");
+                if (IsConsole(writer))
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                }
+
+                writer.Write($"{filename}({startLine}:{startCharacter},{endLine}:{endCharacter}): ");
+                writer.WriteLine(diagnostic);
+                writer.ResetColor();
+                TextSpan prefixSpan = TextSpan.FromBounds(line.start, diagnostic.location.span.start);
+                TextSpan suffixSpan = TextSpan.FromBounds(diagnostic.location.span.end, line.end);
+
+                string prefix = tree.text.ToString(prefixSpan);
+                string error = tree.text.ToString(diagnostic.location.span);
+                string suffix = tree.text.ToString(suffixSpan);
+
+                writer.Write(prefix);
+
+                if (IsConsole(writer))
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                }
+
+                writer.Write(error);
+                writer.ResetColor();
+
+                writer.Write(suffix);
+                writer.Write("\n\n");
             }
         }
     }

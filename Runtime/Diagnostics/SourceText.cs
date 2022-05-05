@@ -5,34 +5,21 @@ namespace IllusionScript.Runtime.Diagnostics
     public sealed class SourceText
     {
         private readonly string text;
-        private readonly string filename;
+        public readonly string filename;
         public readonly ImmutableArray<TextLine> lines;
 
         public int GetLineIndex(int position)
         {
-            int lower = 0;
-            int upper = lines.Length - 1;
-
-            while (lower <= upper)
+            for (var index = 0; index < lines.Length; index++)
             {
-                int index = lower + (upper - lower) / 2;
-                int start = lines[index].start;
-
-                if (position == start)
+                TextLine line = lines[index];
+                if (position >= line.start && position <= line.end)
                 {
                     return index;
                 }
-                else if (position > start)
-                {
-                    upper = index - 1;
-                }
-                else
-                {
-                    lower = index + 1;
-                }
             }
 
-            return lower - 1;
+            return -1;
         }
 
         private SourceText(string text, string filename)

@@ -28,10 +28,7 @@ namespace IllusionScript.ISC
             }
 
             var path = args.Single();
-            var fileContent = File.ReadAllText(path);
-
-
-            SyntaxTree syntaxTree = SyntaxTree.Parse(fileContent);
+            SyntaxTree syntaxTree = SyntaxTree.Load(path);
 
             Compilation compilation = new Compilation(syntaxTree);
             InterpreterResult result = compilation.Interpret(new Dictionary<VariableSymbol, object>());
