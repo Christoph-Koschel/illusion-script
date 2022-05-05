@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using IllusionScript.Runtime;
 using IllusionScript.Runtime.Diagnostics;
@@ -17,27 +18,13 @@ namespace IllusionScript.ISI
         private Compilation previous;
         private bool showTree = true; // <<-- TODO remove true
         private bool showProgram = true; // <<-- TODO remove true
+        private bool loadingSubmission;
         private readonly Dictionary<VariableSymbol, object> variables;
 
         public IlsRepl()
         {
             variables = new Dictionary<VariableSymbol, object>();
-        }
-
-        protected override bool IsCompleteSubmission(string text)
-        {
-            if (string.IsNullOrEmpty(text))
-            {
-                return true;
-            }
-
-            SyntaxTree syntaxTree = SyntaxTree.Parse(text);
-            if (syntaxTree.diagnostics.Any())
-            {
-                return false;
-            }
-
-            return true;
+            LoadCompilations();
         }
 
         protected override void Invoke(string input)
@@ -76,6 +63,8 @@ namespace IllusionScript.ISI
                 Console.ForegroundColor = ConsoleColor.Gray;
                 Console.WriteLine(result.value);
                 Console.ResetColor();
+
+                SaveCompilation(input);
             }
             else
             {
@@ -83,29 +72,60 @@ namespace IllusionScript.ISI
             }
         }
 
-        protected override void InvokeMetaCommand(string lineInput)
+        private void SaveCompilation(string input)
         {
-            switch (lineInput.ToLower())
+            if (loadingSubmission)
             {
-                case "#showtree":
-                    showTree = !showTree;
-                    Console.WriteLine($"$showTree has set to {showTree}");
-                    break;
-                case "#showprogram":
-                    showProgram = !showProgram;
-                    Console.WriteLine($"$showProgram has set to {showProgram}");
-                    break;
-                case "#cls":
-                    Console.Clear();
-                    Console.WriteLine("Console cleared");
-                    break;
-                case "#reset":
-                    previous = null;
-                    break;
-                default:
-                    base.InvokeMetaCommand(lineInput);
-                    break;
+                return;
             }
+
+            string compilationFolder = GetCompilationPath();
+            Directory.CreateDirectory(compilationFolder);
+            int count = Directory.GetFiles(compilationFolder).Length;
+            string name = $"compilation{count:0000}";
+            string fileName = Path.Combine(compilationFolder, name);
+            File.WriteAllText(fileName, input);
+        }
+
+        private static string GetCompilationPath()
+        {
+            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string compilationFolder = Path.Combine(localAppData, "IllusionScript", "Compilations");
+            return compilationFolder;
+        }
+
+        private void ClearCompilations()
+        {
+            Directory.Delete(GetCompilationPath(), true);
+        }
+
+        private void LoadCompilations()
+        {
+            string compilationFolder = GetCompilationPath();
+            if (!Directory.Exists(compilationFolder))
+            {
+                return;
+            }
+
+            var files = Directory.GetFiles(compilationFolder).OrderBy(f => f).ToArray();
+            if (files.Length == 0)
+            {
+                return;
+            }
+
+            loadingSubmission = true;
+
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine($"Loaded {files.Length} submission(s)");
+            Console.ResetColor();
+
+            foreach (string file in files)
+            {
+                var text = File.ReadAllText(file);
+                Invoke(text);
+            }
+
+            loadingSubmission = false;
         }
 
         protected override void Renderer(string line)
@@ -144,6 +164,89 @@ namespace IllusionScript.ISI
                 Console.Write(token.text);
                 Console.ResetColor();
             }
+        }
+
+        [MetaCommand("showtree", "Shows the parse tree")]
+        private void InvokeShowTree()
+        {
+            showTree = !showTree;
+            Console.WriteLine($"$showTree has set to {showTree}");
+        }
+
+        [MetaCommand("showprogram", "Shows the program tree")]
+        private void InvokeShowProgram()
+        {
+            showProgram = !showProgram;
+            Console.WriteLine($"$showProgram has set to {showProgram}");
+        }
+
+
+        [MetaCommand("cls", "Clears the console")]
+        private void InvokeCLS()
+        {
+            Console.Clear();
+            Console.WriteLine("Console cleared");
+        }
+
+        [MetaCommand("reset", "Reset all compilations")]
+        private void InvokeReset()
+        {
+            previous = null;
+            ClearCompilations();
+        }
+
+        [MetaCommand("load", "Loads a script file")]
+        private void InvokeLoad(string path)
+        {
+            path = Path.GetFullPath(path);
+
+            if (!File.Exists(path))
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine($"ERROR File does not exists '{path}'");
+                Console.ResetColor();
+                return;
+            }
+
+            string text = File.ReadAllText(path);
+            Invoke(text);
+        }
+
+        [MetaCommand("ls", "List all symbols")]
+        private void InvokeLS()
+        {
+            if (previous == null)
+            {
+                return;
+            }
+
+            IOrderedEnumerable<Symbol> symbols = previous.GetSymbols().OrderBy(s => s.symbolType).ThenBy(s => s.name);
+            foreach (Symbol symbol in symbols)
+            {
+                symbol.WriteTo(Console.Out);
+                Console.Write("\n");
+            }
+        }
+
+        [MetaCommand("dump", "Shows program tree of given function name")]
+        private void InvokeDump(string name)
+        {
+            if (previous == null)
+            {
+                return;
+            }
+
+            var symbol =
+                previous.GetSymbols().OfType<FunctionSymbol>().SingleOrDefault(f => f.name == name);
+            if (symbol == null)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine($"ERROR Function '{name}' does not exists");
+                Console.ResetColor();
+                return;
+            }
+
+            previous.EmitTree(symbol, Console.Out);
         }
     }
 }

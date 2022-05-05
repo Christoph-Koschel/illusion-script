@@ -18,7 +18,9 @@ namespace IllusionScript.Runtime
     public sealed class Compilation
     {
         public readonly Compilation previous;
-        public readonly SyntaxTree[] syntaxTrees;
+        public readonly ImmutableArray<SyntaxTree> syntaxTrees;
+        public ImmutableArray<FunctionSymbol> functions => GlobalScope.functions;
+        public ImmutableArray<VariableSymbol> variables => GlobalScope.variables;
         private GlobalScope globalScope;
 
         public Compilation(params SyntaxTree[] syntaxThrees)
@@ -29,7 +31,7 @@ namespace IllusionScript.Runtime
         private Compilation(Compilation previous, params SyntaxTree[] syntaxTrees)
         {
             this.previous = previous;
-            this.syntaxTrees = syntaxTrees;
+            this.syntaxTrees = syntaxTrees.ToImmutableArray();
         }
 
         internal GlobalScope GlobalScope
@@ -46,6 +48,32 @@ namespace IllusionScript.Runtime
             }
         }
 
+        public IEnumerable<Symbol> GetSymbols()
+        {
+            Compilation compilation = this;
+            HashSet<string> seenSymbols = new HashSet<string>();
+            while (compilation != null)
+            {
+                foreach (FunctionSymbol function in compilation.functions)
+                {
+                    if (seenSymbols.Add(function.name))
+                    {
+                        yield return function;
+                    }
+                }
+
+                foreach (VariableSymbol variable in compilation.variables)
+                {
+                    if (seenSymbols.Add(variable.name))
+                    {
+                        yield return variable;
+                    }
+                }
+
+                compilation = compilation.previous;
+            }
+        }
+
         public Compilation ContinueWith(SyntaxTree syntaxThree)
         {
             return new Compilation(this, syntaxThree);
@@ -54,8 +82,9 @@ namespace IllusionScript.Runtime
         public InterpreterResult Interpret(Dictionary<VariableSymbol, object> variables)
         {
             IEnumerable<Diagnostic> parseDiagnostics = syntaxTrees.SelectMany(st => st.diagnostics);
-            ImmutableArray<Diagnostic> diagnostics = parseDiagnostics.Concat(GlobalScope.diagnostics).ToImmutableArray();
-            
+            ImmutableArray<Diagnostic>
+                diagnostics = parseDiagnostics.Concat(GlobalScope.diagnostics).ToImmutableArray();
+
             if (diagnostics.Any())
             {
                 return new InterpreterResult(diagnostics, null);
@@ -116,6 +145,19 @@ namespace IllusionScript.Runtime
                     functionBody.Value.WriteTo(writer);
                 }
             }
+        }
+
+        public void EmitTree(FunctionSymbol symbol, TextWriter writer)
+        {       
+            BoundProgram program = Binder.BindProgram(GlobalScope);
+            if (!program.functionBodies.TryGetValue(symbol, out var body))
+            {
+                return;
+            }
+            
+            symbol.WriteTo(writer);
+            writer.Write("\n");
+            body.WriteTo(writer);
         }
     }
 }

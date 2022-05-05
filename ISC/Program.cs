@@ -22,7 +22,7 @@ namespace IllusionScript.ISC
 
             IEnumerable<string> paths = GetFilePaths(args);
             List<SyntaxTree> syntaxTrees = new List<SyntaxTree>();
-            var hasErrors = false;
+            bool hasErrors = false;
             foreach (string path in paths)
             {
                 if (!File.Exists(path))
@@ -65,7 +65,7 @@ namespace IllusionScript.ISC
 
         private static IEnumerable<string> GetFilePaths(IEnumerable<string> paths)
         {
-            var result = new SortedSet<string>();
+            SortedSet<string> result = new SortedSet<string>();
 
             foreach (string path in paths)
             {

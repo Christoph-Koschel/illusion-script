@@ -1,4 +1,6 @@
-﻿namespace IllusionScript.Runtime.Interpreting.Memory.Symbols
+﻿using System.IO;
+
+namespace IllusionScript.Runtime.Interpreting.Memory.Symbols
 {
     public abstract class Symbol
     {
@@ -11,9 +13,18 @@
 
         public abstract SymbolType symbolType { get; }
 
+        public void WriteTo(TextWriter writer)
+        {
+            SymbolPrinter.WriteTo(this, writer);
+        }
+
         public override string ToString()
         {
-            return name;
+            using (StringWriter writer = new StringWriter())
+            {
+                WriteTo(writer);
+                return writer.ToString();
+            }
         }
     }
 }

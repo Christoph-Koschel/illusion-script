@@ -32,7 +32,7 @@ namespace IllusionScript.Runtime.Interpreting.Memory.Symbols
 
         private static void WriteGlobalVariable(GlobalVariableSymbol symbol, TextWriter writer)
         {
-            writer.WriteKeyword(symbol.isReadOnly ? "const" : "let");
+            writer.WriteKeyword(symbol.isReadOnly ? "const " : "let ");
             writer.WriteIdentifier(symbol.name);
             writer.WritePunctuation(": ");
             symbol.type.WriteTo(writer);
@@ -73,7 +73,9 @@ namespace IllusionScript.Runtime.Interpreting.Memory.Symbols
                 parameter.WriteTo(writer);
             }
 
-            writer.WritePunctuation(")");
+            writer.WritePunctuation("): ");
+            symbol.returnType.WriteTo(writer);
+
             writer.WriteLine();
         }
 
