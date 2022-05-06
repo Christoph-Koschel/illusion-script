@@ -1,5 +1,8 @@
 ﻿name: Release ISI & ISC
 on:
+  push:
+    tags:
+      - '*'
   release:
     types: [ published ]
 jobs:
