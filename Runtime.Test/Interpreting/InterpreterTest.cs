@@ -75,25 +75,26 @@ namespace IllusionScript.Runtime.Test.Interpreting
         [InlineData("false;", false)]
         [InlineData("!true;", false)]
         [InlineData("!false;", true)]
-        [InlineData("let a: Int = 10; a = 10 * a;", 100)]
-        [InlineData("let a: Int = 0; if (a == 0) a = 10;", 10)]
+        [InlineData("let a: Int = 10; a = 10 * a; return a;", 100)]
+        [InlineData("let a: Int = 0; if (a == 0) a = 10; return a;", 10)]
         [InlineData("let a: Int = 0; if (a == 4) a = 10;", 0)]
-        [InlineData("let a: Int = 0; if (a == 0) a = 10; else a = 5;", 10)]
-        [InlineData("let a: Int = 0; if (a == 4) a = 10; else a = 5;", 5)]
-        [InlineData("let a: Int = 0; while (a != 4) a = a + 1;", 4)]
-        [InlineData("let a: Int = 0; for (i = 1 to 10) { a = a + i; } a;", 45)]
-        [InlineData("let a: Int = 0; do a = a + 1; while (a < 10);", 10)]
-        [InlineData("let i: Int = 0; while (i < 5) { i = i + 1; if (i == 5) continue; } i;", 5)]
-        [InlineData("let i: Int = 0; do { i = i + 1; if (i == 5) continue; } while (i < 5); i;", 5)]
+        [InlineData("let a: Int = 0; if (a == 0) a = 10; else a = 5; return a;", 10)]
+        [InlineData("let a: Int = 0; if (a == 4) a = 10; else a = 5; return a;", 5)]
+        [InlineData("let a: Int = 0; while (a != 4) a = a + 1; return a;", 4)]
+        [InlineData("let a: Int = 0; for (i = 1 to 10) { a = a + i; } return a;", 45)]
+        [InlineData("let a: Int = 0; do a = a + 1; while (a < 10); return a;", 10)]
+        [InlineData("let i: Int = 0; while (i < 5) { i = i + 1; if (i == 5) continue; } return i;", 5)]
+        [InlineData("let i: Int = 0; do { i = i + 1; if (i == 5) continue; } while (i < 5); i; return i;", 5)]
         public void InterpreterComputesCorrectValues(string text, object expectedValue)
         {
+            testOutputHelper.WriteLine(text);
             AssertValue(text, expectedValue);
         }
 
         private static void AssertValue(string text, object expectedValue)
         {
             SyntaxTree syntaxThree = SyntaxTree.Parse(text);
-            
+
             Compilation compilation = Compilation.CreateScript(null, syntaxThree);
             Dictionary<VariableSymbol, object> variables = new Dictionary<VariableSymbol, object>();
             InterpreterResult result = compilation.Interpret(variables);
