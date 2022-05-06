@@ -1,10 +1,10 @@
-﻿name: Release
+﻿name: Release ISI & ISC
 on:
   push:
     branches:
       - release
 jobs:
-  release:
+  isi:
     name: Release
     strategy:
       matrix:
@@ -31,27 +31,15 @@ jobs:
       - name: Build
         run: |
           tag=$(git describe --tags --abbrev=0)
-          release_name="ISC-$tag-${{ matrix.target }}"
-          
-          dotnet publish ISC/ISC.csproj --runtime "${{ matrix.target }}" -c Release -o "$release_name"
-          
-          if [ "${{ matrix.target }}" == "win-x64" ]; then
-            7z a -tzip "${release_name}.zip" "./${release_name}/*"
-          else
-            tar czvf "${release_name}.tar.gz" "$release_name"
-          fi
-          
-          rm -r "$release_name"
-          
           release_name="ISI-$tag-${{ matrix.target }}"
+          
           dotnet publish ISI/ISI.csproj --runtime "${{ matrix.target }}" -c Release -o "$release_name"
-
+          
           if [ "${{ matrix.target }}" == "win-x64" ]; then
             7z a -tzip "${release_name}.zip" "./${release_name}/*"
           else
-            tar czvf "${release_name}.tar.gz" "$release_name"
+          tar czvf "${release_name}.tar.gz" "$release_name"
           fi
-          
           rm -r "$release_name"
       - name: Publish
         uses: softprops/action-gh-release@v1
@@ -59,6 +47,43 @@ jobs:
           files: "ISI*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  isc:
+    name: Release
+    strategy:
+      matrix:
+        kind: [ "linux", "windows", "macOS" ]
+        include:
+          - kind: linux
+            os: ubuntu-latest
+            target: linux-x64
+          - kind: windows
+            os: windows-latest
+            target: win-x64
+          - kind: macOS
+            os: macos-latest
+            target: osx-x64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 5.0.x
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: |
+          tag=$(git describe --tags --abbrev=0)
+          release_name="ISI-$tag-${{ matrix.target }}"
+          
+          dotnet publish ISC/ISC.csproj --runtime "${{ matrix.target }}" -c Release -o "$release_name"
+          
+          if [ "${{ matrix.target }}" == "win-x64" ]; then
+            7z a -tzip "${release_name}.zip" "./${release_name}/*"
+          else
+          tar czvf "${release_name}.tar.gz" "$release_name"
+          fi
+          rm -r "$release_name"
       - name: Publish
         uses: softprops/action-gh-release@v1
         with:
