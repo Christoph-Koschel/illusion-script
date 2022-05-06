@@ -155,13 +155,31 @@ namespace IllusionScript.Runtime.Diagnostics
 
         public void ReportAllPathsMustReturn(TextLocation location)
         {
-            string message = $"Not all code paths return a value.";
+            string message = $"ERROR: Not all code paths return a value.";
             Report(location, message);
         }
 
         public void ReportInvalidExpressionStatement(TextLocation location)
         {
-            string message = "Only assignment and call expressions can be used as a statement";
+            string message = "ERROR: Only assignment and call expressions can be used as a statement";
+            Report(location, message);
+        }
+
+        public void ReportCannotMixMainAndGlobalStatements(TextLocation location)
+        {
+            string message = "ERROR: Cannot declare a main function when global statements are used";
+            Report(location, message);
+        }
+
+        public void ReportMainMustHaveCorrectSignature(TextLocation location)
+        {
+            string message = "ERROR: Main must not take arguments and not return any anything";
+            Report(location, message);
+        }
+
+        public void ReportOnlyOneFileCanHavaGlobalStatements(TextLocation location)
+        {
+            string message = "ERROR: At most one file can have global statements";
             Report(location, message);
         }
     }

@@ -62,7 +62,7 @@ namespace IllusionScript.Runtime.Binding
 
         private BoundStatement BindStatement(Statement syntax, bool isGlobal = false)
         {
-            var result = BindStatementInternal(syntax);
+            BoundStatement result = BindStatementInternal(syntax);
 
             if (!isScript || !isGlobal)
             {
@@ -359,14 +359,14 @@ namespace IllusionScript.Runtime.Binding
                     syntax.arguments.Length);
                 return new BoundErrorExpression();
             }
-            
+
             for (int i = 0; i < syntax.arguments.Length; i++)
             {
                 TextLocation argumentLocation = syntax.arguments[i].location;
                 BoundExpression argument = arguments[i];
                 ParameterSymbol parameter = function.parameters[i];
 
-                var convertedArgument = BindConversion(argumentLocation, argument, parameter.type);
+                BoundExpression convertedArgument = BindConversion(argumentLocation, argument, parameter.type);
                 arguments[i] = convertedArgument;
             }
 
@@ -521,9 +521,32 @@ namespace IllusionScript.Runtime.Binding
                 diagnostics.AddRange(binder.diagnostics);
             }
 
-            BoundBlockStatement statement = Lowerer.Lower(new BoundBlockStatement(globalScope.statements));
+            if (globalScope.mainFunction != null && globalScope.statements.Any())
+            {
+                BoundBlockStatement body = Lowerer.Lower(new BoundBlockStatement(globalScope.statements));
+                functionBodies.Add(globalScope.mainFunction, body);
+            }
+            else if (globalScope.scriptFunction != null)
+            {
+                ImmutableArray<BoundStatement> statements = globalScope.statements;
+                if (statements.Length == 1 &&
+                    statements[0] is BoundExpressionStatement es &&
+                    es.expression.type != TypeSymbol.Void)
+                {
+                    statements = statements.SetItem(0, new BoundReturnStatement(es.expression));
+                }
+                else
+                {
+                    BoundLiteralExpression nullValue = new BoundLiteralExpression(0);
+                    statements = statements.Add(new BoundReturnStatement(nullValue));
+                }
 
-            return new BoundProgram(previous, globalScope, diagnostics, functionBodies.ToImmutable(), statement);
+                BoundBlockStatement body = Lowerer.Lower(new BoundBlockStatement(statements));
+                functionBodies.Add(globalScope.scriptFunction, body);
+            }
+
+            return new BoundProgram(previous, globalScope, diagnostics, globalScope.mainFunction,
+                globalScope.scriptFunction, functionBodies.ToImmutable());
         }
 
         public static GlobalScope BindGlobalScope(bool isScript, GlobalScope previous,
@@ -542,17 +565,78 @@ namespace IllusionScript.Runtime.Binding
 
             IEnumerable<StatementMember> globalStatements =
                 syntaxTrees.SelectMany(st => st.root.members).OfType<StatementMember>();
-            ImmutableArray<BoundStatement>.Builder statementBuilder = ImmutableArray.CreateBuilder<BoundStatement>();
+            ImmutableArray<BoundStatement>.Builder statements = ImmutableArray.CreateBuilder<BoundStatement>();
 
             foreach (StatementMember statementMember in globalStatements)
             {
                 BoundStatement s = binder.BindGlobalStatement(statementMember.statement);
-                statementBuilder.Add(s);
+                statements.Add(s);
             }
 
-            ImmutableArray<BoundStatement> statements = statementBuilder.ToImmutable();
+            StatementMember[] firstGlobalStatementPerSyntaxTree = syntaxTrees.Select(st =>
+                    st.root.members.OfType<StatementMember>().FirstOrDefault())
+                .Where(g => g != null).ToArray();
 
             ImmutableArray<FunctionSymbol> functions = binder.scope.GetDeclaredFunctions();
+
+            FunctionSymbol mainFunction;
+            FunctionSymbol scriptFunction;
+
+            if (isScript)
+            {
+                mainFunction = null;
+                if (globalStatements.Any())
+                {
+                    scriptFunction = new FunctionSymbol("$eval", ImmutableArray<ParameterSymbol>.Empty,
+                        TypeSymbol.Object);
+                }
+                else
+                {
+                    scriptFunction = null;
+                }
+            }
+            else
+            {
+                scriptFunction = null;
+                mainFunction = functions.FirstOrDefault(f => f.name == "main");
+
+                if (firstGlobalStatementPerSyntaxTree.Length > 1)
+                {
+                    foreach (StatementMember globalStatement in firstGlobalStatementPerSyntaxTree)
+                    {
+                        binder.diagnostics.ReportOnlyOneFileCanHavaGlobalStatements(globalStatement.location);
+                    }
+                }
+
+                if (mainFunction != null)
+                {
+                    if (mainFunction.returnType != TypeSymbol.Void || mainFunction.parameters.Any())
+                    {
+                        binder.diagnostics.ReportMainMustHaveCorrectSignature(mainFunction.declaration.identifier
+                            .location);
+                    }
+                }
+
+                if (globalStatements.Any())
+                {
+                    if (mainFunction != null)
+                    {
+                        binder.diagnostics.ReportCannotMixMainAndGlobalStatements(mainFunction.declaration.identifier
+                            .location);
+
+                        foreach (StatementMember globalStatement in firstGlobalStatementPerSyntaxTree)
+                        {
+                            binder.diagnostics.ReportCannotMixMainAndGlobalStatements(globalStatement.location);
+                        }
+                    }
+                    else
+                    {
+                        mainFunction = new FunctionSymbol("main", ImmutableArray<ParameterSymbol>.Empty,
+                            TypeSymbol.Void);
+                    }
+                }
+            }
+
             ImmutableArray<VariableSymbol> variables = binder.scope.GetDeclaredVariables();
             ImmutableArray<Diagnostic> diagnostics = binder.diagnostics.ToImmutableArray();
 
@@ -561,7 +645,8 @@ namespace IllusionScript.Runtime.Binding
                 diagnostics = diagnostics.InsertRange(0, previous.diagnostics);
             }
 
-            return new GlobalScope(previous, diagnostics, variables, functions, statements);
+            return new GlobalScope(previous, diagnostics, mainFunction, scriptFunction, variables, functions,
+                statements.ToImmutable());
         }
 
         private static Scope CreateParentScopes(GlobalScope previous)

@@ -108,7 +108,7 @@ namespace IllusionScript.ISI
                 return;
             }
 
-            var files = Directory.GetFiles(compilationFolder).OrderBy(f => f).ToArray();
+            string[] files = Directory.GetFiles(compilationFolder).OrderBy(f => f).ToArray();
             if (files.Length == 0)
             {
                 return;
@@ -122,7 +122,7 @@ namespace IllusionScript.ISI
 
             foreach (string file in files)
             {
-                var text = File.ReadAllText(file);
+                string text = File.ReadAllText(file);
                 Invoke(text);
             }
 
@@ -238,7 +238,7 @@ namespace IllusionScript.ISI
                 return;
             }
 
-            var symbol =
+            FunctionSymbol? symbol =
                 previous.GetSymbols().OfType<FunctionSymbol>().SingleOrDefault(f => f.name == name);
             if (symbol == null)
             {

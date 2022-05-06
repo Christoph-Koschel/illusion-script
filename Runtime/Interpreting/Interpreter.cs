@@ -29,7 +29,7 @@ namespace IllusionScript.Runtime.Interpreting
             locals = new Stack<Dictionary<VariableSymbol, object>>();
             locals.Push(new Dictionary<VariableSymbol, object>());
 
-            var current = program;
+            BoundProgram current = program;
             while (current != null)
             {
                 foreach (KeyValuePair<FunctionSymbol, BoundBlockStatement> functionBody in current.functionBodies)
@@ -43,7 +43,14 @@ namespace IllusionScript.Runtime.Interpreting
 
         public object Interpret()
         {
-            return InterpretStatement(program.statement);
+            FunctionSymbol function = program.mainFunction ?? program.scriptFunction;
+            if (function == null)
+            {
+                return null;
+            }
+
+            BoundBlockStatement body = functions[function];
+            return InterpretStatement(body);
         }
 
         private object InterpretStatement(BoundBlockStatement body)

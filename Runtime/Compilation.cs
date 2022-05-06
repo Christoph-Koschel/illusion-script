@@ -22,6 +22,7 @@ namespace IllusionScript.Runtime
         public readonly ImmutableArray<SyntaxTree> syntaxTrees;
         public ImmutableArray<FunctionSymbol> functions => GlobalScope.functions;
         public ImmutableArray<VariableSymbol> variables => GlobalScope.variables;
+        public FunctionSymbol mainFunction => globalScope.mainFunction;
         private GlobalScope globalScope;
 
         private Compilation(bool isScript, Compilation previous, params SyntaxTree[] syntaxTrees)
@@ -47,7 +48,8 @@ namespace IllusionScript.Runtime
             {
                 if (globalScope == null)
                 {
-                    GlobalScope scope = Binder.BindGlobalScope(isScript, previous?.globalScope, syntaxTrees.ToImmutableArray());
+                    GlobalScope scope = Binder.BindGlobalScope(isScript, previous?.globalScope,
+                        syntaxTrees.ToImmutableArray());
                     Interlocked.CompareExchange(ref globalScope, scope, null);
                 }
 
@@ -57,7 +59,7 @@ namespace IllusionScript.Runtime
 
         private BoundProgram GetProgram()
         {
-            var previous = this.previous == null ? null : this.previous.GetProgram();
+            BoundProgram previous = this.previous == null ? null : this.previous.GetProgram();
             return Binder.BindProgram(isScript, previous, GlobalScope);
         }
 
@@ -100,26 +102,26 @@ namespace IllusionScript.Runtime
 
             BoundProgram program = GetProgram();
 
-            string appPath = Environment.GetCommandLineArgs()[0];
-            string? appDirectory = Path.GetDirectoryName(appPath);
-            string cfgPath = Path.Combine(appDirectory, "cfg.dot");
-            BoundBlockStatement cfgStatement = !program.statement.statements.Any() && program.functionBodies.Any()
-                ? program.functionBodies.Last().Value
-                : program.statement;
-
-            try
-            {
-                ControlFlowGraph cfg = ControlFlowGraph.Create(cfgStatement);
-                using StreamWriter streamWriter = new StreamWriter(cfgPath);
-                cfg.WriteTo(streamWriter);
-            }
-            catch (Exception err)
-            {
-                if (err is not UnauthorizedAccessException)
-                {
-                    throw err;
-                }
-            }
+            // string appPath = Environment.GetCommandLineArgs()[0];
+            // string? appDirectory = Path.GetDirectoryName(appPath);
+            // string cfgPath = Path.Combine(appDirectory, "cfg.dot");
+            // BoundBlockStatement cfgStatement = !program.statement.statements.Any() && program.functionBodies.Any()
+            //     ? program.functionBodies.Last().Value
+            //     : program.statement;
+            //
+            // try
+            // {
+            //     ControlFlowGraph cfg = ControlFlowGraph.Create(cfgStatement);
+            //     using StreamWriter streamWriter = new StreamWriter(cfgPath);
+            //     cfg.WriteTo(streamWriter);
+            // }
+            // catch (Exception err)
+            // {
+            //     if (err is not UnauthorizedAccessException)
+            //     {
+            //         throw err;
+            //     }
+            // }
 
 
             if (program.diagnostics.Any())
@@ -135,30 +137,19 @@ namespace IllusionScript.Runtime
 
         public void EmitTree(TextWriter writer)
         {
-            BoundProgram program = GetProgram();
-            if (program.statement.statements.Any())
+            if (GlobalScope.mainFunction != null)
             {
-                program.statement.WriteTo(writer);
-            }
-            else
+                EmitTree(GlobalScope.mainFunction, writer);
+            } else if (GlobalScope.scriptFunction != null)
             {
-                foreach (KeyValuePair<FunctionSymbol, BoundBlockStatement> functionBody in program.functionBodies)
-                {
-                    if (!GlobalScope.functions.Contains(functionBody.Key))
-                    {
-                        continue;
-                    }
-
-                    functionBody.Key.WriteTo(writer);
-                    functionBody.Value.WriteTo(writer);
-                }
+                EmitTree(GlobalScope.scriptFunction, writer);
             }
         }
 
         public void EmitTree(FunctionSymbol symbol, TextWriter writer)
         {
             BoundProgram program = GetProgram();
-            if (!program.functionBodies.TryGetValue(symbol, out var body))
+            if (!program.functionBodies.TryGetValue(symbol, out BoundBlockStatement body))
             {
                 return;
             }
