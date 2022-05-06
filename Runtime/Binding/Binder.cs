@@ -535,7 +535,7 @@ namespace IllusionScript.Runtime.Binding
                 {
                     statements = statements.SetItem(0, new BoundReturnStatement(es.expression));
                 }
-                else
+                else if (statements.Any() && statements.Last().boundType != BoundNodeType.ReturnStatement)
                 {
                     BoundLiteralExpression nullValue = new BoundLiteralExpression(0);
                     statements = statements.Add(new BoundReturnStatement(nullValue));
@@ -565,13 +565,6 @@ namespace IllusionScript.Runtime.Binding
 
             IEnumerable<StatementMember> globalStatements =
                 syntaxTrees.SelectMany(st => st.root.members).OfType<StatementMember>();
-            ImmutableArray<BoundStatement>.Builder statements = ImmutableArray.CreateBuilder<BoundStatement>();
-
-            foreach (StatementMember statementMember in globalStatements)
-            {
-                BoundStatement s = binder.BindGlobalStatement(statementMember.statement);
-                statements.Add(s);
-            }
 
             StatementMember[] firstGlobalStatementPerSyntaxTree = syntaxTrees.Select(st =>
                     st.root.members.OfType<StatementMember>().FirstOrDefault())
@@ -637,8 +630,22 @@ namespace IllusionScript.Runtime.Binding
                 }
             }
 
-            ImmutableArray<VariableSymbol> variables = binder.scope.GetDeclaredVariables();
             ImmutableArray<Diagnostic> diagnostics = binder.diagnostics.ToImmutableArray();
+            ImmutableArray<BoundStatement>.Builder statements = ImmutableArray.CreateBuilder<BoundStatement>();
+            var entryFunction = mainFunction ?? scriptFunction;
+            if (entryFunction != null)
+            {
+                var statementBinder = new Binder(isScript, parentScope, entryFunction);
+                foreach (StatementMember statementMember in globalStatements)
+                {
+                    BoundStatement s = statementBinder.BindGlobalStatement(statementMember.statement);
+                    statements.Add(s);
+                }
+
+                diagnostics.AddRange(statementBinder.diagnostics);
+            }
+
+            ImmutableArray<VariableSymbol> variables = binder.scope.GetDeclaredVariables();
 
             if (previous != null)
             {
