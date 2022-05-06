@@ -2,7 +2,7 @@
 on:
   push:
     tags:
-      - '*'
+      - "*"
   release:
     types: [ published ]
 jobs:
@@ -65,6 +65,6 @@ jobs:
       - name: Publish ISI & ISC
         uses: softprops/action-gh-release@v1
         with:
-          files: "ISI* ISC*"
+          files: "ISI* \n ISC*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
