@@ -642,7 +642,7 @@ namespace IllusionScript.Runtime.Binding
                     statements.Add(s);
                 }
 
-                diagnostics.AddRange(statementBinder.diagnostics);
+                diagnostics = diagnostics.AddRange(statementBinder.diagnostics);
             }
 
             ImmutableArray<VariableSymbol> variables = binder.scope.GetDeclaredVariables();
