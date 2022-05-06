@@ -44,13 +44,12 @@ jobs:
           else
           tar czvf "${release_name}.tar.gz" "$release_name"
           fi
-          rm -r "$release_name"
+      
+      
       - name: Build ISC
-        
-        
         run: |
           tag=$(git describe --tags --abbrev=0)
-          release_name="ISI-$tag-${{ matrix.target }}"
+          release_name="ISC-$tag-${{ matrix.target }}"
           
           dotnet publish ISC/ISC.csproj --runtime "${{ matrix.target }}" -c Release -o "$release_name"
           
@@ -59,12 +58,12 @@ jobs:
           else
           tar czvf "${release_name}.tar.gz" "$release_name"
           fi
-          rm -r "$release_name"
-  
 
       - name: Publish ISI & ISC
         uses: softprops/action-gh-release@v1
         with:
-          files: "ISI* \n ISC*"
+          files: |
+          ISI*
+          ISC*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
