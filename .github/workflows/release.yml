@@ -30,8 +30,8 @@ jobs:
           dotnet-version: 5.0.x
       - name: Restore dependencies
         run: dotnet restore
-        
-        
+
+
       - name: Build ISI
         run: |
           tag=$(git describe --tags --abbrev=0)
@@ -44,8 +44,8 @@ jobs:
           else
           tar czvf "${release_name}.tar.gz" "$release_name"
           fi
-      
-      
+
+
       - name: Build ISC
         run: |
           tag=$(git describe --tags --abbrev=0)
