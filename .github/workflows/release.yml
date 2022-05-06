@@ -1,8 +1,7 @@
 ﻿name: Release ISI & ISC
 on:
-  push:
-    branches:
-      - release
+  release:
+    types: [ published ]
 jobs:
   isi:
     name: Release
