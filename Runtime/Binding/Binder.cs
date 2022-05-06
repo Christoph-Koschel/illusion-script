@@ -59,7 +59,7 @@ namespace IllusionScript.Runtime.Binding
         {
             return BindStatement(syntax, true);
         }
-        
+
         private BoundStatement BindStatement(Statement syntax, bool isGlobal = false)
         {
             var result = BindStatementInternal(syntax);
@@ -68,7 +68,7 @@ namespace IllusionScript.Runtime.Binding
             {
                 if (result is BoundExpressionStatement es)
                 {
-                    bool isAllowedExpression = es.expression.boundType 
+                    bool isAllowedExpression = es.expression.boundType
                         is BoundNodeType.AssignmentExpression
                         or BoundNodeType.ErrorExpression
                         or BoundNodeType.CallExpression;
@@ -359,24 +359,15 @@ namespace IllusionScript.Runtime.Binding
                     syntax.arguments.Length);
                 return new BoundErrorExpression();
             }
-
-            bool hasErrors = false;
+            
             for (int i = 0; i < syntax.arguments.Length; i++)
             {
+                TextLocation argumentLocation = syntax.arguments[i].location;
                 BoundExpression argument = arguments[i];
                 ParameterSymbol parameter = function.parameters[i];
 
-                if (argument.type != parameter.type)
-                {
-                    diagnostics.WrongArgumentType(syntax.arguments[i].location, parameter.name, parameter.type,
-                        argument.type);
-                    hasErrors = true;
-                }
-            }
-
-            if (hasErrors)
-            {
-                return new BoundErrorExpression();
+                var convertedArgument = BindConversion(argumentLocation, argument, parameter.type);
+                arguments[i] = convertedArgument;
             }
 
             return new BoundCallExpression(function, arguments.ToImmutable());
@@ -677,6 +668,7 @@ namespace IllusionScript.Runtime.Binding
 
             return name switch
             {
+                "Object" => TypeSymbol.Object,
                 "Bool" => TypeSymbol.Bool,
                 "Int" => TypeSymbol.Int,
                 "String" => TypeSymbol.String,

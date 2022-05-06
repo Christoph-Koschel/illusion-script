@@ -17,6 +17,16 @@ namespace IllusionScript.Runtime.Binding
                 return Identity;
             }
 
+            if (from != TypeSymbol.Void && to == TypeSymbol.Object)
+            {
+                return Implicit;
+            }
+
+            if (from == TypeSymbol.Object && to == TypeSymbol.Void)
+            {
+                return Explicit;
+            }
+
             if (from == TypeSymbol.Bool || from == TypeSymbol.Int)
             {
                 if (to == TypeSymbol.String)
@@ -24,7 +34,7 @@ namespace IllusionScript.Runtime.Binding
                     return Explicit;
                 }
             }
-            
+
             if (from == TypeSymbol.String)
             {
                 if (to == TypeSymbol.Bool || to == TypeSymbol.Int)

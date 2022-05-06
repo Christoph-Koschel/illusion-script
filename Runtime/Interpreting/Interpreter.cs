@@ -142,7 +142,11 @@ namespace IllusionScript.Runtime.Interpreting
         {
             object value = InterpretExpression(co.expression);
 
-            if (co.type == TypeSymbol.Bool)
+            if (co.type == TypeSymbol.Object)
+            {
+                return value;
+            }
+            else if (co.type == TypeSymbol.Bool)
             {
                 return Convert.ToBoolean(value);
             }

@@ -115,14 +115,6 @@ namespace IllusionScript.Runtime.Diagnostics
             Report(location, message);
         }
 
-        public void WrongArgumentType(TextLocation location, string name, TypeSymbol parameterType,
-            TypeSymbol argumentType)
-        {
-            string message =
-                $"ERROR: Parameter '{name}' requires a value of type '{parameterType}' but was given a value of type '{argumentType}'";
-            Report(location, message);
-        }
-
         public void ReportExpressionMustHaveValue(TextLocation location)
         {
             string message = $"ERROR: Expression must have a value";
