@@ -63,7 +63,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-          ISI*
-          ISC*
+            ISI*
+            ISC*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
