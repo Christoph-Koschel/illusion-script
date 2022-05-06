@@ -107,14 +107,16 @@ namespace IllusionScript.Runtime.Diagnostics
             Report(location, message);
         }
 
-        public void ReportWrongArgumentCount(TextLocation location, string name, int parametersLength, int argumentsLength)
+        public void ReportWrongArgumentCount(TextLocation location, string name, int parametersLength,
+            int argumentsLength)
         {
             string message =
                 $"ERROR: Function '{name}' requires {parametersLength} arguments but was given {argumentsLength}";
             Report(location, message);
         }
 
-        public void WrongArgumentType(TextLocation location, string name, TypeSymbol parameterType, TypeSymbol argumentType)
+        public void WrongArgumentType(TextLocation location, string name, TypeSymbol parameterType,
+            TypeSymbol argumentType)
         {
             string message =
                 $"ERROR: Parameter '{name}' requires a value of type '{parameterType}' but was given a value of type '{argumentType}'";
@@ -162,6 +164,12 @@ namespace IllusionScript.Runtime.Diagnostics
         public void ReportAllPathsMustReturn(TextLocation location)
         {
             string message = $"Not all code paths return a value.";
+            Report(location, message);
+        }
+
+        public void ReportInvalidExpressionStatement(TextLocation location)
+        {
+            string message = "Only assignment and call expressions can be used as a statement";
             Report(location, message);
         }
     }

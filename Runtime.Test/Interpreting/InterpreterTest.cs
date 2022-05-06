@@ -93,7 +93,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         private static void AssertValue(string text, object expectedValue)
         {
             SyntaxTree syntaxThree = SyntaxTree.Parse(text);
-            Compilation compilation = new Compilation(syntaxThree);
+            Compilation compilation = Compilation.Create(syntaxThree);
             Dictionary<VariableSymbol, object> variables = new Dictionary<VariableSymbol, object>();
             InterpreterResult result = compilation.Interpret(variables);
 
@@ -357,7 +357,7 @@ namespace IllusionScript.Runtime.Test.Interpreting
         {
             AnnotatedText annotatedText = AnnotatedText.Parse(text);
             SyntaxTree syntaxTree = SyntaxTree.Parse(annotatedText.text);
-            Compilation compilation = new Compilation(syntaxTree);
+            Compilation compilation = Compilation.Create(syntaxTree);
             InterpreterResult result = compilation.Interpret(new Dictionary<VariableSymbol, object>());
 
             string[] diagnostics = AnnotatedText.UnindentLines(diagnosticsText);

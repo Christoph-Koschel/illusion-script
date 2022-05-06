@@ -31,9 +31,7 @@ namespace IllusionScript.ISI
         {
             SyntaxTree syntaxTree = SyntaxTree.Parse(input, "<stdin>");
 
-            Compilation compilation = previous == null
-                ? new Compilation(syntaxTree)
-                : previous.ContinueWith(syntaxTree);
+            Compilation compilation = Compilation.CreateScript(previous, syntaxTree);
 
             previous = compilation;
 
@@ -55,6 +53,7 @@ namespace IllusionScript.ISI
 
             if (!result.diagnostics.Any())
             {
+                SaveCompilation(input);
                 if (result.value == null)
                 {
                     return;
@@ -63,8 +62,6 @@ namespace IllusionScript.ISI
                 Console.ForegroundColor = ConsoleColor.Gray;
                 Console.WriteLine(result.value);
                 Console.ResetColor();
-
-                SaveCompilation(input);
             }
             else
             {
@@ -96,7 +93,11 @@ namespace IllusionScript.ISI
 
         private void ClearCompilations()
         {
-            Directory.Delete(GetCompilationPath(), true);
+            string path = GetCompilationPath();
+            if (Directory.Exists(path))
+            {
+                Directory.Delete(path, true);
+            }
         }
 
         private void LoadCompilations()
@@ -192,6 +193,7 @@ namespace IllusionScript.ISI
         private void InvokeReset()
         {
             previous = null;
+            variables.Clear();
             ClearCompilations();
         }
 

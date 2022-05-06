@@ -15,16 +15,30 @@ namespace IllusionScript.Runtime.Interpreting
     {
         private readonly BoundProgram program;
         private readonly Dictionary<VariableSymbol, object> globals;
+        private readonly Dictionary<FunctionSymbol, BoundBlockStatement> functions;
+
         private readonly Stack<Dictionary<VariableSymbol, object>> locals;
         private object lastValue;
         private Random random;
 
         public Interpreter(BoundProgram program, Dictionary<VariableSymbol, object> globals)
         {
+            functions = new Dictionary<FunctionSymbol, BoundBlockStatement>();
             this.program = program;
             this.globals = globals;
             locals = new Stack<Dictionary<VariableSymbol, object>>();
             locals.Push(new Dictionary<VariableSymbol, object>());
+
+            var current = program;
+            while (current != null)
+            {
+                foreach (KeyValuePair<FunctionSymbol, BoundBlockStatement> functionBody in current.functionBodies)
+                {
+                    functions.Add(functionBody.Key, functionBody.Value);
+                }
+
+                current = current.previous;
+            }
         }
 
         public object Interpret()
@@ -179,7 +193,7 @@ namespace IllusionScript.Runtime.Interpreting
                 }
 
                 locals.Push(frame);
-                BoundBlockStatement statement = program.functionBodies[c.function];
+                BoundBlockStatement statement = functions[c.function];
                 object result = InterpretStatement(statement);
                 locals.Pop();
                 return result;

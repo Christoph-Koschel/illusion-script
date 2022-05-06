@@ -75,13 +75,10 @@ namespace IllusionScript.Runtime.Interpreting.Memory.Symbols
 
             writer.WritePunctuation("): ");
             symbol.returnType.WriteTo(writer);
-
-            writer.WriteLine();
         }
 
         private static void WriteParameter(ParameterSymbol symbol, TextWriter writer)
         {
-            writer.WriteKeyword(symbol.isReadOnly ? "const" : "let");
             writer.WriteIdentifier(symbol.name);
             writer.WritePunctuation(": ");
             symbol.type.WriteTo(writer);

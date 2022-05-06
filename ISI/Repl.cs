@@ -405,7 +405,7 @@ namespace IllusionScript.ISI
 
                     if (args.Count != parameters.Length)
                     {
-                        string parameterNames = string.Join(", ", parameters
+                        string parameterNames = string.Join(" ", parameters
                             .Select(p => $"<{p.Name}>"));
 
                         Console.ForegroundColor = ConsoleColor.DarkRed;

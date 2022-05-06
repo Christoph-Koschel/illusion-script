@@ -22,6 +22,7 @@ namespace IllusionScript.Runtime.Binding
 {
     internal sealed class Binder
     {
+        public readonly bool isScript;
         public readonly FunctionSymbol function;
         public readonly DiagnosticGroup diagnostics;
         private readonly Stack<(BoundLabel breakLabel, BoundLabel continueLabel)> loopStack;
@@ -29,8 +30,9 @@ namespace IllusionScript.Runtime.Binding
 
         private Scope scope;
 
-        public Binder(Scope parent, FunctionSymbol function)
+        public Binder(bool isScript, Scope parent, FunctionSymbol function)
         {
+            this.isScript = isScript;
             this.function = function;
             diagnostics = new DiagnosticGroup();
             scope = new Scope(parent);
@@ -53,7 +55,35 @@ namespace IllusionScript.Runtime.Binding
             return new BoundExpressionStatement(new BoundErrorExpression());
         }
 
-        private BoundStatement BindStatement(Statement syntax)
+        private BoundStatement BindGlobalStatement(Statement syntax)
+        {
+            return BindStatement(syntax, true);
+        }
+        
+        private BoundStatement BindStatement(Statement syntax, bool isGlobal = false)
+        {
+            var result = BindStatementInternal(syntax);
+
+            if (!isScript || !isGlobal)
+            {
+                if (result is BoundExpressionStatement es)
+                {
+                    bool isAllowedExpression = es.expression.boundType 
+                        is BoundNodeType.AssignmentExpression
+                        or BoundNodeType.ErrorExpression
+                        or BoundNodeType.CallExpression;
+
+                    if (!isAllowedExpression)
+                    {
+                        diagnostics.ReportInvalidExpressionStatement(syntax.location);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private BoundStatement BindStatementInternal(Statement syntax)
         {
             switch (syntax.type)
             {
@@ -184,7 +214,8 @@ namespace IllusionScript.Runtime.Binding
         {
             BoundExpression condition = BindExpression(syntax.condition, TypeSymbol.Bool);
             BoundStatement statement = BindStatement(syntax.body);
-            BoundStatement elseStatement = syntax.elseClause == null ? null : BindStatement(syntax.elseClause.body);
+            BoundStatement elseStatement =
+                syntax.elseClause == null ? null : BindStatement(syntax.elseClause.body);
 
             return new BoundIfStatement(condition, statement, elseStatement);
         }
@@ -476,44 +507,39 @@ namespace IllusionScript.Runtime.Binding
         }
 
 
-        public static BoundProgram BindProgram(GlobalScope globalScope)
+        public static BoundProgram BindProgram(bool isScript, BoundProgram previous, GlobalScope globalScope)
         {
             Scope parentScope = CreateParentScopes(globalScope);
             ImmutableDictionary<FunctionSymbol, BoundBlockStatement>.Builder functionBodies =
                 ImmutableDictionary.CreateBuilder<FunctionSymbol, BoundBlockStatement>();
             DiagnosticGroup diagnostics = new DiagnosticGroup();
 
-            GlobalScope scope = globalScope;
-            while (scope != null)
+            foreach (FunctionSymbol function in globalScope.functions)
             {
-                foreach (FunctionSymbol function in scope.functions)
+                Binder binder = new Binder(isScript, parentScope, function);
+                BoundStatement body = binder.BindStatement(function.declaration.body);
+                BoundBlockStatement loweredBody = Lowerer.Lower(body);
+
+                if (function.returnType != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
                 {
-                    Binder binder = new Binder(parentScope, function);
-                    BoundStatement body = binder.BindStatement(function.declaration.body);
-                    BoundBlockStatement loweredBody = Lowerer.Lower(body);
-
-                    if (function.returnType != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
-                    {
-                        binder.diagnostics.ReportAllPathsMustReturn(function.declaration.identifier.location);
-                    }
-
-                    functionBodies.Add(function, loweredBody);
-
-                    diagnostics.AddRange(binder.diagnostics);
+                    binder.diagnostics.ReportAllPathsMustReturn(function.declaration.identifier.location);
                 }
 
-                scope = scope.previous;
+                functionBodies.Add(function, loweredBody);
+
+                diagnostics.AddRange(binder.diagnostics);
             }
 
             BoundBlockStatement statement = Lowerer.Lower(new BoundBlockStatement(globalScope.statements));
 
-            return new BoundProgram(globalScope, diagnostics, functionBodies.ToImmutable(), statement);
+            return new BoundProgram(previous, globalScope, diagnostics, functionBodies.ToImmutable(), statement);
         }
 
-        public static GlobalScope BindGlobalScope(GlobalScope previous, ImmutableArray<SyntaxTree> syntaxTrees)
+        public static GlobalScope BindGlobalScope(bool isScript, GlobalScope previous,
+            ImmutableArray<SyntaxTree> syntaxTrees)
         {
             Scope parentScope = CreateParentScopes(previous);
-            Binder binder = new Binder(parentScope, null);
+            Binder binder = new Binder(isScript, parentScope, null);
 
             IEnumerable<FunctionDeclarationMember> functionDeclarations =
                 syntaxTrees.SelectMany(st => st.root.members).OfType<FunctionDeclarationMember>();
@@ -522,13 +548,14 @@ namespace IllusionScript.Runtime.Binding
             {
                 binder.BindFunctionDeclarationMember(function);
             }
+
             IEnumerable<StatementMember> globalStatements =
                 syntaxTrees.SelectMany(st => st.root.members).OfType<StatementMember>();
             ImmutableArray<BoundStatement>.Builder statementBuilder = ImmutableArray.CreateBuilder<BoundStatement>();
 
             foreach (StatementMember statementMember in globalStatements)
             {
-                BoundStatement s = binder.BindStatement(statementMember.statement);
+                BoundStatement s = binder.BindGlobalStatement(statementMember.statement);
                 statementBuilder.Add(s);
             }
 

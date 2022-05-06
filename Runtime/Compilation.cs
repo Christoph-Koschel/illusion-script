@@ -17,21 +17,28 @@ namespace IllusionScript.Runtime
 {
     public sealed class Compilation
     {
+        public readonly bool isScript;
         public readonly Compilation previous;
         public readonly ImmutableArray<SyntaxTree> syntaxTrees;
         public ImmutableArray<FunctionSymbol> functions => GlobalScope.functions;
         public ImmutableArray<VariableSymbol> variables => GlobalScope.variables;
         private GlobalScope globalScope;
 
-        public Compilation(params SyntaxTree[] syntaxThrees)
-            : this(null, syntaxThrees)
+        private Compilation(bool isScript, Compilation previous, params SyntaxTree[] syntaxTrees)
         {
-        }
-
-        private Compilation(Compilation previous, params SyntaxTree[] syntaxTrees)
-        {
+            this.isScript = isScript;
             this.previous = previous;
             this.syntaxTrees = syntaxTrees.ToImmutableArray();
+        }
+
+        public static Compilation Create(params SyntaxTree[] syntaxTrees)
+        {
+            return new Compilation(false, null, syntaxTrees);
+        }
+
+        public static Compilation CreateScript(Compilation previous, params SyntaxTree[] syntaxTrees)
+        {
+            return new Compilation(true, previous, syntaxTrees);
         }
 
         internal GlobalScope GlobalScope
@@ -40,12 +47,18 @@ namespace IllusionScript.Runtime
             {
                 if (globalScope == null)
                 {
-                    GlobalScope scope = Binder.BindGlobalScope(previous?.globalScope, syntaxTrees.ToImmutableArray());
+                    GlobalScope scope = Binder.BindGlobalScope(isScript, previous?.globalScope, syntaxTrees.ToImmutableArray());
                     Interlocked.CompareExchange(ref globalScope, scope, null);
                 }
 
                 return globalScope;
             }
+        }
+
+        private BoundProgram GetProgram()
+        {
+            var previous = this.previous == null ? null : this.previous.GetProgram();
+            return Binder.BindProgram(isScript, previous, GlobalScope);
         }
 
         public IEnumerable<Symbol> GetSymbols()
@@ -74,11 +87,6 @@ namespace IllusionScript.Runtime
             }
         }
 
-        public Compilation ContinueWith(SyntaxTree syntaxThree)
-        {
-            return new Compilation(this, syntaxThree);
-        }
-
         public InterpreterResult Interpret(Dictionary<VariableSymbol, object> variables)
         {
             IEnumerable<Diagnostic> parseDiagnostics = syntaxTrees.SelectMany(st => st.diagnostics);
@@ -90,7 +98,7 @@ namespace IllusionScript.Runtime
                 return new InterpreterResult(diagnostics, null);
             }
 
-            BoundProgram program = Binder.BindProgram(GlobalScope);
+            BoundProgram program = GetProgram();
 
             string appPath = Environment.GetCommandLineArgs()[0];
             string? appDirectory = Path.GetDirectoryName(appPath);
@@ -127,7 +135,7 @@ namespace IllusionScript.Runtime
 
         public void EmitTree(TextWriter writer)
         {
-            BoundProgram program = Binder.BindProgram(GlobalScope);
+            BoundProgram program = GetProgram();
             if (program.statement.statements.Any())
             {
                 program.statement.WriteTo(writer);
@@ -148,13 +156,13 @@ namespace IllusionScript.Runtime
         }
 
         public void EmitTree(FunctionSymbol symbol, TextWriter writer)
-        {       
-            BoundProgram program = Binder.BindProgram(GlobalScope);
+        {
+            BoundProgram program = GetProgram();
             if (!program.functionBodies.TryGetValue(symbol, out var body))
             {
                 return;
             }
-            
+
             symbol.WriteTo(writer);
             writer.Write("\n");
             body.WriteTo(writer);

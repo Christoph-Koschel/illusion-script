@@ -41,7 +41,7 @@ namespace IllusionScript.ISC
                 return 1;
             }
 
-            Compilation compilation = new Compilation(syntaxTrees.ToArray());
+            Compilation compilation = Compilation.Create(syntaxTrees.ToArray());
             InterpreterResult result = compilation.Interpret(new Dictionary<VariableSymbol, object>());
 
             if (!result.diagnostics.Any())

@@ -8,13 +8,15 @@ namespace IllusionScript.Runtime.Binding
 {
     internal sealed class BoundProgram
     {
+        public readonly BoundProgram previous;
         public readonly GlobalScope globalScope;
         public readonly DiagnosticGroup diagnostics;
         public readonly ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functionBodies;
         public readonly BoundBlockStatement statement;
 
-        public BoundProgram(GlobalScope globalScope, DiagnosticGroup diagnostics, ImmutableDictionary<FunctionSymbol,BoundBlockStatement> functionBodies, BoundBlockStatement statement)
+        public BoundProgram(BoundProgram previous, GlobalScope globalScope, DiagnosticGroup diagnostics, ImmutableDictionary<FunctionSymbol,BoundBlockStatement> functionBodies, BoundBlockStatement statement)
         {
+            this.previous = previous;
             this.globalScope = globalScope;
             this.diagnostics = diagnostics;
             this.functionBodies = functionBodies;
