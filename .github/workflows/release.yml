@@ -30,7 +30,7 @@ jobs:
         run: dotnet restore
       - name: Build
         run: |
-          tag=$(git rev-parse --short HEAD)
+          tag=$(git describe --tags --abbrev=0)
           release_name="ISI-$tag-${{ matrix.target }}"
           
           dotnet publish ISI/ISI.csproj --runtime "${{ matrix.target }}" -c Release -o "$release_name"
@@ -73,7 +73,7 @@ jobs:
         run: dotnet restore
       - name: Build
         run: |
-          tag=$(git rev-parse --short HEAD)
+          tag=$(git describe --tags --abbrev=0)
           release_name="ISI-$tag-${{ matrix.target }}"
           
           dotnet publish ISC/ISC.csproj --runtime "${{ matrix.target }}" -c Release -o "$release_name"
