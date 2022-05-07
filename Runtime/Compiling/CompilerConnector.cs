@@ -1,4 +1,6 @@
-﻿namespace IllusionScript.Runtime.Compiling
+﻿using IllusionScript.Runtime.Binding;
+
+namespace IllusionScript.Runtime.Compiling
 {
     public abstract class CompilerConnector
     {
@@ -17,6 +19,8 @@
 
         public abstract void BuildOutput();
 
-        public abstract void Build();
+        internal abstract void Build(BoundProgram program);
+
+        public abstract void CleanUp();
     }
 }
