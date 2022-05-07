@@ -4,13 +4,13 @@ using IllusionScript.Runtime.Parsing;
 
 namespace IllusionScript.Runtime.Binding.Operators
 {
-    internal sealed class BoundBinaryOperator
+    public sealed class BoundBinaryOperator
     {
-        public SyntaxType type;
-        public BoundBinaryOperatorType operatorType;
-        public TypeSymbol leftType;
-        public TypeSymbol rightType;
-        public TypeSymbol resultType;
+        public readonly SyntaxType type;
+        public readonly BoundBinaryOperatorType operatorType;
+        public readonly TypeSymbol leftType;
+        public readonly TypeSymbol rightType;
+        public readonly TypeSymbol resultType;
 
         private BoundBinaryOperator(SyntaxType type, BoundBinaryOperatorType operatorType, TypeSymbol leftType,
             TypeSymbol rightType, TypeSymbol resultType)
@@ -92,6 +92,33 @@ namespace IllusionScript.Runtime.Binding.Operators
             }
 
             return null;
+        }
+
+        public static string GetText(BoundBinaryOperatorType type)
+        {
+            return type switch
+            {
+                BoundBinaryOperatorType.Addition => "+",
+                BoundBinaryOperatorType.Subtraction => "-",
+                BoundBinaryOperatorType.Multiplication => "*",
+                BoundBinaryOperatorType.Division => "/",
+                BoundBinaryOperatorType.Modulo => "%",
+                BoundBinaryOperatorType.Pow => "**",
+                BoundBinaryOperatorType.LogicalAnd => "&&",
+                BoundBinaryOperatorType.LogicalOr => "||",
+                BoundBinaryOperatorType.NotEquals => "!=",
+                BoundBinaryOperatorType.Equals => "==",
+                BoundBinaryOperatorType.BitwiseAnd => "&",
+                BoundBinaryOperatorType.BitwiseOr => "|",
+                BoundBinaryOperatorType.BitwiseXor => "^",
+                BoundBinaryOperatorType.BitwiseShiftLeft => "<<",
+                BoundBinaryOperatorType.BitwiseShiftRight => ">>",
+                BoundBinaryOperatorType.Less => "<",
+                BoundBinaryOperatorType.LessEquals => "<=",
+                BoundBinaryOperatorType.Greater => ">",
+                BoundBinaryOperatorType.GreaterEquals => ">=",
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
     }
 }

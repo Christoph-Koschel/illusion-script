@@ -39,7 +39,8 @@ namespace IllusionScript.ISC
                 string[] dlls = Directory.EnumerateFiles("etc", "*.dll", SearchOption.AllDirectories).ToArray();
                 foreach (string dll in dlls)
                 {
-                    Assembly assembly = Assembly.LoadFile(dll);
+                    string path = Path.GetFullPath(dll);
+                    Assembly assembly = Assembly.LoadFile(path);
                     Compilation.AddCompiler(assembly);
                 }
             }

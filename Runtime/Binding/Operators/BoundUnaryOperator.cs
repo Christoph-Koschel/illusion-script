@@ -4,7 +4,7 @@ using IllusionScript.Runtime.Parsing;
 
 namespace IllusionScript.Runtime.Binding.Operators
 {
-    internal sealed class BoundUnaryOperator
+    public sealed class BoundUnaryOperator
     {
         public SyntaxType type;
         public BoundUnaryOperatorType operatorType;
@@ -44,6 +44,18 @@ namespace IllusionScript.Runtime.Binding.Operators
             }
 
             return null;
+        }
+
+        public static string GetText(BoundUnaryOperatorType type)
+        {
+            return type switch
+            {
+                BoundUnaryOperatorType.Identity => "+",
+                BoundUnaryOperatorType.Negation => "-",
+                BoundUnaryOperatorType.LogicalNegation => "!",
+                BoundUnaryOperatorType.OnesComplement => "~",
+                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+            };
         }
     }
 }

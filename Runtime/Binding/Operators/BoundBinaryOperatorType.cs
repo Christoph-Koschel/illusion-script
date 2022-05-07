@@ -1,6 +1,6 @@
 ﻿namespace IllusionScript.Runtime.Binding.Operators
 {
-    internal enum BoundBinaryOperatorType
+    public enum BoundBinaryOperatorType
     {
         // Math
         Addition,

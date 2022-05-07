@@ -2,7 +2,7 @@
 
 namespace IllusionScript.Runtime.Binding.Nodes.Statements
 {
-    internal sealed class BoundBlockStatement : BoundStatement
+    public sealed class BoundBlockStatement : BoundStatement
     {
         public readonly ImmutableArray<BoundStatement> statements;
 

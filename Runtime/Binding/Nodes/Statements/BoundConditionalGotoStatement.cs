@@ -2,7 +2,7 @@
 
 namespace IllusionScript.Runtime.Binding.Nodes.Statements
 {
-    internal sealed class BoundConditionalGotoStatement : BoundStatement
+    public sealed class BoundConditionalGotoStatement : BoundStatement
     {
         public readonly BoundLabel boundLabel;
         public readonly BoundExpression condition;

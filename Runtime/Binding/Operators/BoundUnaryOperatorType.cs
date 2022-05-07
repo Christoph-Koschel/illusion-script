@@ -1,6 +1,6 @@
 ﻿namespace IllusionScript.Runtime.Binding.Operators
 {
-    internal enum BoundUnaryOperatorType
+    public enum BoundUnaryOperatorType
     {
         Identity,
         Negation,

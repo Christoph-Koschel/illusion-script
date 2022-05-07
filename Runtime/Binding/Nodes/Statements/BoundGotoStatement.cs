@@ -1,6 +1,6 @@
 ﻿namespace IllusionScript.Runtime.Binding.Nodes.Statements
 {
-    internal sealed class BoundGotoStatement : BoundStatement
+    public sealed class BoundGotoStatement : BoundStatement
     {
         public readonly BoundLabel BoundLabel;
 

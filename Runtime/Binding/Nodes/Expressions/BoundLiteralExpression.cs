@@ -3,7 +3,7 @@ using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 
 namespace IllusionScript.Runtime.Binding.Nodes.Expressions
 {
-    internal sealed class BoundLiteralExpression : BoundExpression
+    public sealed class BoundLiteralExpression : BoundExpression
     {
         public readonly object value;
 

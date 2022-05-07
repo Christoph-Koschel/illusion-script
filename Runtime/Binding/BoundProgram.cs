@@ -6,16 +6,16 @@ using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 
 namespace IllusionScript.Runtime.Binding
 {
-    internal sealed class BoundProgram
+    public sealed class BoundProgram
     {
         public readonly BoundProgram previous;
         public readonly GlobalScope globalScope;
-        public readonly DiagnosticGroup diagnostics;
+        internal readonly DiagnosticGroup diagnostics;
         public readonly FunctionSymbol mainFunction;
         public readonly FunctionSymbol scriptFunction;
         public readonly ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functionBodies;
 
-        public BoundProgram(
+        internal BoundProgram(
             BoundProgram previous, 
             GlobalScope globalScope, 
             DiagnosticGroup diagnostics, 
