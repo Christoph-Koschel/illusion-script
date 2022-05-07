@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using IllusionScript.Runtime;
 using IllusionScript.Runtime.Compiling;
 using IllusionScript.Runtime.Binding;
@@ -66,7 +64,8 @@ namespace IllusionScript.Compiler.PHP8
                 foreach (FunctionSymbol function in functions)
                 {
                     writer.WriteLine($"    Write: {function.name}");
-                    file.Write(function, program.functionBodies);
+                    file.Write(function, program.functionBodies,
+                        function == program.mainFunction || function == program.scriptFunction);
                 }
 
                 file.Close();

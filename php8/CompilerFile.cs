@@ -6,6 +6,7 @@ using System.Text;
 using IllusionScript.Runtime.Binding;
 using IllusionScript.Runtime.Binding.Nodes.Expressions;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
+using IllusionScript.Runtime.Binding.Operators;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 
 namespace IllusionScript.Compiler.PHP8
@@ -45,9 +46,9 @@ namespace IllusionScript.Compiler.PHP8
         }
 
         public void Write(FunctionSymbol function,
-            ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functionBodies)
+            ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functionBodies, bool isEntryPoint)
         {
-            if (function.name == "$eval")
+            if (isEntryPoint)
             {
                 writer.Write("(");
             }
@@ -56,7 +57,7 @@ namespace IllusionScript.Compiler.PHP8
             writer.Write("\n{\n");
             WriteStatement(functionBodies[function]);
 
-            writer.Write(function.name == "$eval" ? "})()\n" : "}\n");
+            writer.Write(isEntryPoint ? "})();\n" : "}\n");
         }
 
         private void WriteBlockStatement(BoundBlockStatement body)
@@ -87,10 +88,44 @@ namespace IllusionScript.Compiler.PHP8
                     WriteReturnStatement((BoundReturnStatement)statement);
                     writer.Write(";\n");
                     break;
+                case BoundNodeType.GotoStatement:
+                    WriteGotoStatement((BoundGotoStatement)statement);
+                    writer.Write(";\n");
+                    break;
+                case BoundNodeType.ConditionalGotoStatement:
+                    WriteConditionalGotoStatement((BoundConditionalGotoStatement)statement);
+                    writer.Write(";\n");
+                    break;
+                case BoundNodeType.LabelStatement:
+                    WriteLabelStatement((BoundLabelStatement)statement);
+                    writer.Write("\n");
+                    break;
                 default:
                     writer.Close(); // TODO delete file
                     throw new Exception($"Undefined statement {statement.boundType}");
             }
+        }
+
+        private void WriteConditionalGotoStatement(BoundConditionalGotoStatement statement)
+        {
+            writer.Write("if ((");
+            WriteExpression(statement.condition);
+            writer.Write(statement.jmpIfTrue ? ")==true) " : ")==false) ");
+            writer.Write("goto ");
+            writer.Write(statement.boundLabel.name);
+        }
+
+        private void WriteLabelStatement(BoundLabelStatement statement)
+        {
+            writer.Write("\n");
+            writer.Write(statement.BoundLabel.name);
+            writer.Write(":");
+        }
+
+        private void WriteGotoStatement(BoundGotoStatement statement)
+        {
+            writer.Write("goto ");
+            writer.Write(statement.BoundLabel.name);
         }
 
         private void WriteReturnStatement(BoundReturnStatement statement)
@@ -133,10 +168,40 @@ namespace IllusionScript.Compiler.PHP8
                 case BoundNodeType.LiteralExpression:
                     WriteLiteralExpression((BoundLiteralExpression)expression);
                     break;
+                case BoundNodeType.AssignmentExpression:
+                    WriteAssignmentExpression((BoundAssignmentExpression)expression);
+                    break;
+                case BoundNodeType.BinaryExpression:
+                    WriteBinaryExpression((BoundBinaryExpression)expression);
+                    break;
+                case BoundNodeType.UnaryExpression:
+                    WriteBinaryExpression((BoundBinaryExpression)expression);
+                    break;
                 default:
                     writer.Close(); // TODO delete file
                     throw new Exception($"Undefined expression {expression.boundType}");
             }
+        }
+
+        private void WriteBinaryExpression(BoundBinaryExpression expression)
+        {
+            WriteExpression(expression.left);
+            writer.Write(BoundBinaryOperator.GetText(expression.binaryOperator.operatorType));
+            WriteExpression(expression.right);
+        }
+
+        private void WriteUnaryExpression(BoundUnaryExpression expression)
+        {
+            writer.Write(BoundUnaryOperator.GetText(expression.unaryOperator.operatorType));
+            WriteExpression(expression.right);
+        }
+
+        private void WriteAssignmentExpression(BoundAssignmentExpression expression)
+        {
+            writer.Write("$");
+            writer.Write(expression.variableSymbol.name);
+            writer.Write(" = ");
+            WriteExpression(expression.expression);
         }
 
         private void WriteLiteralExpression(BoundLiteralExpression expression)
