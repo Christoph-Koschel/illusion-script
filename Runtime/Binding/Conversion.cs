@@ -22,7 +22,7 @@ namespace IllusionScript.Runtime.Binding
                 return Implicit;
             }
 
-            if (from == TypeSymbol.Object && to == TypeSymbol.Void)
+            if (from == TypeSymbol.Object && to != TypeSymbol.Void)
             {
                 return Explicit;
             }

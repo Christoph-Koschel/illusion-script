@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime.Test", "Runtime.Tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISC", "ISC\ISC.csproj", "{53ECB60D-EF30-48AA-A34E-02EB0180CDAE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "php8", "php8\php8.csproj", "{29323BAE-3979-41D9-BE00-0E39DE509A5E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{53ECB60D-EF30-48AA-A34E-02EB0180CDAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53ECB60D-EF30-48AA-A34E-02EB0180CDAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53ECB60D-EF30-48AA-A34E-02EB0180CDAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29323BAE-3979-41D9-BE00-0E39DE509A5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29323BAE-3979-41D9-BE00-0E39DE509A5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29323BAE-3979-41D9-BE00-0E39DE509A5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29323BAE-3979-41D9-BE00-0E39DE509A5E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

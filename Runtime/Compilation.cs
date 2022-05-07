@@ -3,26 +3,33 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using IllusionScript.Runtime.Binding;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
+using IllusionScript.Runtime.Compiling;
 using IllusionScript.Runtime.Diagnostics;
+using IllusionScript.Runtime.Extension;
 using IllusionScript.Runtime.Interpreting;
 using IllusionScript.Runtime.Interpreting.Memory;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 using IllusionScript.Runtime.Parsing;
-using ControlFlowGraph = IllusionScript.Runtime.CFA.ControlFlowGraph;
+using Binder = IllusionScript.Runtime.Binding.Binder;
 
 namespace IllusionScript.Runtime
 {
     public sealed class Compilation
     {
+        public static readonly Dictionary<string, CompilerConnector> compilers =
+            new();
+
         public readonly bool isScript;
         public readonly Compilation previous;
         public readonly ImmutableArray<SyntaxTree> syntaxTrees;
         public ImmutableArray<FunctionSymbol> functions => GlobalScope.functions;
         public ImmutableArray<VariableSymbol> variables => GlobalScope.variables;
         public FunctionSymbol mainFunction => globalScope.mainFunction;
+        public FunctionSymbol scriptFunction => globalScope.scriptFunction;
         private GlobalScope globalScope;
 
         private Compilation(bool isScript, Compilation previous, params SyntaxTree[] syntaxTrees)
@@ -40,6 +47,29 @@ namespace IllusionScript.Runtime
         public static Compilation CreateScript(Compilation previous, params SyntaxTree[] syntaxTrees)
         {
             return new Compilation(true, previous, syntaxTrees);
+        }
+
+        public static void AddCompiler(Assembly assembly)
+        {
+            Type baseType = typeof(CompilerConnector);
+            Type[] types = assembly.GetTypes().Where(t => baseType.IsAssignableFrom(t) && t.IsClass && !t.IsAbstract)
+                .ToArray();
+
+            foreach (Type type in types)
+            {
+                CompilerConnector compiler = (CompilerConnector)Activator.CreateInstance(type);
+                if (compiler != null)
+                {
+                    compilers.Add(compiler.hashID, compiler);
+                }
+            }
+        }
+
+        public static string GetCompilerHash(string name)
+        {
+            CompilerConnector compiler = compilers.FirstOrDefault(c => c.Value.name == name).Value;
+
+            return compiler?.hashID;
         }
 
         internal GlobalScope GlobalScope
@@ -102,28 +132,6 @@ namespace IllusionScript.Runtime
 
             BoundProgram program = GetProgram();
 
-            // string appPath = Environment.GetCommandLineArgs()[0];
-            // string? appDirectory = Path.GetDirectoryName(appPath);
-            // string cfgPath = Path.Combine(appDirectory, "cfg.dot");
-            // BoundBlockStatement cfgStatement = !program.statement.statements.Any() && program.functionBodies.Any()
-            //     ? program.functionBodies.Last().Value
-            //     : program.statement;
-            //
-            // try
-            // {
-            //     ControlFlowGraph cfg = ControlFlowGraph.Create(cfgStatement);
-            //     using StreamWriter streamWriter = new StreamWriter(cfgPath);
-            //     cfg.WriteTo(streamWriter);
-            // }
-            // catch (Exception err)
-            // {
-            //     if (err is not UnauthorizedAccessException)
-            //     {
-            //         throw err;
-            //     }
-            // }
-
-
             if (program.diagnostics.Any())
             {
                 return new InterpreterResult(program.diagnostics, null);
@@ -135,12 +143,76 @@ namespace IllusionScript.Runtime
             return new InterpreterResult(Array.Empty<Diagnostic>(), value);
         }
 
+        public bool Compile(string id, string output, TextWriter writer)
+        {
+            IEnumerable<Diagnostic> parseDiagnostics = syntaxTrees.SelectMany(st => st.diagnostics);
+            ImmutableArray<Diagnostic>
+                diagnostics = parseDiagnostics.Concat(GlobalScope.diagnostics).ToImmutableArray();
+
+            if (diagnostics.Any())
+            {
+                writer.WriteDiagnostics(diagnostics);
+                return false;
+            }
+
+            BoundProgram program = GetProgram();
+
+            if (program.diagnostics.Any())
+            {
+                writer.WriteDiagnostics(program.diagnostics);
+                return false;
+            }
+            
+            if (!compilers.TryGetValue(id, out CompilerConnector compiler))
+            {
+                return false;
+            }
+
+            output = Path.GetFullPath(output);
+
+            if (!Directory.Exists(output))
+            {
+                writer.WriteLine($"'{output}' does not exists");
+            }
+
+            compiler.setBaseDir(output);
+            compiler.setOutput(writer);
+
+            if (!compiler.BuildOutput())
+            {
+                writer.WriteLine("Failed to create Output (See errors above)");
+                return false;
+            }
+            
+            if (!compiler.BuildCore())
+            {
+                writer.WriteLine("Failed to Build Core (See errors above)");
+                return false;
+            }
+
+            if (!compiler.Build(this, program))
+            {
+                writer.WriteLine("Failed to Build (See errors above)");
+                return false;
+            }
+
+            if (!compiler.CleanUp())
+            {
+                writer.WriteLine("Cleanup failed (See errors above)");
+                return false;
+            }
+
+            writer.WriteLine("Build succeeded");
+            return true;
+        }
+
         public void EmitTree(TextWriter writer)
         {
             if (GlobalScope.mainFunction != null)
             {
                 EmitTree(GlobalScope.mainFunction, writer);
-            } else if (GlobalScope.scriptFunction != null)
+            }
+            else if (GlobalScope.scriptFunction != null)
             {
                 EmitTree(GlobalScope.scriptFunction, writer);
             }

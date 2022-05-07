@@ -1,6 +1,6 @@
 ﻿namespace IllusionScript.Runtime.Binding.Nodes
 {
-    internal sealed class BoundLabel
+    public sealed class BoundLabel
     {
         public readonly string name;
 

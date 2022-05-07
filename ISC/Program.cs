@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using IllusionScript.Runtime;
-using IllusionScript.Runtime.Extension;
-using IllusionScript.Runtime.Interpreting;
-using IllusionScript.Runtime.Interpreting.Memory.Symbols;
-using IllusionScript.Runtime.Parsing;
 
 namespace IllusionScript.ISC
 {
@@ -14,72 +11,77 @@ namespace IllusionScript.ISC
     {
         private static int Main(string[] args)
         {
-            if (args.Length == 0)
+            CliController cliController = ParseArgs(args);
+
+            if (!cliController.namedArguments.ContainsKey("--no-load"))
             {
-                Console.WriteLine("usage: ils <source-paths>");
-                return 1;
+                DetectCompilers();
             }
 
-            IEnumerable<string> paths = GetFilePaths(args);
-            List<SyntaxTree> syntaxTrees = new List<SyntaxTree>();
-            bool hasErrors = false;
-            foreach (string path in paths)
+            Type baseType = typeof(CliController.CliCommand);
+            Type[] types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).Where(t =>
+                baseType.IsAssignableFrom(t) && t.IsClass && !t.IsAbstract).ToArray();
+
+            foreach (Type type in types)
             {
-                if (!File.Exists(path))
+                CliController.CliCommand command = (CliController.CliCommand)Activator.CreateInstance(type);
+
+                cliController.Register(command);
+            }
+
+            return cliController.Exec();
+        }
+
+        private static void DetectCompilers()
+        {
+            if (Directory.Exists("etc"))
+            {
+                string[] dlls = Directory.EnumerateFiles("etc", "*.dll", SearchOption.AllDirectories).ToArray();
+                foreach (string dll in dlls)
                 {
-                    Console.WriteLine($"ERROR: File '{path}' doesn't exists");
-                    hasErrors = true;
-                    continue;
+                    string path = Path.GetFullPath(dll);
+                    Assembly assembly = Assembly.LoadFile(path);
+                    Compilation.AddCompiler(assembly);
                 }
-
-                SyntaxTree syntaxTree = SyntaxTree.Load(path);
-                syntaxTrees.Add(syntaxTree);
-            }
-
-            if (hasErrors)
-            {
-                return 1;
-            }
-
-            Compilation compilation = Compilation.Create(syntaxTrees.ToArray());
-            InterpreterResult result = compilation.Interpret(new Dictionary<VariableSymbol, object>());
-
-            if (!result.diagnostics.Any())
-            {
-                if (result.value == null)
-                {
-                    return 0;
-                }
-
-                Console.ForegroundColor = ConsoleColor.Gray;
-                Console.WriteLine(result.value);
-                Console.ResetColor();
-                return 0;
-            }
-            else
-            {
-                Console.Out.WriteDiagnostics(result.diagnostics);
-                return 1;
             }
         }
 
-        private static IEnumerable<string> GetFilePaths(IEnumerable<string> paths)
+        private static CliController ParseArgs(string[] args)
         {
-            SortedSet<string> result = new SortedSet<string>();
+            List<string> flags = new List<string>();
+            List<string> arguments = new List<string>();
+            Dictionary<string, string> namedArguments = new Dictionary<string, string>();
 
-            foreach (string path in paths)
+            for (int i = 0; i < args.Length; i++)
             {
-                if (Directory.Exists(path))
+                string current = args[i];
+                string next = i + 1 < args.Length ? args[i + 1] : string.Empty;
+                if (current.Length == 2 && current.StartsWith("-"))
                 {
-                    result.UnionWith(Directory.EnumerateFiles(path, "*.ils", SearchOption.AllDirectories));
+                    flags.Add(current);
+                }
+                else if (current.StartsWith("--"))
+                {
+                    string value;
+                    if (next.StartsWith("-"))
+                    {
+                        value = string.Empty;
+                    }
+                    else
+                    {
+                        value = next;
+                        i++;
+                    }
+
+                    namedArguments.Add(current, value);
                 }
                 else
                 {
-                    result.Add(path);
+                    arguments.Add(current);
                 }
             }
 
-            return result;
+            return new CliController(flags.ToArray(), namedArguments, arguments.ToArray());
         }
     }
 }

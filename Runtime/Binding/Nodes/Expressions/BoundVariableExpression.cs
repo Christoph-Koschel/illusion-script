@@ -4,7 +4,7 @@ using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 
 namespace IllusionScript.Runtime.Binding.Nodes.Expressions
 {
-    internal sealed class BoundVariableExpression : BoundExpression
+    public sealed class BoundVariableExpression : BoundExpression
     {
         public readonly VariableSymbol variableSymbol;
 
