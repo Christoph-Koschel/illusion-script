@@ -59,6 +59,7 @@ jobs:
           tar czvf "${release_name}.tar.gz" "$release_name"
           fi
 
+
       - name: Publish ISI & ISC
         uses: softprops/action-gh-release@v1
         with:

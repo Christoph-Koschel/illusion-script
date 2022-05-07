@@ -11,7 +11,6 @@ using IllusionScript.Runtime.Interpreting;
 using IllusionScript.Runtime.Interpreting.Memory;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 using IllusionScript.Runtime.Parsing;
-using ControlFlowGraph = IllusionScript.Runtime.CFA.ControlFlowGraph;
 
 namespace IllusionScript.Runtime
 {
@@ -102,28 +101,6 @@ namespace IllusionScript.Runtime
 
             BoundProgram program = GetProgram();
 
-            // string appPath = Environment.GetCommandLineArgs()[0];
-            // string? appDirectory = Path.GetDirectoryName(appPath);
-            // string cfgPath = Path.Combine(appDirectory, "cfg.dot");
-            // BoundBlockStatement cfgStatement = !program.statement.statements.Any() && program.functionBodies.Any()
-            //     ? program.functionBodies.Last().Value
-            //     : program.statement;
-            //
-            // try
-            // {
-            //     ControlFlowGraph cfg = ControlFlowGraph.Create(cfgStatement);
-            //     using StreamWriter streamWriter = new StreamWriter(cfgPath);
-            //     cfg.WriteTo(streamWriter);
-            // }
-            // catch (Exception err)
-            // {
-            //     if (err is not UnauthorizedAccessException)
-            //     {
-            //         throw err;
-            //     }
-            // }
-
-
             if (program.diagnostics.Any())
             {
                 return new InterpreterResult(program.diagnostics, null);
@@ -140,7 +117,8 @@ namespace IllusionScript.Runtime
             if (GlobalScope.mainFunction != null)
             {
                 EmitTree(GlobalScope.mainFunction, writer);
-            } else if (GlobalScope.scriptFunction != null)
+            }
+            else if (GlobalScope.scriptFunction != null)
             {
                 EmitTree(GlobalScope.scriptFunction, writer);
             }
