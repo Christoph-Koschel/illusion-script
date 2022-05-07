@@ -3,7 +3,7 @@ using IllusionScript.Runtime.Parsing.Nodes.Expressions;
 
 namespace IllusionScript.Runtime.Binding.Nodes.Expressions
 {
-    internal sealed class BoundConversionExpression : BoundExpression
+    public sealed class BoundConversionExpression : BoundExpression
     {
         public readonly BoundExpression expression;
 

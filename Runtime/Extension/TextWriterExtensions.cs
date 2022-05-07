@@ -96,7 +96,7 @@ namespace IllusionScript.Runtime.Extension
             foreach (Diagnostic diagnostic in diagnostics)
             {
                 SourceText text = diagnostic.location.text;
-                string filename = diagnostic.location.text.filename;
+                string filename = Path.GetFullPath(diagnostic.location.text.filename);
                 int startLine = diagnostic.location.startLine + 1;
                 int startCharacter = diagnostic.location.startCharacter + 1;
                 int endLine = diagnostic.location.endLine + 1;

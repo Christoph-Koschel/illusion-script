@@ -20,7 +20,7 @@ namespace IllusionScript.Runtime.Binding.Nodes.Expressions
         public override TypeSymbol type => expression.type;
     }
 
-    internal sealed class BoundCallExpression : BoundExpression
+    public sealed class BoundCallExpression : BoundExpression
     {
         public readonly FunctionSymbol function;
         public readonly ImmutableArray<BoundExpression> arguments;

@@ -6,6 +6,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Runtime\Runtime.csproj" />
+        <ProjectReference Include="..\Runtime\Runtime.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="syscall" />
+      <EmbeddedResource Include="syscall.php" />
+    </ItemGroup>
+
+    <Target Name="Copy Binaries" AfterTargets="AfterBuild">
+        <Copy SourceFiles="$(OutDir)/php8.dll" DestinationFolder="../ISC/bin/Debug/net5.0/etc"></Copy>
+    </Target>
 </Project>

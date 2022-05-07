@@ -9,14 +9,40 @@ namespace IllusionScript.Runtime.Interpreting.Memory
 {
     internal static class BuiltInFunctions
     {
-        public static readonly FunctionSymbol Print = new("print",
-            ImmutableArray.Create(new ParameterSymbol("text", TypeSymbol.String)), TypeSymbol.Void);
+        public static readonly FunctionSymbol Print = new(
+            "print",
+            ImmutableArray.Create(
+                new ParameterSymbol(
+                    "text",
+                    TypeSymbol.String
+                )
+            ),
+            TypeSymbol.Void);
 
         public static readonly FunctionSymbol Scan =
-            new("scan", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.String);
+            new(
+                "scan",
+                ImmutableArray<ParameterSymbol>.Empty,
+                TypeSymbol.String
+            );
 
-        public static readonly FunctionSymbol Rand = new FunctionSymbol("rand",
-            ImmutableArray.Create(new ParameterSymbol("max", TypeSymbol.Int)), TypeSymbol.Int);
+        public static readonly FunctionSymbol Syscall =
+            new(
+                "syscall",
+                ImmutableArray.Create(
+                    new ParameterSymbol("code", TypeSymbol.Int),
+                    new ParameterSymbol("arg", TypeSymbol.Object)
+                ),
+                TypeSymbol.Object
+            );
+
+        public static readonly FunctionSymbol Rand = new(
+            "rand",
+            ImmutableArray.Create(
+                new ParameterSymbol("max", TypeSymbol.Int)
+            ),
+            TypeSymbol.Int
+        );
 
         public static IEnumerable<FunctionSymbol> GetAll() =>
             typeof(BuiltInFunctions).GetFields(BindingFlags.Public | BindingFlags.Static)

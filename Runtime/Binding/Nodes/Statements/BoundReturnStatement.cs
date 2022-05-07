@@ -2,7 +2,7 @@
 
 namespace IllusionScript.Runtime.Binding.Nodes.Statements
 {
-    internal sealed class BoundReturnStatement : BoundStatement
+    public sealed class BoundReturnStatement : BoundStatement
     {
         public readonly BoundExpression expression;
 

@@ -5,7 +5,7 @@ using IllusionScript.Runtime.Interpreting.Memory.Symbols;
 
 namespace IllusionScript.Runtime.Interpreting.Memory
 {
-    internal sealed class GlobalScope
+    public sealed class GlobalScope
     {
         public readonly GlobalScope previous;
         public readonly ImmutableArray<Diagnostic> diagnostics;

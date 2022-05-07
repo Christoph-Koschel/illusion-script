@@ -9,6 +9,7 @@ using IllusionScript.Runtime.Binding;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
 using IllusionScript.Runtime.Compiling;
 using IllusionScript.Runtime.Diagnostics;
+using IllusionScript.Runtime.Extension;
 using IllusionScript.Runtime.Interpreting;
 using IllusionScript.Runtime.Interpreting.Memory;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
@@ -28,6 +29,7 @@ namespace IllusionScript.Runtime
         public ImmutableArray<FunctionSymbol> functions => GlobalScope.functions;
         public ImmutableArray<VariableSymbol> variables => GlobalScope.variables;
         public FunctionSymbol mainFunction => globalScope.mainFunction;
+        public FunctionSymbol scriptFunction => globalScope.scriptFunction;
         private GlobalScope globalScope;
 
         private Compilation(bool isScript, Compilation previous, params SyntaxTree[] syntaxTrees)
@@ -143,6 +145,24 @@ namespace IllusionScript.Runtime
 
         public bool Compile(string id, string output, TextWriter writer)
         {
+            IEnumerable<Diagnostic> parseDiagnostics = syntaxTrees.SelectMany(st => st.diagnostics);
+            ImmutableArray<Diagnostic>
+                diagnostics = parseDiagnostics.Concat(GlobalScope.diagnostics).ToImmutableArray();
+
+            if (diagnostics.Any())
+            {
+                writer.WriteDiagnostics(diagnostics);
+                return false;
+            }
+
+            BoundProgram program = GetProgram();
+
+            if (program.diagnostics.Any())
+            {
+                writer.WriteDiagnostics(program.diagnostics);
+                return false;
+            }
+            
             if (!compilers.TryGetValue(id, out CompilerConnector compiler))
             {
                 return false;
@@ -156,13 +176,21 @@ namespace IllusionScript.Runtime
             }
 
             compiler.setBaseDir(output);
+            compiler.setOutput(writer);
+
             if (!compiler.BuildOutput())
             {
                 writer.WriteLine("Failed to create Output (See errors above)");
                 return false;
             }
+            
+            if (!compiler.BuildCore())
+            {
+                writer.WriteLine("Failed to Build Core (See errors above)");
+                return false;
+            }
 
-            if (!compiler.Build(GetProgram()))
+            if (!compiler.Build(this, program))
             {
                 writer.WriteLine("Failed to Build (See errors above)");
                 return false;
