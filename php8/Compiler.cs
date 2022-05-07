@@ -1,4 +1,5 @@
-﻿using IllusionScript.Runtime.Compiling;
+﻿using System.IO;
+using IllusionScript.Runtime.Compiling;
 
 namespace IllusionScript.Compiler.PHP8
 {
@@ -6,17 +7,21 @@ namespace IllusionScript.Compiler.PHP8
     {
         public Compiler(string baseDir) : base(baseDir)
         {
-            
         }
 
         public override void BuildOutput()
         {
-            throw new System.NotImplementedException();
+            string baseOutput = Path.Combine(baseDir, "out", name);
+
+            if (!Directory.Exists(baseOutput))
+            {
+                Directory.CreateDirectory(baseOutput);
+            }
         }
 
         public override void Build()
         {
-            throw new System.NotImplementedException();
+            
         }
     }
 }
