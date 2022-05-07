@@ -632,10 +632,10 @@ namespace IllusionScript.Runtime.Binding
 
             ImmutableArray<Diagnostic> diagnostics = binder.diagnostics.ToImmutableArray();
             ImmutableArray<BoundStatement>.Builder statements = ImmutableArray.CreateBuilder<BoundStatement>();
-            var entryFunction = mainFunction ?? scriptFunction;
+            FunctionSymbol entryFunction = mainFunction ?? scriptFunction;
             if (entryFunction != null)
             {
-                var statementBinder = new Binder(isScript, parentScope, entryFunction);
+                Binder statementBinder = new Binder(isScript, parentScope, entryFunction);
                 foreach (StatementMember statementMember in globalStatements)
                 {
                     BoundStatement s = statementBinder.BindGlobalStatement(statementMember.statement);

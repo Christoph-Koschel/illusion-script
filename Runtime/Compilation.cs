@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using IllusionScript.Runtime.Binding;
 using IllusionScript.Runtime.Binding.Nodes.Statements;
@@ -21,7 +20,7 @@ namespace IllusionScript.Runtime
     public sealed class Compilation
     {
         public static readonly Dictionary<string, CompilerConnector> compilers =
-            new Dictionary<string, CompilerConnector>();
+            new();
 
         public readonly bool isScript;
         public readonly Compilation previous;
@@ -67,7 +66,8 @@ namespace IllusionScript.Runtime
         public static string GetCompilerHash(string name)
         {
             CompilerConnector compiler = compilers.FirstOrDefault(c => c.Value.name == name).Value;
-            return compiler.hashID;
+
+            return compiler?.hashID;
         }
 
         internal GlobalScope GlobalScope
@@ -141,8 +141,41 @@ namespace IllusionScript.Runtime
             return new InterpreterResult(Array.Empty<Diagnostic>(), value);
         }
 
-        public void Compile(string id)
+        public bool Compile(string id, string output, TextWriter writer)
         {
+            if (!compilers.TryGetValue(id, out CompilerConnector compiler))
+            {
+                return false;
+            }
+
+            output = Path.GetFullPath(output);
+
+            if (!Directory.Exists(output))
+            {
+                writer.WriteLine($"'{output}' does not exists");
+            }
+
+            compiler.setBaseDir(output);
+            if (!compiler.BuildOutput())
+            {
+                writer.WriteLine("Failed to create Output (See errors above)");
+                return false;
+            }
+
+            if (!compiler.Build(GetProgram()))
+            {
+                writer.WriteLine("Failed to Build (See errors above)");
+                return false;
+            }
+
+            if (!compiler.CleanUp())
+            {
+                writer.WriteLine("Cleanup failed (See errors above)");
+                return false;
+            }
+
+            writer.WriteLine("Build succeeded");
+            return true;
         }
 
         public void EmitTree(TextWriter writer)
