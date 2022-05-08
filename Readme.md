@@ -27,21 +27,20 @@
 * [Built With](#built-with)
 * [Getting Started](#getting-started)
     * [Prerequisites](#prerequisites)
-    * [Installation](#installation)
+    * [Usage](#usage)
+    * [Compilers](#compilers)
 * [Contributing](#contributing)
 * [License](#license)
 * [Authors](#authors)
 
 ## About The Project
 
-Illusion Script is an IL compiled script language. It supports both the OOP paradigm and the functional paradigm.
+Illusion Script is a multi-compiled scripting language. Illusion Script represents an engine that can compile/transpile scripts into any language for which a compiler is available.
 
-During development it is important to us to keep the language simple and flexible. Nevertheless it should be clear and secure via. Type Checking.
-
+During development it is important for us to keep the language simple and flexible. Nevertheless, it should be clear and safe. Type checking.
 ## Built With
 
-C#\
-IL Compiler
+C#
 
 ## Getting Started
 
@@ -49,35 +48,59 @@ This is an example to compile a ils program
 
 ### Prerequisites
 
-Download the lastest Illusion Script SDK
+Download the latest ISC or ISI Release from Illusion Script
 
-### Installation
+ISC (Illusion Script Compiler) is the actual compiler interface.<br>
+Through it scripts can be compiled via the console<br>
+<br>
+ISI (Illusion Script Interface) is a simple console editor for executing code. The code is not directly compiled but directly interpreted by the ILS runtime.<br>
+<br>
+**Note**: ISI should only be used for small projects or to try things out.
 
-1. Create your file with the .ils extension
+### Using
 
+1. Create a file with the .ils extension
 2. Open it in a editor your choose and write:
 
 ```
-println("Hello World");
+print("Hello World");
 ```
 
 3. Compile the program
 
 ```
-ils -c main.ils -o main.exe
+ils -c main.ils
 ```
 
-4. Run your application
+Additionally, instead of a file, you can also specify a folder as a path. The runtime will filter all *.ils files in the folder and its subfolders out.
 
 ```
-./main.exe
+ils -c src
 ```
 
+In this example, no target was set, so the runtime executes the code directly.
+So no compiled files will be generated.<br>
+<br>
+
+To generate compiled files a compiler must be downloaded and placed in the /etc folder.
+
+> CLI support will be available soon.
+
+Additionally the target attribute must be added when compiling.
+
+
+```
+ils --target php8 -c src
+```
+
+### Compilers
+* [php8](https://github.com/Christoph-Koschel/illusion-script-php-compiler)
+
+> More are coming soon.
 
 ## Contributing
 
 Pull Request are at any time welcome.
-
 
 Please sort your pull request into categories.
 
