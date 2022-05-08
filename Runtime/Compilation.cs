@@ -162,7 +162,7 @@ namespace IllusionScript.Runtime
                 writer.WriteDiagnostics(program.diagnostics);
                 return false;
             }
-            
+
             if (!compilers.TryGetValue(id, out CompilerConnector compiler))
             {
                 return false;
@@ -183,7 +183,7 @@ namespace IllusionScript.Runtime
                 writer.WriteLine("Failed to create Output (See errors above)");
                 return false;
             }
-            
+
             if (!compiler.BuildCore())
             {
                 writer.WriteLine("Failed to Build Core (See errors above)");
