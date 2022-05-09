@@ -143,7 +143,7 @@ namespace IllusionScript.Runtime
             return new InterpreterResult(Array.Empty<Diagnostic>(), value);
         }
 
-        public bool Compile(string id, string output, TextWriter writer)
+        public bool Compile(string id, string output, int type, TextWriter writer)
         {
             IEnumerable<Diagnostic> parseDiagnostics = syntaxTrees.SelectMany(st => st.diagnostics);
             ImmutableArray<Diagnostic>
@@ -172,7 +172,8 @@ namespace IllusionScript.Runtime
 
             if (!Directory.Exists(output))
             {
-                writer.WriteLine($"'{output}' does not exists");
+                Console.WriteLine($"Creating folder at '{output}'");
+                Directory.CreateDirectory(output);
             }
 
             compiler.setBaseDir(output);

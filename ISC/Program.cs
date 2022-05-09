@@ -34,12 +34,14 @@ namespace IllusionScript.ISC
 
         private static void DetectCompilers()
         {
-            if (Directory.Exists("etc"))
+            string root = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            string etc = Path.Combine(root, "etc");
+            if (Directory.Exists(etc))
             {
-                string[] dlls = Directory.EnumerateFiles("etc", "*.dll", SearchOption.AllDirectories).ToArray();
+                string[] dlls = Directory.EnumerateFiles(etc, "*.dll", SearchOption.AllDirectories).ToArray();
                 foreach (string dll in dlls)
                 {
-                    string path = Path.GetFullPath(dll);
+                    string path = Path.Combine(etc, dll);
                     Assembly assembly = Assembly.LoadFile(path);
                     Compilation.AddCompiler(assembly);
                 }

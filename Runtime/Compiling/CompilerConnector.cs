@@ -37,5 +37,19 @@ namespace IllusionScript.Runtime.Compiling
         {
             this.writer = writer;
         }
+
+        public static int DetectTarget(string tar, int def)
+        {
+            return tar.ToLower() switch
+            {
+                "exe" => Executable,
+                "lib" => Library,
+                "library" => Library,
+                _ => def
+            };
+        }
+
+        public const int Executable = 0;
+        public const int Library = 1;
     }
 }

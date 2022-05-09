@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using IllusionScript.Runtime;
+using IllusionScript.Runtime.Compiling;
 using IllusionScript.Runtime.Extension;
 using IllusionScript.Runtime.Interpreting;
 using IllusionScript.Runtime.Interpreting.Memory.Symbols;
@@ -43,7 +44,11 @@ namespace IllusionScript.ISC.Commands
                     ? controller.namedArguments["--out"]
                     : Environment.CurrentDirectory;
 
-                return compilation.Compile(compiler, outDir, Console.Out) ? 0 : 1;
+                int type = controller.namedArguments.ContainsKey("--type")
+                    ? CompilerConnector.DetectTarget(controller.namedArguments["--type"], CompilerConnector.Executable)
+                    : CompilerConnector.Executable;
+
+                return compilation.Compile(compiler, outDir, type, Console.Out) ? 0 : 1;
             }
             else
             {
@@ -108,13 +113,15 @@ namespace IllusionScript.ISC.Commands
 
             foreach (string path in paths)
             {
-                if (Directory.Exists(path))
+                string target = Path.GetFullPath(path);
+
+                if (Directory.Exists(target))
                 {
-                    result.UnionWith(Directory.EnumerateFiles(path, "*.ils", SearchOption.AllDirectories));
+                    result.UnionWith(Directory.EnumerateFiles(target, "*.ils", SearchOption.AllDirectories));
                 }
                 else
                 {
-                    result.Add(path);
+                    result.Add(target);
                 }
             }
 
