@@ -95,6 +95,7 @@ ils --target php8 -c src
 
 ### Compilers
 * [php8](https://github.com/Christoph-Koschel/illusion-script-php-compiler)
+* [bcc](https://github.com/Christoph-Koschel/illusion-script-bcc-compiler)
 
 > More are coming soon.
 
